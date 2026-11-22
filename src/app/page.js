@@ -12,7 +12,7 @@ export default function LandingPage() {
 
           <div className={styles.navRight}>
             <div className={`${styles.navBadge} badge-brutal badge-blue`}>
-              ⚡ 100% Client-Side Canvas
+              ⚡ 30% Sidebar + 70% Canvas
             </div>
             <Link
               href="/editor"
@@ -28,7 +28,7 @@ export default function LandingPage() {
       {/* 2. Hero Section */}
       <section className={styles.heroSection}>
         <div className={`${styles.heroTag} badge-brutal badge-yellow`}>
-          ✨ DUAL-PANEL SCREENSHOT + AI SOCIAL ENGINE
+          ✨ 30/70 SPLIT WORKSPACE: CANVAS + MULTIMODAL AI
         </div>
 
         <h1 className={styles.headline}>
@@ -60,7 +60,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 3. Interactive-Feel Static Preview Card (2-Panel Preview Showcase) */}
+      {/* 3. Interactive-Feel 30/70 Split Preview Showcase */}
       <section className={styles.previewSection}>
         <div className={styles.previewWindow}>
           {/* Mock Browser/App Header */}
@@ -71,28 +71,123 @@ export default function LandingPage() {
               <span className={`${styles.dot} ${styles.dotGreen}`} />
             </div>
             <div className={styles.windowTitle}>
-              make-a-post-studio-preview.app — [Dual-Panel Mode]
+              make-a-post-studio-preview.app — [30% Dynamic Sidebar / 70% Visual Canvas]
             </div>
             <div className="badge-brutal badge-green" style={{ fontSize: '0.68rem', padding: '2px 8px' }}>
-              ● LIVE PREVIEW
+              ● LIVE 30/70 SPLIT
             </div>
           </div>
 
-          {/* Dual Panel Split */}
+          {/* 30% Control Sidebar / 70% Main Canvas Split */}
           <div className={styles.previewGrid}>
-            {/* Left Panel: Canvas Editor Preview */}
-            <div className={styles.leftPanel}>
-              <div className={styles.panelHeader}>
-                <span className={styles.panelTitle}>
-                  <span>🎨</span> 01. Canvas Beautifier
+            {/* Left 30% Sidebar: Dynamic Control Panel */}
+            <div className={styles.sidebar30}>
+              <div className={styles.sidebarHeader}>
+                <span className={styles.sidebarTitle}>
+                  30% Dynamic Sidebar
                 </span>
-                <span className="badge-brutal badge-yellow" style={{ fontSize: '0.68rem' }}>
-                  100% Free &amp; Offline
+                <span className="badge-brutal badge-yellow" style={{ fontSize: '0.65rem', padding: '2px 6px' }}>
+                  Sticky Pill
                 </span>
               </div>
 
-              {/* Beautified Screenshot Frame */}
-              <div className={styles.canvasFrame}>
+              {/* Sticky Mode Switcher Pill */}
+              <div className={styles.modeSwitcherPill}>
+                <div className={`${styles.modeTab} ${styles.modeTabActive}`}>
+                  🎨 Editor
+                </div>
+                <div className={styles.modeTab}>
+                  ✨ AI Mode
+                </div>
+              </div>
+
+              {/* Active Mode Controls (Editor Mode Active State) */}
+              <div className={styles.controlGroup}>
+                <div className={styles.controlLabel}>
+                  <span>Aspect Ratio</span>
+                  <span className="tag-mono">16:9</span>
+                </div>
+                <div className={styles.aspectPills}>
+                  <div className={`${styles.aspectBtn} ${styles.aspectBtnActive}`}>16:9</div>
+                  <div className={styles.aspectBtn}>4:3</div>
+                  <div className={styles.aspectBtn}>1:1</div>
+                  <div className={styles.aspectBtn}>9:16</div>
+                </div>
+
+                <div className={styles.controlLabel}>
+                  <span>Background Preset</span>
+                  <span className="tag-mono">Sunset</span>
+                </div>
+                <div className={styles.gradientGrid}>
+                  <span
+                    className={`${styles.gradientSwatch} ${styles.gradientSwatchActive}`}
+                    style={{ background: 'linear-gradient(135deg, #4F46E5, #DB2777)' }}
+                  />
+                  <span
+                    className={styles.gradientSwatch}
+                    style={{ background: 'linear-gradient(135deg, #F59E0B, #EF4444)' }}
+                  />
+                  <span
+                    className={styles.gradientSwatch}
+                    style={{ background: 'linear-gradient(135deg, #10B981, #06B6D4)' }}
+                  />
+                  <span
+                    className={styles.gradientSwatch}
+                    style={{ background: '#09090B' }}
+                  />
+                </div>
+
+                <div className={styles.controlLabel}>
+                  <span>Security &amp; Privacy</span>
+                </div>
+                <div className={styles.toggleBtn}>
+                  <span>🔒 Blur Credentials</span>
+                  <span style={{ fontWeight: 800 }}>ACTIVE</span>
+                </div>
+              </div>
+
+              {/* Initial Selection Hint Strip */}
+              <div
+                style={{
+                  padding: '12px',
+                  backgroundColor: '#FFFFFF',
+                  border: '1.5px dashed var(--ink)',
+                  borderRadius: 'var(--radius-sm)',
+                  fontSize: '0.75rem',
+                  fontFamily: 'var(--font-mono)',
+                  color: 'var(--muted)',
+                  lineHeight: 1.4,
+                }}
+              >
+                💡 <strong>Fresh State:</strong> Shows 2 large selection cards (Image Editor vs AI Mode). Active state provides 1-click pill toggling anytime.
+              </div>
+            </div>
+
+            {/* Right 70% Canvas: Main Visual Dropzone & Live Render */}
+            <div className={styles.canvas70}>
+              <div className={styles.canvasHeader}>
+                <span className={styles.canvasTitle}>
+                  <span>🖼️</span> 70% Main Visual Canvas &amp; Dropzone
+                </span>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <span className="badge-brutal badge-blue" style={{ fontSize: '0.68rem' }}>
+                    Ctrl+V Anywhere
+                  </span>
+                  <span className="badge-brutal badge-yellow" style={{ fontSize: '0.68rem' }}>
+                    Always Visible
+                  </span>
+                </div>
+              </div>
+
+              {/* Canvas Frame */}
+              <div className={styles.mainCanvasStage}>
+                <div className={styles.dropzoneOverlay}>
+                  <span className="badge-brutal" style={{ fontSize: '0.65rem', backgroundColor: '#FFFFFF' }}>
+                    ✦ Drop / Paste Screenshot [Ctrl+V]
+                  </span>
+                </div>
+
+                {/* Inner Mockup Card */}
                 <div className={styles.canvasInnerCard}>
                   <div className={styles.innerCardHeader}>
                     <div className={styles.innerMiniDots}>
@@ -101,116 +196,64 @@ export default function LandingPage() {
                       <span className={styles.miniDot} />
                     </div>
                     <span style={{ fontSize: '0.72rem', color: '#94A3B8', fontFamily: 'var(--font-mono)' }}>
-                      api-route.js
+                      make-a-post-studio.js
                     </span>
                   </div>
 
                   <div className={styles.mockCodeLine}>
-                    <span className={styles.codeComment}>// Multimodal single-shot generator</span>
+                    <span className={styles.codeComment}>// 70% Canvas stays visible while AI generates copy</span>
                   </div>
                   <div className={styles.mockCodeLine}>
                     <span className={styles.codeKey}>const</span> post ={' '}
-                    <span className={styles.codeKey}>await</span> ai.generate({'{'}
+                    <span className={styles.codeKey}>await</span> studio.generatePosts({'{'}
                   </div>
                   <div className={styles.mockCodeLine} style={{ paddingLeft: '16px' }}>
-                    model: <span className={styles.codeString}>&apos;gemini-2.0-flash&apos;</span>,
+                    layout: <span className={styles.codeString}>&apos;30-sidebar-70-canvas&apos;</span>,
                   </div>
                   <div className={styles.mockCodeLine} style={{ paddingLeft: '16px' }}>
                     apiSecret: <span className={styles.blurredArea}>sk_live_994821034</span>{' '}
-                    <span style={{ fontSize: '0.65rem', color: '#FFD93D' }}>[Blurred]</span>
+                    <span style={{ fontSize: '0.65rem', color: '#FFD93D' }}>[Blurred Token]</span>
                   </div>
                   <div className={styles.mockCodeLine}>{'}'});</div>
                 </div>
-              </div>
 
-              {/* Canvas Controls Bar */}
-              <div className={styles.canvasToolsBar}>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <span style={{ fontWeight: 700 }}>Frame:</span>
-                  <span className="badge-brutal" style={{ padding: '2px 8px' }}>16:9</span>
-                  <span className="badge-brutal" style={{ padding: '2px 8px' }}>Round 16px</span>
-                </div>
-                <div className={styles.presetDots}>
-                  <span className={styles.presetDot} style={{ background: 'linear-gradient(135deg, #6366F1, #EC4899)' }} />
-                  <span className={styles.presetDot} style={{ background: 'linear-gradient(135deg, #F59E0B, #EF4444)' }} />
-                  <span className={styles.presetDot} style={{ background: 'linear-gradient(135deg, #10B981, #06B6D4)' }} />
-                  <span className={styles.presetDot} style={{ background: '#09090B' }} />
-                </div>
-              </div>
-            </div>
-
-            {/* Right Panel: AI Social Studio Preview */}
-            <div className={styles.rightPanel}>
-              <div className={styles.panelHeader}>
-                <span className={styles.panelTitle}>
-                  <span>🤖</span> 02. AI Social Studio
-                </span>
-                <span className="badge-brutal badge-blue" style={{ fontSize: '0.68rem' }}>
-                  Single-Shot Multi-Platform
-                </span>
-              </div>
-
-              {/* Platform Switcher Tabs */}
-              <div className={styles.platformTabs}>
-                <button type="button" className={`${styles.tabBtn} ${styles.tabActive}`}>
-                  𝕏 X (Twitter)
-                </button>
-                <button type="button" className={styles.tabBtn}>
-                  💼 LinkedIn
-                </button>
-                <button type="button" className={styles.tabBtn}>
-                  👾 Reddit
-                </button>
-              </div>
-
-              {/* Post Preview Card */}
-              <div className={styles.postCard}>
-                <div className={styles.postAuthor}>
-                  <div className={styles.authorAvatar}>MP</div>
-                  <div className={styles.authorMeta}>
-                    <span className={styles.authorName}>Adarsh J. Mishra</span>
-                    <span className={styles.authorHandle}>@adarshjmishra • 2m</span>
+                {/* Integrated AI Post Result Snippet Floater */}
+                <div className={styles.floatingAiSnippet}>
+                  <div className={styles.aiSnippetHeader}>
+                    <span style={{ color: '#09090B' }}>𝕏 X (Twitter) • Generated Thread Starter</span>
+                    <span className="badge-brutal badge-yellow" style={{ fontSize: '0.65rem', padding: '1px 6px' }}>
+                      ⚡ 234 chars
+                    </span>
+                  </div>
+                  <div className={styles.aiSnippetBody}>
+                    Stop uploading plain, unstyled screenshots 🛑 We split the studio into a 70% canvas and 30% dynamic control sidebar. Edit, blur, and generate viral copy in one screen! 👇 #buildinpublic #saas
                   </div>
                 </div>
+              </div>
 
-                <div className={styles.postContent}>
-                  Stop posting raw unstyled screenshots 🛑
-                  <br /><br />
-                  We eliminated switching between Canva and ChatGPT with MakeAPost:
-                  <br />
-                  ✦ Edit &amp; blur credentials locally on HTML5 Canvas
-                  <br />
-                  ✦ Multimodal AI generates tailored X, LinkedIn &amp; Reddit posts
-                  <br /><br />
-                  Instant reach boost with zero backend image storage 👇
+              {/* Canvas Bottom Action Bar */}
+              <div className={styles.canvasToolsBar}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <span style={{ fontWeight: 700 }}>Canvas:</span>
+                  <span className="tag-mono">1920 × 1080 (HD)</span>
+                  <span className="badge-brutal badge-green" style={{ fontSize: '0.68rem' }}>Ready</span>
                 </div>
-
-                <div className={styles.postTags}>
-                  <span className={styles.postTag}>#buildinpublic</span>
-                  <span className={styles.postTag}>#indiehackers</span>
-                  <span className={styles.postTag}>#saas</span>
-                </div>
-
-                <div className={styles.postActions}>
-                  <span style={{ color: 'var(--muted)', fontWeight: 600 }}>
-                    234 / 280 chars
-                  </span>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    type="button"
+                    className="btn-brutal"
+                    style={{ padding: '4px 12px', fontSize: '0.78rem' }}
+                  >
+                    Copy Image 📋
+                  </button>
                   <button
                     type="button"
                     className="btn-brutal btn-primary"
-                    style={{ padding: '4px 12px', fontSize: '0.78rem' }}
+                    style={{ padding: '4px 14px', fontSize: '0.78rem' }}
                   >
-                    Copy Post 📋
+                    Export PNG 📥
                   </button>
                 </div>
-              </div>
-
-              {/* Action Hint */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span className="tag-mono">Format: Thread Starter (High Engagement)</span>
-                <span className="badge-brutal badge-yellow" style={{ fontSize: '0.7rem' }}>
-                  ⚡ Generated in 1.2s
-                </span>
               </div>
             </div>
           </div>
@@ -230,30 +273,30 @@ export default function LandingPage() {
           {/* Card 1 */}
           <div className={styles.stepCard}>
             <div className={styles.stepBadge}>01</div>
-            <h3 className={styles.stepTitle}>Paste Screenshot (Ctrl+V)</h3>
+            <h3 className={styles.stepTitle}>Paste on 70% Canvas (Ctrl+V)</h3>
             <p className={styles.stepDesc}>
               Copy any screenshot or UI snippet and paste it straight onto the
-              canvas. Works 100% offline in your browser with zero upload lag.
+              canvas. Always visible with zero upload lag and no account required.
             </p>
           </div>
 
           {/* Card 2 */}
           <div className={styles.stepCard}>
             <div className={styles.stepBadge}>02</div>
-            <h3 className={styles.stepTitle}>Beautify &amp; Highlight</h3>
+            <h3 className={styles.stepTitle}>Beautify &amp; Blur in 30% Sidebar</h3>
             <p className={styles.stepDesc}>
-              Add vibrant gradients, sleek device frames, custom padding, and
-              instantly blur sensitive credentials, API keys, or customer data.
+              Configure gradient backgrounds, aspect ratios, and blur sensitive
+              tokens client-side with instant real-time canvas updates.
             </p>
           </div>
 
           {/* Card 3 */}
           <div className={styles.stepCard}>
             <div className={styles.stepBadge}>03</div>
-            <h3 className={styles.stepTitle}>Generate Platform Posts</h3>
+            <h3 className={styles.stepTitle}>Switch to AI Mode &amp; Post</h3>
             <p className={styles.stepDesc}>
-              Our multimodal Gemini AI reads your visual context in a single shot
-              and writes high-converting, tailored posts for X, LinkedIn, and
+              Toggle to AI Mode using the sticky pill. Multimodal Gemini AI reads
+              your visual canvas and generates viral posts for X, LinkedIn, and
               Reddit.
             </p>
           </div>

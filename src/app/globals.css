@@ -164,3 +164,71 @@ body {
   font-weight: 600;
   color: var(--muted);
 }
+
+/* Neobrutalist Form Inputs */
+.input-brutal {
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: 500;
+  padding: 8px 12px;
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  background-color: var(--surface);
+  color: var(--ink);
+  box-shadow: 2px 2px 0px var(--ink);
+  outline: none;
+  width: 100%;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+
+.input-brutal:focus {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px var(--ink);
+}
+
+/* Neobrutalist Range Slider */
+.slider-brutal {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  background: #E2E8F0;
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius-full);
+  outline: none;
+}
+
+.slider-brutal::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent-yellow);
+  border: 2px solid var(--ink);
+  box-shadow: 1.5px 1.5px 0px var(--ink);
+  cursor: pointer;
+  transition: transform 0.08s ease;
+}
+
+.slider-brutal::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+.slider-brutal::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent-yellow);
+  border: 2px solid var(--ink);
+  box-shadow: 1.5px 1.5px 0px var(--ink);
+  cursor: pointer;
+}
+
+/* Dot Grid Background */
+.dot-grid-bg {
+  background-color: var(--bg-primary);
+  background-image: radial-gradient(#CBD5E1 1.5px, transparent 1.5px);
+  background-size: 20px 20px;
+}
+
