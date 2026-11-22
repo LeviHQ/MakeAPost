@@ -273,6 +273,7 @@ export default function ModeSidebar({
                     type="button"
                     className="btn-brutal"
                     style={{
+                      minWidth: 0,
                       padding: '6px 2px',
                       fontSize: '0.72rem',
                       backgroundColor: aspectRatio === ratio ? 'var(--accent-blue)' : '#F8FAFC',
@@ -405,6 +406,7 @@ export default function ModeSidebar({
                     className="btn-brutal"
                     title={tool.label}
                     style={{
+                      minWidth: 0,
                       padding: '6px 2px',
                       fontSize: '0.75rem',
                       backgroundColor: activeTool === tool.id ? 'var(--accent-yellow)' : '#F8FAFC',

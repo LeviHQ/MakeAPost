@@ -638,20 +638,21 @@ export default function CanvasEditor({
     renderCanvas();
   }, [renderCanvas]);
 
-  // 3. Mouse Annotation Coordinate Math with Inverse Tilt Support
+  // 3. Mouse & Touch Annotation Coordinate Math with Inverse Tilt Support
   const getCanvasPoint = (e) => {
     const canvas = canvasRef?.current;
     if (!canvas) return { x: 0, y: 0 };
     const rect = canvas.getBoundingClientRect();
-    const clientX = e.clientX ?? (e.touches ? e.touches[0].clientX : 0);
-    const clientY = e.clientY ?? (e.touches ? e.touches[0].clientY : 0);
+    const touch = e.touches?.[0] || e.changedTouches?.[0];
+    const clientX = e.clientX ?? touch?.clientX ?? 0;
+    const clientY = e.clientY ?? touch?.clientY ?? 0;
     const scaleX = parseFloat(canvas.style.width) / rect.width;
     const scaleY = parseFloat(canvas.style.height) / rect.height;
 
     let x = (clientX - rect.left) * scaleX;
     let y = (clientY - rect.top) * scaleY;
 
-    // If canvas has tilt rotation, apply inverse rotation to mouse point
+    // If canvas has tilt rotation, apply inverse rotation to point
     if (tilt !== 0) {
       const centerX = parseFloat(canvas.style.width) / 2;
       const centerY = parseFloat(canvas.style.height) / 2;
@@ -822,7 +823,7 @@ export default function CanvasEditor({
           style={{
             maxWidth: '640px',
             width: '100%',
-            padding: '36px 28px',
+            padding: 'clamp(20px, 4vw, 36px) clamp(16px, 4vw, 28px)',
             textAlign: 'center',
             backgroundColor: isDraggingOver ? '#FEF9C3' : '#FFFFFF',
             border: isDraggingOver ? '3px solid #09090B' : '2.5px dashed #09090B',
@@ -833,8 +834,8 @@ export default function CanvasEditor({
         >
           <div
             style={{
-              width: '64px',
-              height: '64px',
+              width: '56px',
+              height: '56px',
               backgroundColor: 'var(--accent-yellow)',
               border: 'var(--border)',
               borderRadius: 'var(--radius-md)',
@@ -842,8 +843,8 @@ export default function CanvasEditor({
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '2rem',
-              marginBottom: '16px',
+              fontSize: '1.8rem',
+              marginBottom: '14px',
             }}
           >
             📸
@@ -852,7 +853,7 @@ export default function CanvasEditor({
           <h2
             style={{
               fontFamily: 'var(--font-heading)',
-              fontSize: '1.75rem',
+              fontSize: 'clamp(1.3rem, 4vw, 1.75rem)',
               fontWeight: 800,
               color: 'var(--ink)',
               marginBottom: '8px',
@@ -864,9 +865,9 @@ export default function CanvasEditor({
           <p
             style={{
               color: 'var(--muted)',
-              fontSize: '0.95rem',
+              fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
               maxWidth: '440px',
-              margin: '0 auto 24px',
+              margin: '0 auto 20px',
               lineHeight: 1.5,
             }}
           >
@@ -877,7 +878,7 @@ export default function CanvasEditor({
           <button
             type="button"
             className="btn-brutal btn-primary"
-            style={{ padding: '12px 28px', fontSize: '1rem', marginBottom: '28px' }}
+            style={{ padding: '10px 24px', fontSize: '0.95rem', marginBottom: '24px' }}
             onClick={() => fileInputRef.current?.click()}
           >
             Browse Image 📁
@@ -887,18 +888,18 @@ export default function CanvasEditor({
           <div
             style={{
               borderTop: '1.5px dashed #CBD5E1',
-              paddingTop: '20px',
+              paddingTop: '16px',
             }}
           >
             <div
               style={{
                 fontFamily: 'var(--font-mono)',
-                fontSize: '0.78rem',
+                fontSize: '0.74rem',
                 fontWeight: 700,
                 color: 'var(--muted)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.04em',
-                marginBottom: '14px',
+                marginBottom: '12px',
               }}
             >
               — OR TEST INSTANTLY WITH A DEMO SAMPLE —
@@ -907,16 +908,16 @@ export default function CanvasEditor({
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '12px',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: '10px',
               }}
             >
               <button
                 type="button"
                 className="btn-brutal"
                 style={{
-                  padding: '10px 14px',
-                  fontSize: '0.82rem',
+                  padding: '9px 12px',
+                  fontSize: '0.8rem',
                   backgroundColor: '#0F172A',
                   color: '#FFFFFF',
                   borderColor: '#09090B',
@@ -930,8 +931,8 @@ export default function CanvasEditor({
                 type="button"
                 className="btn-brutal"
                 style={{
-                  padding: '10px 14px',
-                  fontSize: '0.82rem',
+                  padding: '9px 12px',
+                  fontSize: '0.8rem',
                   backgroundColor: '#F8FAFC',
                   color: '#09090B',
                 }}
@@ -943,7 +944,7 @@ export default function CanvasEditor({
           </div>
         </div>
       ) : (
-        /* State 2: Active HTML5 Canvas Viewport */
+        /* State 2: Active HTML5 Canvas Viewport with Touch Support */
         <div
           style={{
             display: 'flex',
@@ -952,6 +953,7 @@ export default function CanvasEditor({
             justifyContent: 'center',
             maxWidth: '100%',
             maxHeight: '100%',
+            width: '100%',
           }}
         >
           <canvas
@@ -959,9 +961,18 @@ export default function CanvasEditor({
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
+            onTouchStart={(e) => {
+              if (activeTool !== 'select') e.preventDefault();
+              handleMouseDown(e);
+            }}
+            onTouchMove={(e) => {
+              if (activeTool !== 'select') e.preventDefault();
+              handleMouseMove(e);
+            }}
+            onTouchEnd={handleMouseUp}
             style={{
               maxWidth: '100%',
-              maxHeight: 'calc(100vh - 140px)',
+              maxHeight: 'calc(100vh - 150px)',
               objectFit: 'contain',
               cursor:
                 activeTool === 'select'
@@ -970,6 +981,7 @@ export default function CanvasEditor({
                   ? 'text'
                   : 'crosshair',
               display: 'block',
+              touchAction: activeTool === 'select' ? 'auto' : 'none',
             }}
           />
         </div>

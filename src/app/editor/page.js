@@ -12,6 +12,9 @@ export default function EditorPage() {
   // Mode Selection State ('fresh' | 'editor' | 'ai')
   const [activeMode, setActiveMode] = useState('editor');
 
+  // Mobile View Switcher State ('canvas' | 'controls')
+  const [mobileTab, setMobileTab] = useState('canvas');
+
   // Canvas Framing & Image State
   const [image, setImage] = useState(null);
   const [aspectRatio, setAspectRatio] = useState('auto');
@@ -66,6 +69,7 @@ export default function EditorPage() {
     setImage(null);
     setAnnotations([]);
     setSelectedAnnotationId(null);
+    setMobileTab('canvas');
     showToast('Canvas cleared for new image');
   };
 
@@ -80,7 +84,6 @@ export default function EditorPage() {
     // Deselect any active annotation so selection box is not copied
     setSelectedAnnotationId(null);
 
-    // Give one micro-tick for canvas to re-render without selection ring
     setTimeout(() => {
       try {
         canvas.toBlob(async (blob) => {
@@ -98,7 +101,7 @@ export default function EditorPage() {
         console.error(err);
         showToast('Could not copy image.');
       }
-    }, 20);
+    }, 25);
   };
 
   // Canvas Action 3: Download High-Res 2x PNG
@@ -126,7 +129,7 @@ export default function EditorPage() {
         console.error(err);
         showToast('Download failed.');
       }
-    }, 20);
+    }, 25);
   };
 
   // Delete Selected Annotation
@@ -145,12 +148,12 @@ export default function EditorPage() {
 
   return (
     <div className={styles.editorContainer}>
-      {/* 1. Slim Neobrutalist Header */}
+      {/* 1. Responsive Slim Top Header */}
       <header className={styles.editorHeader}>
         <div className={styles.headerLeft}>
-          <Logo size={32} />
-          <div className="badge-brutal badge-yellow" style={{ fontSize: '0.68rem', padding: '2px 8px' }}>
-            STUDIO WORKSPACE
+          <Logo size={30} />
+          <div className={`${styles.headerStudioBadge} badge-brutal badge-yellow`} style={{ fontSize: '0.65rem', padding: '2px 8px' }}>
+            STUDIO
           </div>
         </div>
 
@@ -162,7 +165,8 @@ export default function EditorPage() {
               onClick={handleReset}
               title="Clear canvas and import a new image"
             >
-              New Image ↺
+              <span className={styles.btnTextDesktop}>New Image ↺</span>
+              <span className={styles.btnTextMobile}>↺</span>
             </button>
           )}
 
@@ -172,8 +176,10 @@ export default function EditorPage() {
             onClick={handleCopyPng}
             disabled={!image}
             style={{ opacity: image ? 1 : 0.6 }}
+            title="Copy 2x PNG to clipboard"
           >
-            Copy PNG 📋
+            <span className={styles.btnTextDesktop}>Copy PNG 📋</span>
+            <span className={styles.btnTextMobile}>📋</span>
           </button>
 
           <button
@@ -185,73 +191,111 @@ export default function EditorPage() {
               opacity: image ? 1 : 0.6,
               fontWeight: 800,
             }}
+            title="Download 2x PNG file"
           >
-            Download 2x PNG 📥
+            <span className={styles.btnTextDesktop}>Download 2x PNG 📥</span>
+            <span className={styles.btnTextMobile}>📥 2x</span>
           </button>
         </div>
       </header>
 
-      {/* 2. Main 30/70 Studio Split */}
-      <div className={styles.workspaceLayout}>
-        {/* Left 30% Width Dynamic Control Sidebar */}
-        <ModeSidebar
-          activeMode={activeMode}
-          onModeChange={setActiveMode}
-          aspectRatio={aspectRatio}
-          onAspectRatioChange={setAspectRatio}
-          frameStyle={frameStyle}
-          onFrameStyleChange={setFrameStyle}
-          padding={padding}
-          onPaddingChange={setPadding}
-          borderRadius={borderRadius}
-          onBorderRadiusChange={setBorderRadius}
-          shadow={shadow}
-          onShadowChange={setShadow}
-          activeTool={activeTool}
-          onToolChange={setActiveTool}
-          annotationColor={annotationColor}
-          onAnnotationColorChange={setAnnotationColor}
-          annotations={annotations}
-          onClearAnnotations={handleClearAnnotations}
-          selectedAnnotationId={selectedAnnotationId}
-          onDeleteSelectedAnnotation={handleDeleteSelectedAnnotation}
-          background={background}
-          onBackgroundChange={setBackground}
-          tilt={tilt}
-          onTiltChange={setTilt}
-          windowTitle={windowTitle}
-          onWindowTitleChange={setWindowTitle}
-          ambientGlow={ambientGlow}
-          onAmbientGlowChange={setAmbientGlow}
-          canvasBorder={canvasBorder}
-          onCanvasBorderChange={setCanvasBorder}
-          verticalAlign={verticalAlign}
-          onVerticalAlignChange={setVerticalAlign}
-        />
+      {/* 2. Mobile View Switcher Tabs (Visible on screens < 900px) */}
+      <div className={styles.mobileTabBar}>
+        <button
+          type="button"
+          className={`${styles.mobileTabBtn} ${mobileTab === 'canvas' ? styles.mobileTabActive : ''}`}
+          onClick={() => setMobileTab('canvas')}
+        >
+          🖼️ Canvas Preview
+        </button>
+        <button
+          type="button"
+          className={`${styles.mobileTabBtn} ${mobileTab === 'controls' ? styles.mobileTabActive : ''}`}
+          onClick={() => setMobileTab('controls')}
+        >
+          ⚙️ Controls {annotations.length > 0 ? `(${annotations.length})` : ''}
+        </button>
+      </div>
 
-        {/* Right 70% Width Main Visual Canvas & Dropzone */}
-        <CanvasEditor
-          canvasRef={canvasRef}
-          image={image}
-          onImageLoaded={setImage}
-          aspectRatio={aspectRatio}
-          background={background}
-          padding={padding}
-          borderRadius={borderRadius}
-          shadow={shadow}
-          frameStyle={frameStyle}
-          windowTitle={windowTitle}
-          tilt={tilt}
-          ambientGlow={ambientGlow}
-          canvasBorder={canvasBorder}
-          verticalAlign={verticalAlign}
-          activeTool={activeTool}
-          annotationColor={annotationColor}
-          annotations={annotations}
-          onAnnotationsChange={setAnnotations}
-          selectedAnnotationId={selectedAnnotationId}
-          onSelectAnnotation={setSelectedAnnotationId}
-        />
+      {/* 3. Main Studio Workspace Layout */}
+      <div className={styles.workspaceLayout}>
+        {/* Left 30% Control Sidebar */}
+        <div className={`${styles.sidebarPane} ${mobileTab === 'controls' ? styles.paneVisible : ''}`}>
+          <ModeSidebar
+            activeMode={activeMode}
+            onModeChange={setActiveMode}
+            aspectRatio={aspectRatio}
+            onAspectRatioChange={setAspectRatio}
+            frameStyle={frameStyle}
+            onFrameStyleChange={setFrameStyle}
+            padding={padding}
+            onPaddingChange={setPadding}
+            borderRadius={borderRadius}
+            onBorderRadiusChange={setBorderRadius}
+            shadow={shadow}
+            onShadowChange={setShadow}
+            activeTool={activeTool}
+            onToolChange={setActiveTool}
+            annotationColor={annotationColor}
+            onAnnotationColorChange={setAnnotationColor}
+            annotations={annotations}
+            onClearAnnotations={handleClearAnnotations}
+            selectedAnnotationId={selectedAnnotationId}
+            onDeleteSelectedAnnotation={handleDeleteSelectedAnnotation}
+            background={background}
+            onBackgroundChange={setBackground}
+            tilt={tilt}
+            onTiltChange={setTilt}
+            windowTitle={windowTitle}
+            onWindowTitleChange={setWindowTitle}
+            ambientGlow={ambientGlow}
+            onAmbientGlowChange={setAmbientGlow}
+            canvasBorder={canvasBorder}
+            onCanvasBorderChange={setCanvasBorder}
+            verticalAlign={verticalAlign}
+            onVerticalAlignChange={setVerticalAlign}
+          />
+        </div>
+
+        {/* Right 70% Visual Canvas Area */}
+        <div className={`${styles.canvasPane} ${mobileTab === 'canvas' ? styles.paneVisible : ''}`}>
+          <CanvasEditor
+            canvasRef={canvasRef}
+            image={image}
+            onImageLoaded={(img) => {
+              setImage(img);
+              setMobileTab('canvas');
+            }}
+            aspectRatio={aspectRatio}
+            background={background}
+            padding={padding}
+            borderRadius={borderRadius}
+            shadow={shadow}
+            frameStyle={frameStyle}
+            windowTitle={windowTitle}
+            tilt={tilt}
+            ambientGlow={ambientGlow}
+            canvasBorder={canvasBorder}
+            verticalAlign={verticalAlign}
+            activeTool={activeTool}
+            annotationColor={annotationColor}
+            annotations={annotations}
+            onAnnotationsChange={setAnnotations}
+            selectedAnnotationId={selectedAnnotationId}
+            onSelectAnnotation={setSelectedAnnotationId}
+          />
+
+          {/* Floating Mobile Pill to Switch to Controls */}
+          {image && mobileTab === 'canvas' && (
+            <button
+              type="button"
+              className={`btn-brutal btn-primary ${styles.mobileFloatingPill}`}
+              onClick={() => setMobileTab('controls')}
+            >
+              ⚙️ Customize Image &amp; Annotate →
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Floating Action Toast */}
