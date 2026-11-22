@@ -227,6 +227,8 @@ export default function EditorPage() {
           <ModeSidebar
             activeMode={activeMode}
             onModeChange={setActiveMode}
+            canvasRef={canvasRef}
+            image={image}
             aspectRatio={aspectRatio}
             onAspectRatioChange={setAspectRatio}
             frameStyle={frameStyle}

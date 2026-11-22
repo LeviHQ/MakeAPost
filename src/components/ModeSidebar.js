@@ -1,10 +1,13 @@
 'use client';
 
 import { GRADIENT_PRESETS, SOLID_PRESETS } from './CanvasEditor';
+import AiStudio from './AiStudio';
 
 export default function ModeSidebar({
   activeMode,
   onModeChange,
+  canvasRef,
+  image,
   // Section 1: Aspect Ratio
   aspectRatio,
   onAspectRatioChange,
@@ -198,59 +201,13 @@ export default function ModeSidebar({
           </div>
         )}
 
-        {/* State B: AI Post Mode Placeholder (Scheduled for Phase 3) */}
+        {/* State B: AI Post Mode Studio (Phases 3 & 4) */}
         {activeMode === 'ai' && (
-          <div
-            className="card-brutal"
-            style={{
-              padding: '24px 20px',
-              backgroundColor: 'var(--card-bg-subtle)',
-              border: 'var(--border-thick)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '14px',
-              textAlign: 'center',
-            }}
-          >
-            <div
-              style={{
-                width: '48px',
-                height: '48px',
-                backgroundColor: 'var(--accent-yellow)',
-                border: 'var(--border)',
-                borderRadius: '50%',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto',
-                fontSize: '1.4rem',
-                boxShadow: '2px 2px 0px var(--shadow-color)',
-              }}
-            >
-              🤖
-            </div>
-
-            <div className="badge-brutal badge-blue" style={{ alignSelf: 'center', fontSize: '0.72rem' }}>
-              COMING IN PHASE 3
-            </div>
-
-            <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.2rem', fontWeight: 800, color: 'var(--ink)' }}>
-              AI Social Generator
-            </h3>
-
-            <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.55 }}>
-              The Gemini Multimodal AI pipeline will be connected in <strong>Phase 3</strong>. Your image canvas will automatically feed directly into the post generator!
-            </p>
-
-            <button
-              type="button"
-              className="btn-brutal btn-primary"
-              style={{ padding: '10px 16px', fontSize: '0.9rem', marginTop: '6px' }}
-              onClick={() => onModeChange('editor')}
-            >
-              ← Return to Image Editor
-            </button>
-          </div>
+          <AiStudio
+            canvasRef={canvasRef}
+            image={image}
+            onSwitchToEditor={() => onModeChange('editor')}
+          />
         )}
 
         {/* State C: Active Image Editor Controls (Reordered & Enhanced) */}

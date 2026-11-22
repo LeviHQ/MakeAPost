@@ -79,13 +79,12 @@ export const viewport = {
   initialScale: 1,
 };
 
-// Zero-flash inline script to apply saved theme or OS preference before hydration
+// Zero-flash inline script: Default to 'light' mode, respect saved user preference
 const themeScript = `
 (function() {
   try {
     var savedTheme = localStorage.getItem('makeapost-theme');
-    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    var theme = savedTheme || (prefersDark ? 'dark' : 'light');
+    var theme = savedTheme === 'dark' ? 'dark' : 'light';
     document.documentElement.setAttribute('data-theme', theme);
   } catch (e) {}
 })();

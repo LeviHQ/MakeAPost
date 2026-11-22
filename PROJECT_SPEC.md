@@ -132,8 +132,8 @@ The 30% control sidebar features two distinct UI states:
 
 [x] Production Platform Features: Zero-flash Dark/Light Mode, Multi-Platform Favicons, Dynamic OpenGraph Image, and PWA Web App (src/components/ThemeToggle.js, src/app/opengraph-image.js, src/app/manifest.js, public/sw.js, docs/05-theme-pwa-seo.md)
 
-[ ] Phase 3: Image Compression & Gemini Multimodal Single-Shot API (imageCompress.js, src/app/api/generate/route.js, docs/03-ai-generator.md)
+[x] Phase 3: Dual-Stage Image Compression & Gemini Multimodal Single-Shot API (imageCompress.js, sharp backend compression gate, src/app/api/generate/route.js, docs/03-ai-generator.md)
 
-[ ] Phase 4: AI Social Studio Mode in 30% Sidebar & Live Post Previews (AiStudio.js, docs/03-ai-generator.md)
+[x] Phase 4: Token-Optimized AI Social Studio Mode in 30% Sidebar & Live Post Previews (AiStudio.js, Tone Chips, Editable Post Previews, X Character Limit Tracker & Direct X Tweet Intent, docs/03-ai-generator.md)
 
 [ ] Phase 5: Supabase Auth & 3-Day Trial / Daily Credit Tracker (docs/04-auth-credits.md)
