@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Logo from '@/components/Logo';
+import ThemeToggle from '@/components/ThemeToggle';
 import CanvasEditor from '@/components/CanvasEditor';
 import ModeSidebar from '@/components/ModeSidebar';
 import styles from './editor.module.css';
@@ -158,6 +159,8 @@ export default function EditorPage() {
         </div>
 
         <div className={styles.headerRight}>
+          <ThemeToggle />
+
           {image && (
             <button
               type="button"

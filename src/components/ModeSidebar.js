@@ -59,8 +59,7 @@ export default function ModeSidebar({
           position: 'sticky',
           top: 0,
           zIndex: 20,
-          backgroundColor: 'rgba(255, 255, 255, 0.96)',
-          backdropFilter: 'blur(8px)',
+          backgroundColor: 'var(--surface)',
           padding: '14px 16px',
           borderBottom: 'var(--border)',
         }}
@@ -71,10 +70,10 @@ export default function ModeSidebar({
             gridTemplateColumns: '1fr 1fr',
             gap: '6px',
             padding: '4px',
-            backgroundColor: '#F1F5F9',
+            backgroundColor: 'var(--card-bg-subtle)',
             border: 'var(--border)',
             borderRadius: 'var(--radius-md)',
-            boxShadow: '2px 2px 0px var(--ink)',
+            boxShadow: '2px 2px 0px var(--shadow-color)',
           }}
         >
           <button
@@ -84,9 +83,9 @@ export default function ModeSidebar({
               padding: '8px 10px',
               fontSize: '0.84rem',
               backgroundColor: activeMode === 'editor' ? 'var(--accent-yellow)' : 'transparent',
-              color: 'var(--ink)',
-              boxShadow: activeMode === 'editor' ? '2px 2px 0px var(--ink)' : 'none',
-              border: activeMode === 'editor' ? '1.5px solid var(--ink)' : '1.5px solid transparent',
+              color: activeMode === 'editor' ? '#09090B' : 'var(--ink)',
+              boxShadow: activeMode === 'editor' ? '2px 2px 0px var(--shadow-color)' : 'none',
+              border: activeMode === 'editor' ? '1.5px solid var(--border-color)' : '1.5px solid transparent',
             }}
             onClick={() => onModeChange('editor')}
           >
@@ -100,9 +99,9 @@ export default function ModeSidebar({
               padding: '8px 10px',
               fontSize: '0.84rem',
               backgroundColor: activeMode === 'ai' ? 'var(--accent-yellow)' : 'transparent',
-              color: 'var(--ink)',
-              boxShadow: activeMode === 'ai' ? '2px 2px 0px var(--ink)' : 'none',
-              border: activeMode === 'ai' ? '1.5px solid var(--ink)' : '1.5px solid transparent',
+              color: activeMode === 'ai' ? '#09090B' : 'var(--ink)',
+              boxShadow: activeMode === 'ai' ? '2px 2px 0px var(--shadow-color)' : 'none',
+              border: activeMode === 'ai' ? '1.5px solid var(--border-color)' : '1.5px solid transparent',
             }}
             onClick={() => onModeChange('ai')}
           >
@@ -135,7 +134,7 @@ export default function ModeSidebar({
               style={{
                 padding: '20px 18px',
                 cursor: 'pointer',
-                backgroundColor: '#FFFFFF',
+                backgroundColor: 'var(--surface)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '10px',
@@ -148,7 +147,7 @@ export default function ModeSidebar({
                   100% Free
                 </span>
               </div>
-              <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.15rem', fontWeight: 800 }}>
+              <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.15rem', fontWeight: 800, color: 'var(--ink)' }}>
                 1. Image Editor
               </h3>
               <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.5 }}>
@@ -169,7 +168,7 @@ export default function ModeSidebar({
               style={{
                 padding: '20px 18px',
                 cursor: 'pointer',
-                backgroundColor: '#F8FAFC',
+                backgroundColor: 'var(--surface)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '10px',
@@ -182,7 +181,7 @@ export default function ModeSidebar({
                   Multimodal AI
                 </span>
               </div>
-              <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.15rem', fontWeight: 800 }}>
+              <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.15rem', fontWeight: 800, color: 'var(--ink)' }}>
                 2. AI Post Mode
               </h3>
               <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.5 }}>
@@ -205,7 +204,7 @@ export default function ModeSidebar({
             className="card-brutal"
             style={{
               padding: '24px 20px',
-              backgroundColor: '#FEF9C3',
+              backgroundColor: 'var(--card-bg-subtle)',
               border: 'var(--border-thick)',
               display: 'flex',
               flexDirection: 'column',
@@ -225,7 +224,7 @@ export default function ModeSidebar({
                 justifyContent: 'center',
                 margin: '0 auto',
                 fontSize: '1.4rem',
-                boxShadow: '2px 2px 0px var(--ink)',
+                boxShadow: '2px 2px 0px var(--shadow-color)',
               }}
             >
               🤖
@@ -235,11 +234,11 @@ export default function ModeSidebar({
               COMING IN PHASE 3
             </div>
 
-            <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.2rem', fontWeight: 800 }}>
+            <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.2rem', fontWeight: 800, color: 'var(--ink)' }}>
               AI Social Generator
             </h3>
 
-            <p style={{ fontSize: '0.88rem', color: 'var(--ink)', lineHeight: 1.55 }}>
+            <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.55 }}>
               The Gemini Multimodal AI pipeline will be connected in <strong>Phase 3</strong>. Your image canvas will automatically feed directly into the post generator!
             </p>
 
@@ -276,8 +275,10 @@ export default function ModeSidebar({
                       minWidth: 0,
                       padding: '6px 2px',
                       fontSize: '0.72rem',
-                      backgroundColor: aspectRatio === ratio ? 'var(--accent-blue)' : '#F8FAFC',
-                      boxShadow: aspectRatio === ratio ? '2px 2px 0px var(--ink)' : 'none',
+                      backgroundColor: aspectRatio === ratio ? 'var(--accent-blue)' : 'var(--card-bg-subtle)',
+                      color: aspectRatio === ratio ? '#09090B' : 'var(--ink)',
+                      boxShadow: aspectRatio === ratio ? '2px 2px 0px var(--shadow-color)' : 'none',
+                      border: '1.5px solid var(--border-color)',
                     }}
                     onClick={() => onAspectRatioChange(ratio)}
                   >
@@ -307,8 +308,10 @@ export default function ModeSidebar({
                     style={{
                       padding: '6px 4px',
                       fontSize: '0.75rem',
-                      backgroundColor: frameStyle === st.id ? 'var(--accent-yellow)' : '#F8FAFC',
-                      boxShadow: frameStyle === st.id ? '2px 2px 0px var(--ink)' : 'none',
+                      backgroundColor: frameStyle === st.id ? 'var(--accent-yellow)' : 'var(--card-bg-subtle)',
+                      color: frameStyle === st.id ? '#09090B' : 'var(--ink)',
+                      boxShadow: frameStyle === st.id ? '2px 2px 0px var(--shadow-color)' : 'none',
+                      border: '1.5px solid var(--border-color)',
                     }}
                     onClick={() => onFrameStyleChange(st.id)}
                   >
@@ -409,8 +412,10 @@ export default function ModeSidebar({
                       minWidth: 0,
                       padding: '6px 2px',
                       fontSize: '0.75rem',
-                      backgroundColor: activeTool === tool.id ? 'var(--accent-yellow)' : '#F8FAFC',
-                      boxShadow: activeTool === tool.id ? '2px 2px 0px var(--ink)' : 'none',
+                      backgroundColor: activeTool === tool.id ? 'var(--accent-yellow)' : 'var(--card-bg-subtle)',
+                      color: activeTool === tool.id ? '#09090B' : 'var(--ink)',
+                      boxShadow: activeTool === tool.id ? '2px 2px 0px var(--shadow-color)' : 'none',
+                      border: '1.5px solid var(--border-color)',
                       flexDirection: 'column',
                       gap: '2px',
                     }}
@@ -436,10 +441,10 @@ export default function ModeSidebar({
                         height: '22px',
                         borderRadius: '50%',
                         backgroundColor: col,
-                        border: annotationColor === col ? '2.5px solid var(--ink)' : '1.5px solid #CBD5E1',
+                        border: annotationColor === col ? '2.5px solid var(--ink)' : '1.5px solid var(--muted-light)',
                         transform: annotationColor === col ? 'scale(1.15)' : 'none',
                         cursor: 'pointer',
-                        boxShadow: annotationColor === col ? '1.5px 1.5px 0px var(--ink)' : 'none',
+                        boxShadow: annotationColor === col ? '1.5px 1.5px 0px var(--shadow-color)' : 'none',
                       }}
                     />
                   ))}
@@ -580,8 +585,10 @@ export default function ModeSidebar({
                         flex: 1,
                         padding: '4px 0',
                         fontSize: '0.72rem',
-                        backgroundColor: tilt === tVal ? 'var(--accent-yellow)' : '#F8FAFC',
-                        boxShadow: tilt === tVal ? '1.5px 1.5px 0px var(--ink)' : 'none',
+                        backgroundColor: tilt === tVal ? 'var(--accent-yellow)' : 'var(--card-bg-subtle)',
+                        color: tilt === tVal ? '#09090B' : 'var(--ink)',
+                        boxShadow: tilt === tVal ? '1.5px 1.5px 0px var(--shadow-color)' : 'none',
+                        border: '1.5px solid var(--border-color)',
                       }}
                       onClick={() => onTiltChange(tVal)}
                     >
@@ -630,8 +637,10 @@ export default function ModeSidebar({
                     style={{
                       padding: '4px 12px',
                       fontSize: '0.75rem',
-                      backgroundColor: ambientGlow ? 'var(--accent-yellow)' : '#F1F5F9',
-                      boxShadow: ambientGlow ? '2px 2px 0px var(--ink)' : 'none',
+                      backgroundColor: ambientGlow ? 'var(--accent-yellow)' : 'var(--card-bg-subtle)',
+                      color: ambientGlow ? '#09090B' : 'var(--ink)',
+                      boxShadow: ambientGlow ? '2px 2px 0px var(--shadow-color)' : 'none',
+                      border: '1.5px solid var(--border-color)',
                     }}
                     onClick={() => onAmbientGlowChange(!ambientGlow)}
                   >
@@ -659,8 +668,10 @@ export default function ModeSidebar({
                       style={{
                         padding: '4px 0',
                         fontSize: '0.72rem',
-                        backgroundColor: canvasBorder === borderOpt.id ? 'var(--accent-blue)' : '#F8FAFC',
-                        boxShadow: canvasBorder === borderOpt.id ? '1.5px 1.5px 0px var(--ink)' : 'none',
+                        backgroundColor: canvasBorder === borderOpt.id ? 'var(--accent-blue)' : 'var(--card-bg-subtle)',
+                        color: canvasBorder === borderOpt.id ? '#09090B' : 'var(--ink)',
+                        boxShadow: canvasBorder === borderOpt.id ? '1.5px 1.5px 0px var(--shadow-color)' : 'none',
+                        border: '1.5px solid var(--border-color)',
                       }}
                       onClick={() => onCanvasBorderChange(borderOpt.id)}
                     >
@@ -689,8 +700,10 @@ export default function ModeSidebar({
                       style={{
                         padding: '4px 0',
                         fontSize: '0.72rem',
-                        backgroundColor: verticalAlign === alignOpt.id ? 'var(--accent-yellow)' : '#F8FAFC',
-                        boxShadow: verticalAlign === alignOpt.id ? '1.5px 1.5px 0px var(--ink)' : 'none',
+                        backgroundColor: verticalAlign === alignOpt.id ? 'var(--accent-yellow)' : 'var(--card-bg-subtle)',
+                        color: verticalAlign === alignOpt.id ? '#09090B' : 'var(--ink)',
+                        boxShadow: verticalAlign === alignOpt.id ? '1.5px 1.5px 0px var(--shadow-color)' : 'none',
+                        border: '1.5px solid var(--border-color)',
                       }}
                       onClick={() => onVerticalAlignChange(alignOpt.id)}
                     >

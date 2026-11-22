@@ -825,8 +825,8 @@ export default function CanvasEditor({
             width: '100%',
             padding: 'clamp(20px, 4vw, 36px) clamp(16px, 4vw, 28px)',
             textAlign: 'center',
-            backgroundColor: isDraggingOver ? '#FEF9C3' : '#FFFFFF',
-            border: isDraggingOver ? '3px solid #09090B' : '2.5px dashed #09090B',
+            backgroundColor: isDraggingOver ? 'var(--card-bg-subtle)' : 'var(--surface)',
+            border: isDraggingOver ? '3px solid var(--accent-yellow)' : '2.5px dashed var(--border-color)',
             borderRadius: 'var(--radius-lg)',
             boxShadow: 'var(--shadow-card-lg)',
             transition: 'background-color 0.15s ease',
@@ -839,7 +839,7 @@ export default function CanvasEditor({
               backgroundColor: 'var(--accent-yellow)',
               border: 'var(--border)',
               borderRadius: 'var(--radius-md)',
-              boxShadow: '3px 3px 0px var(--ink)',
+              boxShadow: '3px 3px 0px var(--shadow-color)',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -887,7 +887,7 @@ export default function CanvasEditor({
           {/* Instant Sample Demos Strip */}
           <div
             style={{
-              borderTop: '1.5px dashed #CBD5E1',
+              borderTop: '1.5px dashed var(--border-color)',
               paddingTop: '16px',
             }}
           >
@@ -933,8 +933,8 @@ export default function CanvasEditor({
                 style={{
                   padding: '9px 12px',
                   fontSize: '0.8rem',
-                  backgroundColor: '#F8FAFC',
-                  color: '#09090B',
+                  backgroundColor: 'var(--card-bg-subtle)',
+                  color: 'var(--ink)',
                 }}
                 onClick={() => loadFromDataUrl(SAMPLE_ANALYTICS_SVG)}
               >
@@ -995,7 +995,8 @@ export default function CanvasEditor({
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
-            backgroundColor: '#FFFFFF',
+            backgroundColor: 'var(--surface)',
+            color: 'var(--ink)',
             border: 'var(--border-thick)',
             borderRadius: 'var(--radius-md)',
             boxShadow: 'var(--shadow-card-lg)',

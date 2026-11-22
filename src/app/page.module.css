@@ -13,8 +13,7 @@
   position: sticky;
   top: 0;
   z-index: 50;
-  background-color: rgba(248, 250, 252, 0.95);
-  backdrop-filter: blur(8px);
+  background-color: var(--surface);
   border-bottom: var(--border);
   padding: 12px 20px;
 }
@@ -91,10 +90,11 @@
   position: relative;
   display: inline-block;
   background-color: var(--accent-yellow);
+  color: #09090B;
   padding: 0 10px;
   border: var(--border-thin);
   border-radius: var(--radius-sm);
-  box-shadow: 3px 3px 0px var(--ink);
+  box-shadow: 3px 3px 0px var(--shadow-color);
   transform: rotate(-1deg);
   margin-top: 4px;
 }
@@ -120,7 +120,7 @@
 .heroBtn {
   font-size: clamp(1rem, 3.5vw, 1.2rem);
   padding: 14px 32px;
-  box-shadow: 4px 4px 0px var(--ink);
+  box-shadow: 4px 4px 0px var(--shadow-color);
   border: var(--border-thick);
 }
 
@@ -134,12 +134,12 @@
 
 .heroBtn:hover {
   transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0px var(--ink);
+  box-shadow: 6px 6px 0px var(--shadow-color);
 }
 
 .heroBtn:active {
   transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0px var(--ink);
+  box-shadow: 1px 1px 0px var(--shadow-color);
 }
 
 .microCopy {
@@ -182,7 +182,7 @@
 }
 
 .windowBar {
-  background-color: #F1F5F9;
+  background-color: var(--card-bg-subtle);
   border-bottom: var(--border);
   padding: 10px 14px;
   display: flex;
@@ -246,7 +246,7 @@
 /* Left 30% Sidebar: Dynamic Control Mode */
 .sidebar30 {
   padding: 18px 16px;
-  background-color: #F8FAFC;
+  background-color: var(--surface);
   border-bottom: var(--border);
   display: flex;
   flex-direction: column;
@@ -282,10 +282,10 @@
   grid-template-columns: 1fr 1fr;
   gap: 4px;
   padding: 4px;
-  background-color: #E2E8F0;
+  background-color: var(--card-bg-subtle);
   border: var(--border);
   border-radius: var(--radius-md);
-  box-shadow: 2px 2px 0px var(--ink);
+  box-shadow: 2px 2px 0px var(--shadow-color);
 }
 
 .modeTab {
@@ -307,9 +307,9 @@
 
 .modeTabActive {
   background-color: var(--accent-yellow);
-  color: var(--ink);
-  border: 1.5px solid var(--ink);
-  box-shadow: 2px 2px 0px var(--ink);
+  color: #09090B;
+  border: 1.5px solid var(--border-color);
+  box-shadow: 2px 2px 0px var(--shadow-color);
 }
 
 /* Active Mode Control Group */
@@ -321,7 +321,7 @@
   border: var(--border);
   border-radius: var(--radius-md);
   padding: 16px;
-  box-shadow: 2px 2px 0px var(--ink);
+  box-shadow: 2px 2px 0px var(--shadow-color);
 }
 
 .controlLabel {
@@ -347,15 +347,17 @@
   font-weight: 700;
   padding: 5px 0;
   text-align: center;
-  border: 1.5px solid var(--ink);
+  border: 1.5px solid var(--border-color);
   border-radius: var(--radius-xs);
-  background-color: #F8FAFC;
+  background-color: var(--card-bg-subtle);
+  color: var(--ink);
   cursor: pointer;
 }
 
 .aspectBtnActive {
   background-color: var(--accent-blue);
-  box-shadow: 1.5px 1.5px 0px var(--ink);
+  color: #09090B;
+  box-shadow: 1.5px 1.5px 0px var(--shadow-color);
 }
 
 .gradientGrid {
@@ -398,7 +400,7 @@
 /* Right 70% Panel: Main Visual Canvas */
 .canvas70 {
   padding: 20px 16px;
-  background-color: #F1F5F9;
+  background-color: var(--card-bg-subtle);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -540,11 +542,11 @@
   margin-top: 16px;
   width: 100%;
   max-width: 520px;
-  background-color: #FFFFFF;
+  background-color: var(--surface);
   border: var(--border);
   border-radius: var(--radius-sm);
   padding: 12px 14px;
-  box-shadow: 3px 3px 0px var(--ink);
+  box-shadow: 3px 3px 0px var(--shadow-color);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -663,11 +665,12 @@
   font-weight: 800;
   font-size: 1.1rem;
   background-color: var(--accent-yellow);
+  color: #09090B;
   border: var(--border);
   border-radius: var(--radius-sm);
   padding: 4px 10px;
   width: fit-content;
-  box-shadow: 2px 2px 0px var(--ink);
+  box-shadow: 2px 2px 0px var(--shadow-color);
 }
 
 .stepTitle {
@@ -694,7 +697,7 @@
 }
 
 .privacyBox {
-  background-color: #FEF9C3;
+  background-color: var(--card-bg-subtle);
   border: var(--border-thick);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-card);
@@ -723,20 +726,21 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 2px 2px 0px var(--ink);
+  box-shadow: 2px 2px 0px var(--shadow-color);
 }
 
 .privacyTextTitle {
   font-family: var(--font-heading);
   font-size: 1.15rem;
   font-weight: 800;
+  color: var(--ink);
   margin-bottom: 4px;
 }
 
 .privacyTextBody {
   font-family: var(--font-body);
   font-size: 0.92rem;
-  color: var(--ink);
+  color: var(--muted);
   line-height: 1.5;
 }
 

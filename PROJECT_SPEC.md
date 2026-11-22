@@ -80,29 +80,39 @@ The 30% control sidebar features two distinct UI states:
 /
 ├── src/
 │   ├── app/
-│   │   ├── layout.js               # Root layout with Space Grotesk, Inter, JetBrains Mono fonts & metadata
-│   │   ├── globals.css             # Global Neobrutalism CSS variables, borders, hard shadows, button utilities
-│   │   ├── page.js                 # Neobrutalist Landing Page with 30/70 preview showcase
+│   │   ├── layout.js               # Root layout with Space Grotesk, Inter, JetBrains Mono fonts, zero-flash script, metadata & PWA register
+│   │   ├── globals.css             # Global Neobrutalism CSS tokens (Light & [data-theme="dark"]), borders, hard shadows, utilities
+│   │   ├── page.js                 # Neobrutalist Landing Page with ThemeToggle and 30/70 preview showcase
 │   │   ├── page.module.css         # Landing page styles
+│   │   ├── opengraph-image.js      # Dynamic 1200x630 Neobrutalist OpenGraph & Twitter/X card (next/og)
+│   │   ├── manifest.js             # Web App Manifest for PWA installation
+│   │   ├── icon.svg                # Vector SVG App Icon
+│   │   ├── apple-icon.png          # Apple Touch Icon
 │   │   ├── editor/
-│   │   │   ├── page.js             # 30/70 Studio Workspace (/editor)
+│   │   │   ├── page.js             # 30/70 Studio Workspace (/editor) with ThemeToggle & actions
 │   │   │   └── editor.module.css   # 30/70 workspace layout styles
 │   │   └── api/
 │   │       └── generate/
 │   │           └── route.js        # Serverless Gemini Vision API + Supabase credit verification
 │   ├── components/
 │   │   ├── Logo.js                 # Reusable MakeAPost SVG Logo + Brand Wordmark
-│   │   ├── ModeSidebar.js          # 30% Dynamic Control Sidebar (Initial Selection Cards, Sticky Mode Switcher Pill [🎨 Editor | ✨ AI Mode], controls)
-│   │   ├── CanvasWorkspace.js      # 70% Main Visual Canvas & Dropzone (HTML5 Canvas, Ctrl+V, annotations, blur, PNG export)
+│   │   ├── ThemeToggle.js          # Tactile Neobrutalist Dark / Light mode toggle
+│   │   ├── PwaRegister.js          # Service worker registration component
+│   │   ├── ModeSidebar.js          # 30% Dynamic Control Sidebar (Aspect ratio, frame, blur, background, pro settings)
+│   │   ├── CanvasEditor.js         # 70% Main Visual Canvas & Dropzone (HTML5 Canvas, Ctrl+V, annotations, blur, PNG export)
 │   │   └── AiStudio.js             # AI Post Generation sub-view inside 30% sidebar
 │   └── lib/
 │       ├── imageCompress.js        # Client-side 768px JPEG compression utility
 │       └── supabase.js             # Supabase client & credit/trial helper
+├── public/
+│   ├── sw.js                       # Lightweight PWA Service Worker caching app shell
+│   └── icons/                      # App icon assets (icon-192.png, icon-512.png, apple-touch-icon.png)
 ├── docs/                           # MANDATORY feature & architecture documentation
 │   ├── 01-landing-page.md
 │   ├── 02-canvas-editor.md
 │   ├── 03-ai-generator.md
-│   └── 04-auth-credits.md
+│   ├── 04-auth-credits.md
+│   └── 05-theme-pwa-seo.md
 └── PROJECT_SPEC.md                 # Master spec (must be updated on every change)
 ```
 
@@ -119,6 +129,8 @@ The 30% control sidebar features two distinct UI states:
 [x] Phase 1: Next.js Setup, Neobrutalism Design System (globals.css, Logo.js), Landing Page with 30/70 Studio Preview (src/app/page.js, docs/01-landing-page.md)
 
 [x] Phase 2: 30/70 Studio Workspace Architecture & 70% Canvas Visual Engine (src/app/editor/page.js, CanvasEditor.js, ModeSidebar.js, docs/02-canvas-editor.md)
+
+[x] Production Platform Features: Zero-flash Dark/Light Mode, Multi-Platform Favicons, Dynamic OpenGraph Image, and PWA Web App (src/components/ThemeToggle.js, src/app/opengraph-image.js, src/app/manifest.js, public/sw.js, docs/05-theme-pwa-seo.md)
 
 [ ] Phase 3: Image Compression & Gemini Multimodal Single-Shot API (imageCompress.js, src/app/api/generate/route.js, docs/03-ai-generator.md)
 

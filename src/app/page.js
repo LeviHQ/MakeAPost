@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Logo from '@/components/Logo';
+import ThemeToggle from '@/components/ThemeToggle';
 import styles from './page.module.css';
 
 export default function LandingPage() {
@@ -14,6 +15,7 @@ export default function LandingPage() {
             <div className={`${styles.navBadge} badge-brutal badge-blue`}>
               ⚡ 30% Sidebar + 70% Canvas
             </div>
+            <ThemeToggle />
             <Link
               href="/editor"
               className="btn-brutal btn-primary"
@@ -150,8 +152,8 @@ export default function LandingPage() {
               <div
                 style={{
                   padding: '12px',
-                  backgroundColor: '#FFFFFF',
-                  border: '1.5px dashed var(--ink)',
+                  backgroundColor: 'var(--card-bg-subtle)',
+                  border: '1.5px dashed var(--border-color)',
                   borderRadius: 'var(--radius-sm)',
                   fontSize: '0.75rem',
                   fontFamily: 'var(--font-mono)',
@@ -167,7 +169,22 @@ export default function LandingPage() {
             <div className={styles.canvas70}>
               <div className={styles.canvasHeader}>
                 <span className={styles.canvasTitle}>
-                  <span>🖼️</span> 70% Main Visual Canvas &amp; Dropzone
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{ flexShrink: 0 }}
+                  >
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                    <circle cx="8.5" cy="8.5" r="1.5" />
+                    <polyline points="21 15 16 10 5 21" />
+                  </svg>
+                  <span>70% Main Visual Canvas &amp; Dropzone</span>
                 </span>
                 <div style={{ display: 'flex', gap: '6px' }}>
                   <span className="badge-brutal badge-blue" style={{ fontSize: '0.68rem' }}>
@@ -182,7 +199,7 @@ export default function LandingPage() {
               {/* Canvas Frame */}
               <div className={styles.mainCanvasStage}>
                 <div className={styles.dropzoneOverlay}>
-                  <span className="badge-brutal" style={{ fontSize: '0.65rem', backgroundColor: '#FFFFFF' }}>
+                  <span className="badge-brutal" style={{ fontSize: '0.65rem', backgroundColor: 'var(--surface)', color: 'var(--ink)' }}>
                     ✦ Drop / Paste Screenshot [Ctrl+V]
                   </span>
                 </div>
@@ -220,7 +237,7 @@ export default function LandingPage() {
                 {/* Integrated AI Post Result Snippet Floater */}
                 <div className={styles.floatingAiSnippet}>
                   <div className={styles.aiSnippetHeader}>
-                    <span style={{ color: '#09090B' }}>𝕏 X (Twitter) • Generated Thread Starter</span>
+                    <span style={{ color: 'var(--ink)' }}>𝕏 X (Twitter) • Generated Thread Starter</span>
                     <span className="badge-brutal badge-yellow" style={{ fontSize: '0.65rem', padding: '1px 6px' }}>
                       ⚡ 234 chars
                     </span>
