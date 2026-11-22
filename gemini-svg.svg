@@ -1,0 +1,10 @@
+<svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="MakeAPost Logo">
+  
+  <rect x="6" y="6" width="34" height="34" rx="8" fill="#09090B" />
+  
+  <rect x="3" y="3" width="34" height="34" rx="8" fill="#FFD93D" stroke="#09090B" stroke-width="2.5" />
+  
+  <path d="M11 15V11H15M25 11H29V15M29 25V29H25M15 29H11V25" stroke="#09090B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+  
+  <path d="M20 14L21.5 18.5L26 20L21.5 21.5L20 26L18.5 21.5L14 20L18.5 18.5L20 14Z" fill="#09090B" />
+</svg>

@@ -1,0 +1,166 @@
+:root {
+  /* Neobrutalism Design System Tokens */
+  --bg-primary: #F8FAFC;
+  --surface: #FFFFFF;
+  --accent-yellow: #FFD93D;
+  --accent-blue: #38BDF8;
+  --accent-green: #4ADE80;
+  --ink: #09090B;
+  --muted: #475569;
+  --muted-light: #94A3B8;
+  --border-color: #09090B;
+
+  /* Borders & Outlines */
+  --border-width: 2.5px;
+  --border: 2.5px solid var(--border-color);
+  --border-thick: 3px solid var(--border-color);
+  --border-thin: 1.5px solid var(--border-color);
+
+  /* Hard Offset Shadows */
+  --shadow-card: 4px 4px 0px var(--border-color);
+  --shadow-card-hover: 6px 6px 0px var(--border-color);
+  --shadow-card-lg: 8px 8px 0px var(--border-color);
+  --shadow-btn: 3px 3px 0px var(--border-color);
+  --shadow-btn-hover: 4px 4px 0px var(--border-color);
+  --shadow-btn-active: 1px 1px 0px var(--border-color);
+  --shadow-badge: 2px 2px 0px var(--border-color);
+
+  /* Border Radii */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-full: 9999px;
+
+  /* Typography Font Stacks */
+  --font-heading: var(--font-space-grotesk), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-body: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: var(--font-jetbrains-mono), monospace;
+}
+
+/* Base Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--ink);
+  font-family: var(--font-body);
+  line-height: 1.5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Neobrutalist Utility Classes */
+.btn-brutal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+  padding: 10px 20px;
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  background-color: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-btn);
+  cursor: pointer;
+  text-decoration: none;
+  user-select: none;
+  white-space: nowrap;
+  transition: transform 0.08s ease-out, box-shadow 0.08s ease-out, background-color 0.12s ease;
+}
+
+.btn-brutal:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-btn-hover);
+}
+
+.btn-brutal:active {
+  transform: translate(2px, 2px);
+  box-shadow: var(--shadow-btn-active);
+}
+
+.btn-primary {
+  background-color: var(--accent-yellow);
+  color: var(--ink);
+}
+
+.btn-primary:hover {
+  background-color: #f7ce2e;
+}
+
+.btn-secondary {
+  background-color: var(--accent-blue);
+  color: var(--ink);
+}
+
+.btn-secondary:hover {
+  background-color: #29b4f0;
+}
+
+.btn-dark {
+  background-color: var(--ink);
+  color: #FFFFFF;
+}
+
+.btn-dark:hover {
+  background-color: #18181B;
+}
+
+.card-brutal {
+  background-color: var(--surface);
+  border: var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.badge-brutal {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 4px 10px;
+  border: var(--border);
+  border-radius: var(--radius-full);
+  background-color: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-badge);
+}
+
+.badge-yellow {
+  background-color: var(--accent-yellow);
+}
+
+.badge-blue {
+  background-color: var(--accent-blue);
+}
+
+.badge-green {
+  background-color: var(--accent-green);
+}
+
+.tag-mono {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+}
