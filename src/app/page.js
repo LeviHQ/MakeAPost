@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Logo from '@/components/Logo';
-import ThemeToggle from '@/components/ThemeToggle';
+import NavbarAuth from '@/components/NavbarAuth';
 import { XIcon } from '@/components/SocialIcons';
 import {
   Zap,
@@ -29,7 +29,7 @@ export default function LandingPage() {
               <Zap size={13} />
               <span>30% Sidebar + 70% Canvas</span>
             </div>
-            <ThemeToggle />
+            <NavbarAuth />
             <Link
               href="/editor"
               className="btn-brutal btn-primary"

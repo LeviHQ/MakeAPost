@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Logo from '@/components/Logo';
-import ThemeToggle from '@/components/ThemeToggle';
+import NavbarAuth from '@/components/NavbarAuth';
 import CanvasEditor from '@/components/CanvasEditor';
 import ModeSidebar from '@/components/ModeSidebar';
 import { RotateCcw, Copy, Download, Image as ImageIcon, Sliders, Zap, ArrowRight } from 'lucide-react';
@@ -160,7 +160,7 @@ export default function EditorPage() {
         </div>
 
         <div className={styles.headerRight}>
-          <ThemeToggle />
+          <NavbarAuth />
 
           {image && (
             <button

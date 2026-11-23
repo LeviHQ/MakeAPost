@@ -89,24 +89,37 @@ The 30% control sidebar features two distinct UI states:
 │   │   ├── icon.svg                # Vector SVG App Icon
 │   │   ├── apple-icon.png          # Apple Touch Icon
 │   │   ├── editor/
-│   │   │   ├── page.js             # 30/70 Studio Workspace (/editor) with ThemeToggle & actions
+│   │   │   ├── page.js             # 30/70 Studio Workspace (/editor) with NavbarAuth & actions
 │   │   │   └── editor.module.css   # 30/70 workspace layout styles
+│   │   ├── settings/
+│   │   │   ├── page.js             # Account, subscription, daily credit tracker & preference sync
+│   │   │   └── settings.module.css # Neobrutalist settings page styles
+│   │   ├── auth/
+│   │   │   └── callback/
+│   │   │       └── route.js        # Supabase OAuth session exchange callback
 │   │   └── api/
 │   │       └── generate/
-│   │           └── route.js        # Serverless Gemini Vision API + Supabase credit verification
+│   │           └── route.js        # Serverless Gemini Vision API + Supabase trial & credit verification
 │   ├── components/
 │   │   ├── Logo.js                 # Reusable MakeAPost SVG Logo + Brand Wordmark
+│   │   ├── NavbarAuth.js           # Reusable Google OAuth button, credit badge (X/5 left), avatar & sync
 │   │   ├── SocialIcons.js          # Vector brand SVGs for X, LinkedIn, and Reddit
 │   │   ├── ThemeToggle.js          # Tactile Neobrutalist Dark / Light mode toggle (Lucide Sun/Moon)
 │   │   ├── PwaRegister.js          # Service worker registration component
 │   │   ├── ModeSidebar.js          # 30% Dynamic Control Sidebar (Aspect ratio, frame, blur, background, pro settings)
 │   │   ├── CanvasEditor.js         # 70% Main Visual Canvas & Dropzone (HTML5 Canvas, Ctrl+V, annotations, blur, PNG export)
-│   │   └── AiStudio.js             # AI Post Generation sub-view inside 30% sidebar
+│   │   └── AiStudio.js             # AI Post Generation sub-view inside 30% sidebar with auth & credit gate
 │   └── lib/
 │       ├── imageCompress.js        # Client-side 768px JPEG compression utility
-│       └── supabase.js             # Supabase client & credit/trial helper
+│       └── supabase/
+│           ├── client.js           # Browser client (@supabase/ssr)
+│           ├── server.js           # Server SSR client with cookies (@supabase/ssr)
+│           └── admin.js            # Service-role admin client (@supabase/supabase-js)
+├── supabase/
+│   └── schema.sql                  # PostgreSQL public.users schema, RLS policies & on_auth_user_created trigger
 ├── public/
 │   ├── sw.js                       # Lightweight PWA Service Worker caching app shell
+│   ├── og-image.png                # Pre-rendered 1200x630 static fallback OpenGraph card
 │   └── icons/                      # App icon assets (icon-192.png, icon-512.png, apple-touch-icon.png)
 ├── docs/                           # MANDATORY feature & architecture documentation
 │   ├── 01-landing-page.md
@@ -140,4 +153,4 @@ The 30% control sidebar features two distinct UI states:
 
 [x] Design System Polish & Dark Contrast Overhaul: Universal Lucide & Brand Vector Icons, High-Contrast Neobrutalist Dark Tokens (`--border-color: #E4E4E7`), and Text Isolation (SocialIcons.js, ThemeToggle.js, globals.css, docs/06-design-icons-and-dark-contrast.md)
 
-[ ] Phase 5: Supabase Auth & 3-Day Trial / Daily Credit Tracker (docs/04-auth-credits.md)
+[x] Phase 5: Supabase Google Auth, `/settings` Synced Preferences, & 3-Day Trial / Daily Credit Enforcement (NavbarAuth.js, schema.sql, settings/page.js, /api/generate gate, docs/04-auth-credits.md)

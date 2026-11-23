@@ -573,9 +573,13 @@ export default function CanvasEditor({
     // Restore tilt context
     ctx.restore();
 
-    // Step I: Automatic Default Watermark: "made with makeapost.app"
+    // Step I: Automatic Default Watermark (pre-filled with custom handle if saved)
     ctx.save();
-    const markText = 'made with makeapost.app';
+    let savedWatermark = null;
+    try {
+      savedWatermark = typeof window !== 'undefined' ? localStorage.getItem('makeapost-default-watermark') : null;
+    } catch {}
+    const markText = savedWatermark ? `${savedWatermark} • made with makeapost.app` : 'made with makeapost.app';
     ctx.font = 'bold 12px -apple-system, BlinkMacSystemFont, "Segoe UI", monospace';
     const markMetrics = ctx.measureText(markText);
     const pillW = markMetrics.width + 20;
