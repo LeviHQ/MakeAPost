@@ -19,6 +19,10 @@ import {
   Globe,
   ArrowLeft,
   Lock,
+  Send,
+  Loader2,
+  Clock,
+  Share2,
 } from 'lucide-react';
 
 const TONE_OPTIONS = [
@@ -48,6 +52,93 @@ export default function AiStudio({
   const [activePlatform, setActivePlatform] = useState('x');
   const [thumbnailUrl, setThumbnailUrl] = useState(null);
   const [copied, setCopied] = useState(false);
+
+  // Social Connections & Direct 1-Click Publishing State
+  const [connections, setConnections] = useState({
+    linkedin: { connected: false, username: null },
+    x: { connected: false, username: null },
+    reddit: { connected: false, comingSoon: true },
+  });
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [publishSuccessUrl, setPublishSuccessUrl] = useState(null);
+  const [publishError, setPublishError] = useState(null);
+
+  // Fetch social connections status when user logs in
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchConnStatus() {
+      try {
+        const res = await fetch('/api/connect/status');
+        if (res.ok && isMounted) {
+          const data = await res.json();
+          if (data?.connections) {
+            setConnections(data.connections);
+          }
+        }
+      } catch (e) {
+        console.warn('Could not fetch social connection status:', e);
+      }
+    }
+    if (user) {
+      fetchConnStatus();
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [user]);
+
+  const handlePlatformChange = (p) => {
+    setActivePlatform(p);
+    setPublishSuccessUrl(null);
+    setPublishError(null);
+  };
+
+  const handleDirectPublish = async (platform) => {
+    if (!canvasRef?.current) {
+      setPublishError('Canvas is not ready. Please load a screenshot.');
+      return;
+    }
+
+    setIsPublishing(true);
+    setPublishError(null);
+    setPublishSuccessUrl(null);
+
+    try {
+      const canvas = canvasRef.current;
+      const imageBase64 = canvas.toDataURL('image/png');
+      const text = editedPosts[platform] || '';
+
+      if (!text.trim()) {
+        throw new Error('Post content cannot be empty.');
+      }
+
+      const res = await fetch(`/api/publish/${platform}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text,
+          imageBase64,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || `Failed to publish to ${platform.toUpperCase()}`);
+      }
+
+      setPublishSuccessUrl(data.postUrl);
+    } catch (err) {
+      console.error(`Direct publish error for ${platform}:`, err);
+      setPublishError(
+        err.message || 'Error publishing post. Please verify your connection in Settings.'
+      );
+    } finally {
+      setIsPublishing(false);
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -443,7 +534,7 @@ export default function AiStudio({
                 boxShadow: activePlatform === 'x' ? '1.5px 1.5px 0px var(--shadow-color)' : 'none',
                 gap: '5px',
               }}
-              onClick={() => setActivePlatform('x')}
+              onClick={() => handlePlatformChange('x')}
             >
               <XIcon size={13} />
               <span>X</span>
@@ -461,7 +552,7 @@ export default function AiStudio({
                 boxShadow: activePlatform === 'linkedin' ? '1.5px 1.5px 0px var(--shadow-color)' : 'none',
                 gap: '5px',
               }}
-              onClick={() => setActivePlatform('linkedin')}
+              onClick={() => handlePlatformChange('linkedin')}
             >
               <LinkedInIcon size={13} />
               <span>LinkedIn</span>
@@ -479,7 +570,7 @@ export default function AiStudio({
                 boxShadow: activePlatform === 'reddit' ? '1.5px 1.5px 0px var(--shadow-color)' : 'none',
                 gap: '5px',
               }}
-              onClick={() => setActivePlatform('reddit')}
+              onClick={() => handlePlatformChange('reddit')}
             >
               <RedditIcon size={13} />
               <span>Reddit</span>
@@ -603,46 +694,242 @@ export default function AiStudio({
               </div>
             )}
 
-            {/* Action Buttons: Copy & Direct Intent */}
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              <button
-                type="button"
-                className="btn-brutal btn-primary"
+            {/* Success Banner (Live Post Link) */}
+            {publishSuccessUrl && (
+              <div
                 style={{
-                  flex: 1,
-                  padding: '8px 12px',
-                  fontSize: '0.82rem',
-                  display: 'inline-flex',
+                  padding: '10px 14px',
+                  backgroundColor: 'rgba(74, 222, 128, 0.15)',
+                  border: '2px solid #22C55E',
+                  borderRadius: 'var(--radius-xs)',
+                  display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px',
+                  justifyContent: 'space-between',
+                  gap: '8px',
+                  boxShadow: '2px 2px 0px var(--shadow-color)',
                 }}
-                onClick={() => handleCopy(currentPostText)}
               >
-                {copied ? <Check size={14} /> : <Copy size={14} />}
-                <span>{copied ? 'Copied!' : 'Copy Post'}</span>
-              </button>
-
-              {activePlatform === 'x' && (
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    fontSize: '0.82rem',
+                    fontWeight: 800,
+                    color: '#166534',
+                  }}
+                >
+                  <Check size={16} />
+                  <span>Published to {activePlatform.toUpperCase()}!</span>
+                </div>
                 <a
-                  href={`https://x.com/intent/tweet?text=${encodeURIComponent(currentPostText)}`}
+                  href={publishSuccessUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn-brutal"
                   style={{
-                    padding: '8px 14px',
-                    fontSize: '0.82rem',
+                    padding: '4px 10px',
+                    fontSize: '0.78rem',
                     textDecoration: 'none',
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '6px',
+                    gap: '4px',
+                    backgroundColor: '#FFFFFF',
+                    color: '#09090B',
                   }}
-                  title="Open in X (Twitter) directly"
                 >
-                  <XIcon size={12} />
-                  <span>Post on X</span>
+                  <span>View Live Post</span>
                   <ExternalLink size={12} />
                 </a>
+              </div>
+            )}
+
+            {/* Error Banner */}
+            {publishError && (
+              <div
+                style={{
+                  padding: '8px 12px',
+                  backgroundColor: '#FEE2E2',
+                  border: '2px solid #EF4444',
+                  borderRadius: 'var(--radius-xs)',
+                  color: '#B91C1C',
+                  fontSize: '0.78rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                <AlertCircle size={14} style={{ flexShrink: 0 }} />
+                <span>{publishError}</span>
+              </div>
+            )}
+
+            {/* Action Buttons: 1-Click Direct Publish, Copy & Connect Link */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {/* 1. Direct Publish Button for X */}
+                {activePlatform === 'x' && (
+                  connections.x.connected ? (
+                    <button
+                      type="button"
+                      className="btn-brutal btn-primary"
+                      style={{
+                        flex: 1,
+                        padding: '9px 14px',
+                        fontSize: '0.82rem',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                      }}
+                      disabled={isPublishing}
+                      onClick={() => handleDirectPublish('x')}
+                    >
+                      {isPublishing ? (
+                        <>
+                          <Loader2 size={14} className="animate-spin" />
+                          <span>Publishing to X...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Send size={14} />
+                          <span>🚀 Publish Now to X</span>
+                        </>
+                      )}
+                    </button>
+                  ) : (
+                    <Link
+                      href="/settings"
+                      className="btn-brutal btn-secondary"
+                      style={{
+                        flex: 1,
+                        padding: '9px 12px',
+                        fontSize: '0.82rem',
+                        textDecoration: 'none',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                      }}
+                      title="Connect your X account in Settings for direct 1-click publishing"
+                    >
+                      <XIcon size={13} />
+                      <span>Connect X in Settings →</span>
+                    </Link>
+                  )
+                )}
+
+                {/* 2. Direct Publish Button for LinkedIn */}
+                {activePlatform === 'linkedin' && (
+                  connections.linkedin.connected ? (
+                    <button
+                      type="button"
+                      className="btn-brutal btn-primary"
+                      style={{
+                        flex: 1,
+                        padding: '9px 14px',
+                        fontSize: '0.82rem',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                      }}
+                      disabled={isPublishing}
+                      onClick={() => handleDirectPublish('linkedin')}
+                    >
+                      {isPublishing ? (
+                        <>
+                          <Loader2 size={14} className="animate-spin" />
+                          <span>Publishing to LinkedIn...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Send size={14} />
+                          <span>🚀 Publish Now to LinkedIn</span>
+                        </>
+                      )}
+                    </button>
+                  ) : (
+                    <Link
+                      href="/settings"
+                      className="btn-brutal btn-secondary"
+                      style={{
+                        flex: 1,
+                        padding: '9px 12px',
+                        fontSize: '0.82rem',
+                        textDecoration: 'none',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                      }}
+                      title="Connect your LinkedIn account in Settings for direct 1-click publishing"
+                    >
+                      <LinkedInIcon size={13} />
+                      <span>Connect LinkedIn in Settings →</span>
+                    </Link>
+                  )
+                )}
+
+                {/* 3. Reddit Coming Soon Badge */}
+                {activePlatform === 'reddit' && (
+                  <div
+                    className="badge-brutal badge-yellow"
+                    style={{
+                      flex: 1,
+                      padding: '9px 12px',
+                      fontSize: '0.78rem',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                    }}
+                  >
+                    <Clock size={13} />
+                    <span>Direct Publish — Coming Soon</span>
+                  </div>
+                )}
+
+                {/* Universal Copy Post Button */}
+                <button
+                  type="button"
+                  className="btn-brutal"
+                  style={{
+                    padding: '9px 14px',
+                    fontSize: '0.82rem',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    backgroundColor: 'var(--surface)',
+                  }}
+                  onClick={() => handleCopy(currentPostText)}
+                >
+                  {copied ? <Check size={14} /> : <Copy size={14} />}
+                  <span>{copied ? 'Copied!' : 'Copy Post'}</span>
+                </button>
+              </div>
+
+              {/* Optional X fallback intent link if not connected */}
+              {activePlatform === 'x' && !connections.x.connected && (
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <a
+                    href={`https://x.com/intent/tweet?text=${encodeURIComponent(currentPostText)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      fontSize: '0.72rem',
+                      color: 'var(--muted)',
+                      textDecoration: 'underline',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                    }}
+                  >
+                    <span>Or open fallback Tweet Composer</span>
+                    <ExternalLink size={10} />
+                  </a>
+                </div>
               )}
             </div>
           </div>
