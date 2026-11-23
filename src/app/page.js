@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Logo from '@/components/Logo';
-import NavbarAuth from '@/components/NavbarAuth';
+import LandingNavbar from '@/components/LandingNavbar';
 import { XIcon } from '@/components/SocialIcons';
 import {
   Zap,
@@ -20,27 +20,7 @@ export default function LandingPage() {
   return (
     <div className={styles.pageContainer}>
       {/* 1. Navbar */}
-      <header className={styles.navbar}>
-        <div className={styles.navInner}>
-          <Logo size={40} />
-
-          <div className={styles.navRight}>
-            <div className={`${styles.navBadge} badge-brutal badge-blue`}>
-              <Zap size={13} />
-              <span>30% Sidebar + 70% Canvas</span>
-            </div>
-            <NavbarAuth />
-            <Link
-              href="/editor"
-              className="btn-brutal btn-primary"
-              style={{ padding: '8px 18px', fontSize: '0.9rem' }}
-            >
-              <span>Go to Editor</span>
-              <ArrowRight size={14} />
-            </Link>
-          </div>
-        </div>
-      </header>
+      <LandingNavbar />
 
       {/* 2. Hero Section */}
       <section className={styles.heroSection}>
@@ -70,11 +50,11 @@ export default function LandingPage() {
           </Link>
 
           <div className={styles.microCopy}>
-            <span>3-day free trial</span>
+            <span>100% Free to Use</span>
             <span className={styles.dotSep}>•</span>
             <span>No card required</span>
             <span className={styles.dotSep}>•</span>
-            <span>Free unlimited image editor</span>
+            <span>Free unlimited image editor &amp; AI posts</span>
           </div>
         </div>
       </section>

@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import ThemeToggle from './ThemeToggle';
-import { Zap, Settings, AlertCircle, LogIn } from 'lucide-react';
+import { Settings } from 'lucide-react';
 
 export function GoogleIcon({ size = 16 }) {
   return (
@@ -115,16 +114,6 @@ export default function NavbarAuth({ className = '', style = {} }) {
     }
   };
 
-  // Remaining credits calculation
-  const plan = profile?.plan || 'trial';
-  const dailyCreditsUsed = profile?.daily_credits_used || 0;
-  const isTrial = plan === 'trial';
-  const isPro = plan === 'pro';
-  const isExpired = plan === 'expired';
-
-  const maxDaily = isPro ? 40 : 5;
-  const creditsLeft = Math.max(0, maxDaily - dailyCreditsUsed);
-
   return (
     <div
       className={className}
@@ -135,8 +124,6 @@ export default function NavbarAuth({ className = '', style = {} }) {
         ...style,
       }}
     >
-      <ThemeToggle />
-
       {!loading && !user && (
         <button
           type="button"
@@ -150,7 +137,7 @@ export default function NavbarAuth({ className = '', style = {} }) {
             backgroundColor: 'var(--surface)',
             color: 'var(--ink)',
           }}
-          title="Sign in with Google to start your 3-day free trial"
+          title="Sign in with Google"
         >
           <GoogleIcon size={15} />
           <span style={{ fontWeight: 700 }}>Continue with Google</span>
@@ -158,104 +145,25 @@ export default function NavbarAuth({ className = '', style = {} }) {
       )}
 
       {!loading && user && (
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-          {/* Credit Badge */}
-          {isExpired ? (
-            <Link
-              href="/settings"
-              className="badge-brutal"
-              style={{
-                fontSize: '0.72rem',
-                padding: '4px 8px',
-                backgroundColor: 'rgba(239, 68, 68, 0.15)',
-                color: '#EF4444',
-                borderColor: '#EF4444',
-                textDecoration: 'none',
-              }}
-              title="Trial expired — Click to upgrade to Pro"
-            >
-              <AlertCircle size={12} />
-              <span>Trial Expired</span>
-            </Link>
-          ) : (
-            <Link
-              href="/settings"
-              className={`badge-brutal ${isPro ? 'badge-blue' : 'badge-yellow'}`}
-              style={{
-                fontSize: '0.72rem',
-                padding: '4px 8px',
-                textDecoration: 'none',
-              }}
-              title={`${creditsLeft} of ${maxDaily} daily AI credits remaining`}
-            >
-              <Zap size={12} />
-              <span>{creditsLeft}/{maxDaily} left</span>
-            </Link>
-          )}
-
-          {/* User Avatar linking to /settings */}
-          <Link
-            href="/settings"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              textDecoration: 'none',
-            }}
-            title="Settings & Profile"
-          >
-            {user?.user_metadata?.avatar_url || profile?.avatar_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={user?.user_metadata?.avatar_url || profile?.avatar_url}
-                alt={user?.user_metadata?.full_name || 'User avatar'}
-                style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '50%',
-                  border: '2px solid var(--border-color)',
-                  boxShadow: '1.5px 1.5px 0px var(--shadow-color)',
-                  objectFit: 'cover',
-                }}
-              />
-            ) : (
-              <div
-                style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '50%',
-                  backgroundColor: 'var(--accent-yellow)',
-                  color: '#09090B',
-                  border: '2px solid var(--border-color)',
-                  boxShadow: '1.5px 1.5px 0px var(--shadow-color)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 800,
-                  fontSize: '0.85rem',
-                }}
-              >
-                {(user.email?.[0] || 'U').toUpperCase()}
-              </div>
-            )}
-          </Link>
-
-          {/* Settings Icon Link */}
-          <Link
-            href="/settings"
-            className="btn-brutal"
-            style={{
-              padding: '6px 8px',
-              fontSize: '0.8rem',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-            title="Settings"
-            aria-label="Settings"
-          >
-            <Settings size={14} />
-          </Link>
-        </div>
+        <Link
+          href="/settings"
+          className="btn-brutal"
+          style={{
+            padding: '6px 12px',
+            fontSize: '0.82rem',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            textDecoration: 'none',
+            backgroundColor: 'var(--surface)',
+            color: 'var(--ink)',
+          }}
+          title="Account & Settings"
+          aria-label="Account Settings"
+        >
+          <Settings size={15} />
+          <span style={{ fontWeight: 700 }}>Settings</span>
+        </Link>
       )}
     </div>
   );

@@ -38,9 +38,8 @@ export default function AiStudio({
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
 
-  // Supabase Auth & Credit States
+  // Supabase Auth State
   const [user, setUser] = useState(null);
-  const [userProfile, setUserProfile] = useState(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
 
   // In-Memory Generated Posts State (Zero Database Storage)
@@ -65,22 +64,7 @@ export default function AiStudio({
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!isMounted) return;
-
-        if (user) {
-          setUser(user);
-          const { data: profile } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', user.id)
-            .single();
-
-          if (profile && isMounted) {
-            setUserProfile(profile);
-          }
-        } else {
-          setUser(null);
-          setUserProfile(null);
-        }
+        setUser(user || null);
       } catch (err) {
         console.warn('Auth check error:', err);
       } finally {
@@ -92,13 +76,7 @@ export default function AiStudio({
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!isMounted) return;
-      if (session?.user) {
-        setUser(session.user);
-        checkAuth();
-      } else {
-        setUser(null);
-        setUserProfile(null);
-      }
+      setUser(session?.user || null);
     });
 
     return () => {
@@ -121,29 +99,10 @@ export default function AiStudio({
     }
   };
 
-  // Remaining Credits Calculations
-  const plan = userProfile?.plan || 'trial';
-  const isPro = plan === 'pro';
-  const isExpired = plan === 'expired';
-  const dailyCreditsUsed = userProfile?.daily_credits_used || 0;
-  const maxDaily = isPro ? 40 : 5;
-  const creditsRemaining = Math.max(0, maxDaily - dailyCreditsUsed);
-  const isLimitReached = creditsRemaining <= 0;
-
   // Handle Generation
   const handleGenerate = async () => {
     if (!user) {
-      setErrorMessage('Please sign in with Google to start your 3-day free trial.');
-      return;
-    }
-
-    if (isExpired) {
-      setErrorMessage('Your 3-day free trial has expired. Please upgrade to MakeAPost Pro in Settings.');
-      return;
-    }
-
-    if (isLimitReached) {
-      setErrorMessage(`You have reached your daily limit of ${maxDaily} AI generations. Credits reset at midnight (00:00 UTC).`);
+      setErrorMessage('Please sign in with Google to generate social posts.');
       return;
     }
 
@@ -188,15 +147,6 @@ export default function AiStudio({
         linkedin: data.posts.linkedin_post || '',
         reddit: data.posts.reddit_post || '',
       });
-
-      // Update local profile credits upon success
-      if (data.credits) {
-        setUserProfile((prev) => ({
-          ...(prev || {}),
-          daily_credits_used: data.credits.used,
-          plan: data.credits.plan,
-        }));
-      }
     } catch (err) {
       console.error('Generation error:', err);
       setErrorMessage(err.message || 'Network error while generating posts.');
@@ -259,10 +209,10 @@ export default function AiStudio({
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontWeight: 800, fontSize: '0.92rem' }}>
             <Sparkles size={16} style={{ color: 'var(--accent-yellow)' }} />
-            <span>Start Your 3-Day Free Trial</span>
+            <span>Sign In to Generate Posts</span>
           </div>
           <p style={{ fontSize: '0.8rem', color: 'var(--muted)', lineHeight: 1.45 }}>
-            Sign in with Google to generate high-engagement social posts from your screenshot with Multimodal Gemini AI. <strong>5 posts / day</strong>, no card required.
+            Sign in with Google to generate tailored X, LinkedIn, and Reddit posts from your screenshots using Multimodal Gemini AI.
           </p>
           <button
             type="button"
@@ -274,7 +224,7 @@ export default function AiStudio({
             <span>Continue with Google</span>
           </button>
           <div style={{ fontSize: '0.72rem', color: 'var(--muted)', fontFamily: 'var(--font-mono)' }}>
-            Tip: 🎨 Image Editor is 100% free &amp; unlimited without login!
+            Tip: 🎨 Image Editor on the left is 100% free &amp; unlimited without login!
           </div>
         </div>
       )}
@@ -396,55 +346,8 @@ export default function AiStudio({
           onClick={handleGoogleSignIn}
         >
           <Lock size={15} />
-          <span>Sign In to Generate (5 Free Credits)</span>
+          <span>Sign In with Google to Generate</span>
         </button>
-      ) : isExpired ? (
-        <Link
-          href="/settings"
-          className="btn-brutal"
-          style={{
-            padding: '12px 18px',
-            fontSize: '0.88rem',
-            fontWeight: 800,
-            backgroundColor: 'rgba(239, 68, 68, 0.15)',
-            color: '#EF4444',
-            borderColor: '#EF4444',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            textDecoration: 'none',
-          }}
-        >
-          <AlertCircle size={16} />
-          <span>Trial Expired — Upgrade to Pro in Settings</span>
-        </Link>
-      ) : isLimitReached ? (
-        <div
-          style={{
-            backgroundColor: 'var(--card-bg-subtle)',
-            border: '1.5px dashed var(--border-color)',
-            borderRadius: 'var(--radius-sm)',
-            padding: '12px',
-            textAlign: 'center',
-            fontSize: '0.82rem',
-          }}
-        >
-          <div style={{ fontWeight: 800, color: 'var(--ink)', marginBottom: '4px' }}>
-            Daily limit reached (0/{maxDaily} left)
-          </div>
-          <div style={{ color: 'var(--muted)', fontSize: '0.75rem', marginBottom: '8px' }}>
-            Credits reset at midnight (00:00 UTC).
-          </div>
-          <Link
-            href="/settings"
-            className="btn-brutal btn-primary"
-            style={{ padding: '6px 12px', fontSize: '0.78rem', textDecoration: 'none', display: 'inline-flex', gap: '6px' }}
-          >
-            <Sparkles size={13} />
-            <span>Need more? Upgrade to Pro</span>
-          </Link>
-        </div>
       ) : (
         <button
           type="button"
@@ -482,7 +385,7 @@ export default function AiStudio({
           ) : (
             <>
               <Sparkles size={16} />
-              <span>Generate Posts ({creditsRemaining}/{maxDaily} left)</span>
+              <span>Generate Posts (X, LinkedIn, Reddit)</span>
             </>
           )}
         </button>
@@ -510,22 +413,6 @@ export default function AiStudio({
               <strong>Error:</strong> {errorMessage}
             </div>
           </div>
-          {(errorMessage.includes('Settings') || errorMessage.includes('expired') || errorMessage.includes('limit')) && (
-            <Link
-              href="/settings"
-              className="btn-brutal"
-              style={{
-                padding: '4px 10px',
-                fontSize: '0.75rem',
-                alignSelf: 'flex-start',
-                backgroundColor: 'var(--surface)',
-                color: 'var(--ink)',
-                textDecoration: 'none',
-              }}
-            >
-              Go to Account Settings
-            </Link>
-          )}
         </div>
       )}
 

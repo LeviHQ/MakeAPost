@@ -38,7 +38,7 @@ The 30% control sidebar features two distinct UI states:
 - **Image Engine:** Native HTML5 `<canvas>` API (100% client-side rendering, annotations, blur, & PNG export).
 - **Backend / API Routes:** Next.js Route Handlers (`src/app/api/generate/route.js`).
 - **AI Model:** Google Gemini Flash / Flash-Lite via `@google/generative-ai` (Multimodal Vision + Single-Shot JSON output).
-- **Auth & Database (Minimal):** Supabase (Google Auth + 1 single `users` table for 3-day trial & daily credit tracking only).
+- **Auth & Database (Minimal):** Supabase (Google Auth + 1 single `users` table for cross-device preferences & profile sync).
 - **Deployment:** Vercel (`*.vercel.app` subdomain).
 
 ---
@@ -65,12 +65,13 @@ The 30% control sidebar features two distinct UI states:
 
 ---
 
-## 5. Monetization, Trial & Token Optimization Rules
+## 5. Free Access, Token Optimization & Future Billing Architecture
 - **Image Editor (70% Canvas + 30% Editor Sidebar):** 100% Free & Unlimited (works client-side without login).
-- **3-Day Free Trial (New Google Signups for AI Mode):** No credit card required. 5 AI post generations / day for 72 hours.
-- **Monthly Pro Plan:** Daily credit cap (40 AI post generations / day, resets every 24 hours).
+- **AI Post Mode (30% Sidebar):** 100% Free for all authenticated users (Google Sign-In required to prevent bot abuse).
+- **Billing & Subscriptions:** Paywalls, 3-day trial countdowns, and daily credit caps have been completely decoupled and removed across the frontend, backend, and database. Subscriptions will be introduced in a future release with a full billing system.
 - **Token Optimization:**
-  - Resize/compress canvas image client-side to max 768px width JPEG (0.7 quality) before sending to `/api/generate`.
+  - Resize/compress canvas image client-side to max 768px width JPEG (0.65 quality) before sending to `/api/generate`.
+  - Backend Sharp compression gate downsizes to 640px JPEG (0.60 quality) so vision input fits in a single vision tile.
   - Single-shot structured JSON response returning `x_post`, `linkedin_post`, and `reddit_post` in one API call.
 
 ---
@@ -92,23 +93,25 @@ The 30% control sidebar features two distinct UI states:
 │   │   │   ├── page.js             # 30/70 Studio Workspace (/editor) with NavbarAuth & actions
 │   │   │   └── editor.module.css   # 30/70 workspace layout styles
 │   │   ├── settings/
-│   │   │   ├── page.js             # Account, subscription, daily credit tracker & preference sync
+│   │   │   ├── page.js             # Account profile & cross-device theme preference with responsive hamburger navbar
 │   │   │   └── settings.module.css # Neobrutalist settings page styles
 │   │   ├── auth/
 │   │   │   └── callback/
 │   │   │       └── route.js        # Supabase OAuth session exchange callback
 │   │   └── api/
 │   │       └── generate/
-│   │           └── route.js        # Serverless Gemini Vision API + Supabase trial & credit verification
+│   │           └── route.js        # Serverless Gemini Vision API + Supabase auth verification
 │   ├── components/
 │   │   ├── Logo.js                 # Reusable MakeAPost SVG Logo + Brand Wordmark
-│   │   ├── NavbarAuth.js           # Reusable Google OAuth button, credit badge (X/5 left), avatar & sync
+│   │   ├── LandingNavbar.js        # Responsive Neobrutalist landing navbar with mobile hamburger menu
+│   │   ├── NavbarAuth.js           # Reusable Google OAuth button & settings link
+│   │   ├── UserThemeSync.js        # Global root-level Supabase PostgreSQL cross-device theme synchronizer
 │   │   ├── SocialIcons.js          # Vector brand SVGs for X, LinkedIn, and Reddit
 │   │   ├── ThemeToggle.js          # Tactile Neobrutalist Dark / Light mode toggle (Lucide Sun/Moon)
 │   │   ├── PwaRegister.js          # Service worker registration component
 │   │   ├── ModeSidebar.js          # 30% Dynamic Control Sidebar (Aspect ratio, frame, blur, background, pro settings)
 │   │   ├── CanvasEditor.js         # 70% Main Visual Canvas & Dropzone (HTML5 Canvas, Ctrl+V, annotations, blur, PNG export)
-│   │   └── AiStudio.js             # AI Post Generation sub-view inside 30% sidebar with auth & credit gate
+│   │   └── AiStudio.js             # AI Post Generation sub-view inside 30% sidebar with Google auth gate
 │   └── lib/
 │       ├── imageCompress.js        # Client-side 768px JPEG compression utility
 │       └── supabase/
@@ -153,4 +156,4 @@ The 30% control sidebar features two distinct UI states:
 
 [x] Design System Polish & Dark Contrast Overhaul: Universal Lucide & Brand Vector Icons, High-Contrast Neobrutalist Dark Tokens (`--border-color: #E4E4E7`), and Text Isolation (SocialIcons.js, ThemeToggle.js, globals.css, docs/06-design-icons-and-dark-contrast.md)
 
-[x] Phase 5: Supabase Google Auth, `/settings` Synced Preferences, & 3-Day Trial / Daily Credit Enforcement (NavbarAuth.js, schema.sql, settings/page.js, /api/generate gate, docs/04-auth-credits.md)
+[x] Phase 5: Supabase Google Auth & `/settings` Synced Preferences (NavbarAuth.js, schema.sql, settings/page.js, /api/generate auth gate, docs/04-auth-credits.md; trial/credit caps completely decoupled for future billing release)

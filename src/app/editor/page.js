@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import Logo from '@/components/Logo';
 import NavbarAuth from '@/components/NavbarAuth';
 import CanvasEditor from '@/components/CanvasEditor';
 import ModeSidebar from '@/components/ModeSidebar';
-import { RotateCcw, Copy, Download, Image as ImageIcon, Sliders, Zap, ArrowRight } from 'lucide-react';
+import { RotateCcw, Copy, Download, Image as ImageIcon, Sliders, Zap, ArrowRight, Menu, X, Home } from 'lucide-react';
 import styles from './editor.module.css';
 
 export default function EditorPage() {
@@ -16,6 +17,7 @@ export default function EditorPage() {
 
   // Mobile View Switcher State ('canvas' | 'controls')
   const [mobileTab, setMobileTab] = useState('canvas');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Canvas Framing & Image State
   const [image, setImage] = useState(null);
@@ -159,7 +161,18 @@ export default function EditorPage() {
           </div>
         </div>
 
-        <div className={styles.headerRight}>
+        {/* Desktop Header Actions */}
+        <div className={styles.desktopNav}>
+          <Link
+            href="/"
+            className={`btn-brutal ${styles.headerBtn}`}
+            style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            title="Back to Landing Page"
+          >
+            <Home size={14} />
+            <span>Back to Home</span>
+          </Link>
+
           <NavbarAuth />
 
           {image && (
@@ -170,7 +183,7 @@ export default function EditorPage() {
               title="Clear canvas and import a new image"
             >
               <RotateCcw size={14} />
-              <span className={styles.btnTextDesktop}>New Image</span>
+              <span>New Image</span>
             </button>
           )}
 
@@ -183,7 +196,7 @@ export default function EditorPage() {
             title="Copy 2x PNG to clipboard"
           >
             <Copy size={14} />
-            <span className={styles.btnTextDesktop}>Copy PNG</span>
+            <span>Copy PNG</span>
           </button>
 
           <button
@@ -198,10 +211,84 @@ export default function EditorPage() {
             title="Download 2x PNG file"
           >
             <Download size={14} />
-            <span className={styles.btnTextDesktop}>Download 2x PNG</span>
-            <span className={styles.btnTextMobile}>2x</span>
+            <span>Download 2x PNG</span>
           </button>
         </div>
+
+        {/* Mobile Action & Hamburger Row */}
+        <div className={styles.mobileNav}>
+          <button
+            type="button"
+            className={`btn-brutal btn-primary ${styles.headerBtn}`}
+            onClick={handleDownloadPng}
+            disabled={!image}
+            style={{
+              opacity: image ? 1 : 0.6,
+              fontWeight: 800,
+              padding: '6px 10px',
+              fontSize: '0.8rem',
+            }}
+            title="Download PNG"
+          >
+            <Download size={13} />
+            <span>PNG</span>
+          </button>
+
+          <button
+            type="button"
+            className={`btn-brutal ${styles.hamburgerBtn}`}
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle studio menu"
+            aria-expanded={mobileMenuOpen}
+          >
+            {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+          </button>
+        </div>
+
+        {/* Mobile Dropdown Menu */}
+        {mobileMenuOpen && (
+          <div className={styles.mobileDropdown}>
+            <NavbarAuth />
+
+            {image && (
+              <button
+                type="button"
+                className={`btn-brutal ${styles.mobileMenuItem}`}
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleReset();
+                }}
+              >
+                <RotateCcw size={15} />
+                <span>New Image (Reset)</span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              className={`btn-brutal ${styles.mobileMenuItem}`}
+              onClick={() => {
+                setMobileMenuOpen(false);
+                handleCopyPng();
+              }}
+              disabled={!image}
+              style={{ opacity: image ? 1 : 0.6 }}
+            >
+              <Copy size={15} />
+              <span>Copy 2x PNG</span>
+            </button>
+
+            <Link
+              href="/"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`btn-brutal ${styles.mobileMenuItem}`}
+              style={{ textDecoration: 'none' }}
+            >
+              <Home size={15} />
+              <span>Back to Home</span>
+            </Link>
+          </div>
+        )}
       </header>
 
       {/* 2. Mobile View Switcher Tabs (Visible on screens < 900px) */}

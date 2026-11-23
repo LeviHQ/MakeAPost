@@ -108,7 +108,7 @@ Strict Neobrutalism rules are defined using standard CSS variables:
 - **Headline:** `INCREASE REACH OF YOUR SCREENSHOTS` with yellow Neobrutalist highlight box on `SCREENSHOTS`.
 - **Subheadline:** "Turn raw screenshots into viral social posts in seconds. Edit your image & generate tailored X, LinkedIn, and Reddit posts in one screen."
 - **Primary CTA:** Tactile button `Go to Editor →`.
-- **Micro-copy:** "3-day free trial • No card required • Free unlimited image editor".
+- **Micro-copy:** "100% Free to Use • No card required • Free unlimited image editor & AI posts".
 
 ### 3. Interactive-Feel 30/70 Split Preview Showcase
 - **Left 30% Sidebar (`.sidebar30`):**

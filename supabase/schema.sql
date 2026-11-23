@@ -1,34 +1,34 @@
 -- ==============================================================================
--- MakeAPost — Phase 5: Supabase Schema, RLS & Auth Trigger
+-- MakeAPost — Supabase Schema, RLS & Auth Trigger (Preferences & Auth Only)
 -- ==============================================================================
 
--- 1. Create public.users table
+-- 1. Create public.users table (Profile & Cross-Device Preferences)
 create table if not exists public.users (
   id uuid primary key references auth.users(id) on delete cascade,
   email text,
   full_name text,
   avatar_url text,
   theme text default 'light' check (theme in ('light', 'dark')),
-  default_watermark text default '',
-  plan text default 'trial' check (plan in ('trial', 'pro', 'expired')),
-  trial_ends_at timestamptz default (now() + interval '3 days'),
-  daily_credits_used int default 0,
-  last_credit_reset date default current_date,
   created_at timestamptz default now()
 );
 
--- 2. Enable Row Level Security (RLS)
+-- 2. Grant essential table permissions
+grant all on table public.users to postgres, anon, authenticated, service_role;
+
+-- 3. Enable Row Level Security (RLS)
 alter table public.users enable row level security;
 
 -- 3. RLS Policies
 -- Allow authenticated users to view their own profile
+drop policy if exists "Users can read own profile" on public.users;
 create policy "Users can read own profile"
   on public.users
   for select
   to authenticated
   using (auth.uid() = id);
 
--- Allow authenticated users to update their own profile
+-- Allow authenticated users to update their own profile (theme, watermark)
+drop policy if exists "Users can update own profile" on public.users;
 create policy "Users can update own profile"
   on public.users
   for update
@@ -36,28 +36,16 @@ create policy "Users can update own profile"
   using (auth.uid() = id)
   with check (auth.uid() = id);
 
--- 4. Guard against tampering of sensitive fields (plan, trial_ends_at, credits)
-create or replace function public.prevent_user_plan_tampering()
-returns trigger as $$
-begin
-  -- If invoked by normal authenticated user, forbid altering plan or credits directly
-  if current_user = 'authenticated' or auth.role() = 'authenticated' then
-    new.plan := old.plan;
-    new.trial_ends_at := old.trial_ends_at;
-    new.daily_credits_used := old.daily_credits_used;
-    new.last_credit_reset := old.last_credit_reset;
-    new.id := old.id;
-    new.created_at := old.created_at;
-  end if;
-  return new;
-end;
-$$ language plpgsql security definer;
-
+-- 4. Clean up legacy columns & triggers if migrating from previous version
 drop trigger if exists enforce_user_update_safety on public.users;
-create trigger enforce_user_update_safety
-  before update on public.users
-  for each row
-  execute function public.prevent_user_plan_tampering();
+drop function if exists public.prevent_user_plan_tampering();
+
+alter table public.users 
+  drop column if exists plan,
+  drop column if exists trial_ends_at,
+  drop column if exists daily_credits_used,
+  drop column if exists last_credit_reset,
+  drop column if exists default_watermark;
 
 -- 5. Trigger: Automatically insert a row in public.users on auth signup (e.g. Google OAuth)
 create or replace function public.handle_new_user()
@@ -69,11 +57,6 @@ begin
     full_name,
     avatar_url,
     theme,
-    default_watermark,
-    plan,
-    trial_ends_at,
-    daily_credits_used,
-    last_credit_reset,
     created_at
   )
   values (
@@ -82,11 +65,6 @@ begin
     coalesce(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name', ''),
     coalesce(new.raw_user_meta_data->>'avatar_url', new.raw_user_meta_data->>'picture', ''),
     'light',
-    '',
-    'trial',
-    now() + interval '3 days',
-    0,
-    current_date,
     now()
   )
   on conflict (id) do nothing;

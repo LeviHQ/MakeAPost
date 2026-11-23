@@ -1,5 +1,6 @@
 import { Space_Grotesk, Inter, JetBrains_Mono } from 'next/font/google';
 import PwaRegister from '@/components/PwaRegister';
+import UserThemeSync from '@/components/UserThemeSync';
 import './globals.css';
 
 const spaceGrotesk = Space_Grotesk({
@@ -124,8 +125,9 @@ export default function RootLayout({ children }) {
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <PwaRegister />
+        <UserThemeSync />
         {children}
       </body>
     </html>

@@ -7,17 +7,16 @@ import Logo from '@/components/Logo';
 import { createClient } from '@/lib/supabase/client';
 import {
   User,
-  Zap,
   Sparkles,
   Sun,
   Moon,
   LogOut,
-  Save,
   Check,
   ShieldCheck,
   ArrowLeft,
-  Clock,
-  CheckCircle2,
+  Home,
+  Menu,
+  X,
 } from 'lucide-react';
 import styles from './settings.module.css';
 
@@ -26,11 +25,14 @@ export default function SettingsPage() {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [savingWatermark, setSavingWatermark] = useState(false);
-  const [watermark, setWatermark] = useState('');
-  const [theme, setTheme] = useState('light');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [theme, setTheme] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return document.documentElement.getAttribute('data-theme') || 'light';
+    }
+    return 'light';
+  });
   const [toastMessage, setToastMessage] = useState(null);
-  const [showProModal, setShowProModal] = useState(false);
 
   const showToast = (msg) => {
     setToastMessage(msg);
@@ -61,8 +63,12 @@ export default function SettingsPage() {
 
         if (profileData && isMounted) {
           setProfile(profileData);
-          setTheme(profileData.theme || 'light');
-          setWatermark(profileData.default_watermark || '');
+          const activeTheme = profileData.theme === 'dark' ? 'dark' : 'light';
+          setTheme(activeTheme);
+          document.documentElement.setAttribute('data-theme', activeTheme);
+          try {
+            localStorage.setItem('makeapost-theme', activeTheme);
+          } catch {}
         }
       } catch (err) {
         console.error('Failed to load settings:', err);
@@ -86,42 +92,25 @@ export default function SettingsPage() {
       localStorage.setItem('makeapost-theme', newTheme);
     } catch {}
 
-    showToast(`Theme updated to ${newTheme} mode`);
+    if (!user) return;
 
-    try {
-      const supabase = createClient();
-      await supabase
-        .from('users')
-        .update({ theme: newTheme })
-        .eq('id', user.id);
-    } catch (err) {
-      console.error('Failed to sync theme to Supabase:', err);
-    }
-  };
-
-  // Handle Watermark Save
-  const handleSaveWatermark = async (e) => {
-    e?.preventDefault();
-    setSavingWatermark(true);
     try {
       const supabase = createClient();
       const { error } = await supabase
         .from('users')
-        .update({ default_watermark: watermark.trim() })
+        .update({ theme: newTheme })
         .eq('id', user.id);
 
-      if (error) throw error;
-
-      try {
-        localStorage.setItem('makeapost-default-watermark', watermark.trim());
-      } catch {}
-
-      showToast('Default watermark saved successfully!');
+      if (error) {
+        const errorMsg = error?.message || error?.details || 'Database permission error';
+        console.error('Failed to sync theme to Supabase:', errorMsg, error);
+        showToast(`Error: ${errorMsg}`);
+      } else {
+        showToast(`Theme updated to ${newTheme === 'dark' ? 'Dark' : 'Light'} Mode`);
+      }
     } catch (err) {
-      console.error('Failed to save watermark:', err);
-      showToast('Error saving watermark. Please retry.');
-    } finally {
-      setSavingWatermark(false);
+      console.error('Failed to sync theme to Supabase exception:', err?.message || err);
+      showToast('Error saving theme to account. Please retry.');
     }
   };
 
@@ -130,6 +119,11 @@ export default function SettingsPage() {
     try {
       const supabase = createClient();
       await supabase.auth.signOut();
+      // Reset DOM & localStorage to default light mode on sign out
+      document.documentElement.setAttribute('data-theme', 'light');
+      try {
+        localStorage.setItem('makeapost-theme', 'light');
+      } catch {}
       router.push('/');
     } catch (err) {
       console.error('Sign out error:', err);
@@ -147,33 +141,6 @@ export default function SettingsPage() {
     );
   }
 
-  // Calculate Subscription & Credit Metrics
-  const plan = profile?.plan || 'trial';
-  const dailyCreditsUsed = profile?.daily_credits_used || 0;
-  const isPro = plan === 'pro';
-  const isExpired = plan === 'expired';
-
-  const maxDaily = isPro ? 40 : 5;
-  const creditsRemaining = Math.max(0, maxDaily - dailyCreditsUsed);
-  const percentUsed = Math.min(100, Math.round((dailyCreditsUsed / maxDaily) * 100));
-
-  // Time remaining on trial
-  let trialRemainingText = '3 Days';
-  if (profile?.trial_ends_at) {
-    const msLeft = new Date(profile.trial_ends_at) - new Date();
-    if (msLeft <= 0) {
-      trialRemainingText = 'Expired';
-    } else {
-      const hours = Math.floor(msLeft / (1000 * 60 * 60));
-      const days = Math.floor(hours / 24);
-      if (days >= 1) {
-        trialRemainingText = `${days} day${days > 1 ? 's' : ''} left`;
-      } else {
-        trialRemainingText = `${hours} hour${hours > 1 ? 's' : ''} left`;
-      }
-    }
-  }
-
   return (
     <div className={styles.settingsContainer}>
       {/* Top Header */}
@@ -181,17 +148,61 @@ export default function SettingsPage() {
         <div className={styles.headerInner}>
           <Logo size={36} />
 
-          <div className={styles.headerRight}>
+          {/* Desktop Navigation Links */}
+          <div className={styles.desktopNav}>
+            <Link
+              href="/"
+              className="btn-brutal"
+              style={{ padding: '8px 16px', fontSize: '0.88rem', gap: '6px' }}
+            >
+              <Home size={15} />
+              <span>Back to Home</span>
+            </Link>
+
             <Link
               href="/editor"
               className="btn-brutal btn-primary"
-              style={{ padding: '8px 16px', fontSize: '0.88rem' }}
+              style={{ padding: '8px 16px', fontSize: '0.88rem', gap: '6px' }}
             >
-              <ArrowLeft size={14} />
+              <ArrowLeft size={15} />
               <span>Back to Studio</span>
             </Link>
           </div>
+
+          {/* Mobile Hamburger Button */}
+          <button
+            type="button"
+            className={`btn-brutal ${styles.hamburgerBtn}`}
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle navigation menu"
+            aria-expanded={mobileMenuOpen}
+          >
+            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
         </div>
+
+        {/* Mobile Dropdown Menu */}
+        {mobileMenuOpen && (
+          <div className={styles.mobileDropdown}>
+            <Link
+              href="/"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`btn-brutal ${styles.mobileNavLink}`}
+            >
+              <Home size={16} />
+              <span>Back to Home</span>
+            </Link>
+
+            <Link
+              href="/editor"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`btn-brutal btn-primary ${styles.mobileNavLink}`}
+            >
+              <ArrowLeft size={16} />
+              <span>Back to Studio</span>
+            </Link>
+          </div>
+        )}
       </header>
 
       {/* Main Settings Canvas */}
@@ -206,7 +217,7 @@ export default function SettingsPage() {
             </div>
           </div>
           <p className={styles.pageSubtitle}>
-            Manage your profile, cross-device design preferences, and daily AI post credits.
+            Manage your profile and cross-device design preferences.
           </p>
         </div>
 
@@ -261,120 +272,7 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* Card 2: Subscription & Daily Credits */}
-        <section className={styles.cardSection}>
-          <div className={styles.cardHeader}>
-            <div className={styles.cardTitle}>
-              <Zap size={18} />
-              <span>Subscription &amp; Daily AI Credits</span>
-            </div>
-
-            <div
-              className={`badge-brutal ${
-                isPro ? 'badge-blue' : isExpired ? '' : 'badge-yellow'
-              }`}
-              style={{
-                fontSize: '0.78rem',
-                ...(isExpired
-                  ? {
-                      backgroundColor: 'rgba(239, 68, 68, 0.15)',
-                      color: '#EF4444',
-                      borderColor: '#EF4444',
-                    }
-                  : {}),
-              }}
-            >
-              {isPro ? 'PRO PLAN (ACTIVE)' : isExpired ? 'TRIAL EXPIRED' : '3-DAY FREE TRIAL'}
-            </div>
-          </div>
-
-          <div className={styles.metricGrid}>
-            <div className={styles.metricBox}>
-              <span className={styles.metricLabel}>Daily Credits Remaining</span>
-              <div className={styles.metricValue}>
-                <Zap size={20} style={{ color: 'var(--accent-yellow)' }} />
-                <span>{creditsRemaining} / {maxDaily}</span>
-              </div>
-              <span style={{ fontSize: '0.74rem', color: 'var(--muted)' }}>
-                Resets daily at midnight (00:00 UTC)
-              </span>
-            </div>
-
-            <div className={styles.metricBox}>
-              <span className={styles.metricLabel}>Trial Status</span>
-              <div className={styles.metricValue}>
-                <Clock size={20} style={{ color: 'var(--accent-blue)' }} />
-                <span>{isPro ? 'Unlimited' : trialRemainingText}</span>
-              </div>
-              <span style={{ fontSize: '0.74rem', color: 'var(--muted)' }}>
-                {isPro ? 'Pro membership active' : 'No credit card required for trial'}
-              </span>
-            </div>
-          </div>
-
-          {/* Progress Bar */}
-          <div>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                fontSize: '0.78rem',
-                fontWeight: 700,
-                marginBottom: '6px',
-              }}
-            >
-              <span>Daily AI Generation Usage</span>
-              <span>{dailyCreditsUsed} of {maxDaily} used ({percentUsed}%)</span>
-            </div>
-            <div className={styles.progressBarContainer}>
-              <div
-                className={styles.progressBarFill}
-                style={{
-                  width: `${percentUsed}%`,
-                  backgroundColor: percentUsed >= 100 ? '#EF4444' : 'var(--accent-yellow)',
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Upgrade CTA */}
-          {!isPro && (
-            <div
-              style={{
-                backgroundColor: 'var(--card-bg-subtle)',
-                border: '1.5px dashed var(--border-color)',
-                borderRadius: 'var(--radius-sm)',
-                padding: '16px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                flexWrap: 'wrap',
-                gap: '12px',
-              }}
-            >
-              <div>
-                <div style={{ fontWeight: 800, fontSize: '0.92rem' }}>
-                  Need more daily multimodal generations?
-                </div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
-                  Upgrade to MakeAPost Pro for 40 AI posts / day + priority Gemini quota.
-                </div>
-              </div>
-
-              <button
-                type="button"
-                className="btn-brutal btn-primary"
-                style={{ padding: '8px 16px', fontSize: '0.85rem' }}
-                onClick={() => setShowProModal(true)}
-              >
-                <Sparkles size={14} />
-                <span>Upgrade to Pro</span>
-              </button>
-            </div>
-          )}
-        </section>
-
-        {/* Card 3: Cross-Device Preferences (Synced to Supabase) */}
+        {/* Card 2: Cross-Device Preferences (Synced to Supabase) */}
         <section className={styles.cardSection}>
           <div className={styles.cardHeader}>
             <div className={styles.cardTitle}>
@@ -386,8 +284,8 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* 1. Theme Selection */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {/* Theme Selection */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <label style={{ fontFamily: 'var(--font-heading)', fontSize: '0.88rem', fontWeight: 800 }}>
               Theme Preference
             </label>
@@ -414,138 +312,12 @@ export default function SettingsPage() {
                 <span>Dark Mode</span>
               </button>
             </div>
-          </div>
-
-          {/* 2. Default Watermark Handle */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <label style={{ fontFamily: 'var(--font-heading)', fontSize: '0.88rem', fontWeight: 800 }}>
-              Default Watermark Handle
-            </label>
-            <form onSubmit={handleSaveWatermark} className={styles.watermarkForm}>
-              <input
-                type="text"
-                className="input-brutal"
-                placeholder="e.g. @adarshmishra or yoursite.com"
-                value={watermark}
-                onChange={(e) => setWatermark(e.target.value)}
-                style={{ flex: 1 }}
-              />
-              <button
-                type="submit"
-                disabled={savingWatermark}
-                className="btn-brutal btn-secondary"
-                style={{ padding: '8px 18px', fontSize: '0.88rem', whiteSpace: 'nowrap' }}
-              >
-                {savingWatermark ? (
-                  <span>Saving...</span>
-                ) : (
-                  <>
-                    <Save size={14} />
-                    <span>Save Preference</span>
-                  </>
-                )}
-              </button>
-            </form>
             <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontFamily: 'var(--font-mono)' }}>
-              Saved to your PostgreSQL account profile and pre-fills your watermark in the image editor.
+              Saved to your PostgreSQL account profile and automatically synced across all your devices.
             </span>
           </div>
         </section>
       </main>
-
-      {/* Pro Modal */}
-      {showProModal && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.65)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 100,
-            padding: '20px',
-          }}
-          onClick={() => setShowProModal(false)}
-        >
-          <div
-            className="card-brutal"
-            style={{
-              maxWidth: '440px',
-              width: '100%',
-              padding: '28px',
-              backgroundColor: 'var(--surface)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '16px',
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div className="badge-brutal badge-yellow" style={{ fontSize: '0.8rem' }}>
-                <Sparkles size={14} />
-                <span>MAKEAPOST PRO</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowProModal(false)}
-                className="btn-brutal"
-                style={{ padding: '2px 8px', fontSize: '0.8rem' }}
-              >
-                ✕
-              </button>
-            </div>
-
-            <div style={{ fontFamily: 'var(--font-heading)', fontSize: '1.4rem', fontWeight: 900 }}>
-              Supercharge Your Social Reach
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.9rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <CheckCircle2 size={16} style={{ color: 'var(--accent-green)' }} />
-                <span><strong>40 AI post generations</strong> per day</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <CheckCircle2 size={16} style={{ color: 'var(--accent-green)' }} />
-                <span>Priority multimodal vision pipeline</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <CheckCircle2 size={16} style={{ color: 'var(--accent-green)' }} />
-                <span>Zero wait times &amp; extended token limits</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <CheckCircle2 size={16} style={{ color: 'var(--accent-green)' }} />
-                <span>100% Stateless &amp; Private</span>
-              </div>
-            </div>
-
-            <div
-              style={{
-                padding: '12px',
-                backgroundColor: 'var(--card-bg-subtle)',
-                borderRadius: 'var(--radius-sm)',
-                fontSize: '0.85rem',
-                textAlign: 'center',
-                fontFamily: 'var(--font-mono)',
-              }}
-            >
-              Phase 5 Beta: Pro upgrades will open alongside Stripe checkout integration!
-            </div>
-
-            <button
-              type="button"
-              className="btn-brutal btn-primary"
-              style={{ width: '100%', padding: '12px', fontSize: '0.95rem' }}
-              onClick={() => {
-                setShowProModal(false);
-                showToast('Thanks for your interest in Pro! Checkout integration coming soon.');
-              }}
-            >
-              <span>Got It</span>
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Floating Feedback Toast */}
       {toastMessage && (
