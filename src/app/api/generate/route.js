@@ -18,13 +18,25 @@ export async function POST(req) {
       );
     }
 
-    // 2. Validation: Gemini API Key
-    const apiKey = process.env.GEMINI_API_KEY;
+    // 2. Validation & Sanitization: Gemini API Key
+    const rawApiKey = process.env.GEMINI_API_KEY;
+    if (!rawApiKey) {
+      return NextResponse.json(
+        {
+          error:
+            'GEMINI_API_KEY is not configured in your environment. Please add GEMINI_API_KEY to your Vercel Project Settings > Environment Variables and redeploy.',
+        },
+        { status: 401 }
+      );
+    }
+
+    // Strip accidental whitespace, newlines, or wrapping quotes from dashboard copy-paste
+    const apiKey = rawApiKey.trim().replace(/^["']|["']$/g, '').trim();
     if (!apiKey) {
       return NextResponse.json(
         {
           error:
-            'GEMINI_API_KEY is not configured in your environment. Please add GEMINI_API_KEY=your_key to your .env or .env.local file.',
+            'GEMINI_API_KEY is empty or malformed. Please verify the value in Vercel Environment Variables and redeploy.',
         },
         { status: 401 }
       );
@@ -146,6 +158,14 @@ Return strictly a valid JSON object matching this schema:
       } catch (modelErr) {
         console.warn(`Model ${modelName} call failed:`, modelErr.message);
         lastError = modelErr;
+
+        // If the API key is completely rejected, retrying other models won't help
+        if (
+          modelErr.message?.includes('API_KEY_INVALID') ||
+          modelErr.message?.includes('API key not valid')
+        ) {
+          break;
+        }
       }
     }
 
@@ -177,17 +197,27 @@ Return strictly a valid JSON object matching this schema:
   } catch (error) {
     console.error('Error in /api/generate:', error);
 
-    // Friendly error messaging
     const errMsg = error?.message || 'Failed to generate social posts.';
     const isRateLimit = errMsg.includes('429') || errMsg.toLowerCase().includes('quota');
+    const isInvalidKey =
+      errMsg.includes('API_KEY_INVALID') || errMsg.includes('API key not valid');
+
+    let userFriendlyError = errMsg;
+    let statusCode = 500;
+
+    if (isInvalidKey) {
+      statusCode = 400;
+      userFriendlyError =
+        'Invalid Gemini API key on Vercel. Please check your GEMINI_API_KEY in Vercel Project Settings > Environment Variables (ensure no extra spaces or quotes), verify that the key has no restrictive IP/domain restrictions in Google AI Studio, and Redeploy your project.';
+    } else if (isRateLimit) {
+      statusCode = 429;
+      userFriendlyError =
+        'Gemini API quota exceeded or rate limit reached. Please wait a moment and try again.';
+    }
 
     return NextResponse.json(
-      {
-        error: isRateLimit
-          ? 'Gemini API quota exceeded or rate limit reached. Please wait a moment and try again.'
-          : errMsg,
-      },
-      { status: isRateLimit ? 429 : 500 }
+      { error: userFriendlyError },
+      { status: statusCode }
     );
   }
 }
