@@ -20,8 +20,23 @@ const jetbrainsMono = JetBrains_Mono({
   display: 'swap',
 });
 
+// Determine reliable base URL across local dev, preview deployments, and custom production domains
+const getBaseUrl = () => {
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    const url = process.env.NEXT_PUBLIC_SITE_URL.trim();
+    return url.startsWith('http') ? url : `https://${url}`;
+  }
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  return 'https://makeapost.app';
+};
+
 export const metadata = {
-  metadataBase: new URL('https://makeapost.app'),
+  metadataBase: new URL(getBaseUrl()),
   title: 'MakeAPost — Turn Screenshots into Viral Social Posts',
   description:
     'Turn raw screenshots into viral social posts in seconds. Edit your image & generate tailored X, LinkedIn, and Reddit posts in one screen.',
@@ -56,8 +71,16 @@ export const metadata = {
     title: 'MakeAPost — Turn Screenshots into Viral Social Posts',
     description:
       'Turn raw screenshots into viral social posts in seconds. Edit your image & generate tailored X, LinkedIn, and Reddit posts in one screen.',
-    url: 'https://makeapost.app',
+    url: '/',
     siteName: 'MakeAPost',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'MakeAPost — Turn raw screenshots into viral social posts in seconds',
+      },
+    ],
     locale: 'en_US',
     type: 'website',
   },
@@ -66,6 +89,7 @@ export const metadata = {
     title: 'MakeAPost — Turn Screenshots into Viral Social Posts',
     description:
       'Turn raw screenshots into viral social posts in seconds. Edit your image & generate tailored X, LinkedIn, and Reddit posts in one screen.',
+    images: ['/og-image.png'],
     creator: '@makeapost',
   },
 };

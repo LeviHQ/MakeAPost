@@ -75,15 +75,31 @@ icons: {
 
 ## 3. Dynamic OpenGraph & Twitter/X Preview Card
 
-### Route: `src/app/opengraph-image.js`
-- Built using `next/og` `ImageResponse` with dimensions `1200x630`.
-- Renders:
-  - Neobrutalist dot-grid background (`#F8FAFC`).
-  - Tactile brand card with `4px 4px 0px #09090B` shadow and `3px solid #09090B` border.
-  - Official MakeAPost emblem in `#FFD93D` with lightning arrow.
-  - Bold headline: `INCREASE REACH OF YOUR SCREENSHOTS`.
-  - Feature badges: `🎨 Standalone Image Editor`, `✨ AI Social Post Generator`, `⚡ Free Unlimited`.
-- Configured with `metadataBase: new URL('https://makeapost.app')` and `twitter: { card: 'summary_large_image' }`.
+### Dual-Layer OG Architecture
+To guarantee 100% reliable preview cards across all social platforms (X/Twitter, LinkedIn, WhatsApp, Telegram, Discord, Slack, and opengraph.xyz/metatags.io debuggers):
+1. **Dynamic `metadataBase` Resolution (`src/app/layout.js`):**
+   ```js
+   const getBaseUrl = () => {
+     if (process.env.NEXT_PUBLIC_SITE_URL) {
+       const url = process.env.NEXT_PUBLIC_SITE_URL.trim();
+       return url.startsWith('http') ? url : `https://${url}`;
+     }
+     if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+       return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+     }
+     if (process.env.VERCEL_URL) {
+       return `https://${process.env.VERCEL_URL}`;
+     }
+     return 'https://makeapost.app';
+   };
+   ```
+   - Automatically adapts when deployed on Vercel preview URLs (`*.vercel.app`), avoiding hardcoded non-existent domains that cause DNS NXDOMAIN errors during social crawler scraping.
+2. **Static Fallback Asset (`public/og-image.png`):**
+   - High-resolution 1200x630 pre-rendered PNG served directly from `/og-image.png` with 0ms serverless cold-start latency.
+3. **App Router Route Handlers (`src/app/opengraph-image.js` & `src/app/twitter-image.js`):**
+   - Native App Router conventions dynamically serving generated images with `ImageResponse`.
+   - Feature pills rendered with clean vector text (removing emojis to prevent missing glyphs in Satori).
+   - Configured with `twitter: { card: 'summary_large_image', images: ['/og-image.png'] }`.
 
 ---
 

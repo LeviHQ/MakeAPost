@@ -147,7 +147,7 @@ export default async function Image() {
                 color: '#09090B',
               }}
             >
-              🎨 70% Canvas Editor
+              70% Visual Canvas Editor
             </div>
             <div
               style={{
@@ -161,7 +161,7 @@ export default async function Image() {
                 color: '#09090B',
               }}
             >
-              ✨ Multimodal AI
+              Multimodal Gemini AI
             </div>
             <div
               style={{
@@ -175,7 +175,7 @@ export default async function Image() {
                 color: '#09090B',
               }}
             >
-              🔒 100% Privacy-First
+              100% Privacy-First
             </div>
           </div>
         </div>
