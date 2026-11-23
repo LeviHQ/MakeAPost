@@ -6,12 +6,17 @@ export async function GET(request) {
   const code = requestUrl.searchParams.get('code');
   const next = requestUrl.searchParams.get('next') || '/editor';
 
+  // Determine actual forwarded origin on Vercel
+  const forwardedHost = request.headers.get('x-forwarded-host');
+  const forwardedProto = request.headers.get('x-forwarded-proto') || 'https';
+  const origin = forwardedHost ? `${forwardedProto}://${forwardedHost}` : requestUrl.origin;
+
   if (code) {
     try {
       const supabase = await createClient();
       const { error } = await supabase.auth.exchangeCodeForSession(code);
       if (!error) {
-        return NextResponse.redirect(new URL(next, requestUrl.origin));
+        return NextResponse.redirect(new URL(next, origin));
       }
       console.error('Supabase exchangeCodeForSession error:', error);
     } catch (err) {
@@ -19,5 +24,5 @@ export async function GET(request) {
     }
   }
 
-  return NextResponse.redirect(new URL('/editor?auth_error=true', requestUrl.origin));
+  return NextResponse.redirect(new URL('/editor?auth_error=true', origin));
 }

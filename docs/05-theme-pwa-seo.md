@@ -50,11 +50,10 @@ MakeAPost uses a high-contrast Neobrutalist theme toggle supporting light mode (
 ## 2. All-Platform Favicon & Apple Touch Icons
 
 ### Asset Matrix
-- `src/app/icon.svg`: Vector icon matching the official MakeAPost Neobrutalist logo. Automatically resolved by Next.js App Router for modern SVG-capable browsers.
-- `src/app/apple-icon.png`: 180x180 Apple Touch Icon registered at the route level.
-- `public/icons/apple-touch-icon.png`: 180x180 PNG for Safari iOS bookmarks and home screen.
-- `public/icons/icon-192.png`: 192x192 PNG for Android Chrome PWA install banners.
-- `public/icons/icon-512.png`: 512x512 PNG for high-density Android launcher icons and splash screens.
+- `public/icon.svg`: Vector icon matching the official MakeAPost Neobrutalist logo (yellow box `#FFD93D`, black border `2.5px`, offset shadow `#09090B`, 4 viewfinder crop corners & center AI sparkle).
+- `public/icons/apple-touch-icon.png`: 180x180 PNG rendered directly from the official logo vector for Safari iOS bookmarks and home screen.
+- `public/icons/icon-192.png`: 192x192 PNG rendered directly from the official logo vector for Android Chrome PWA install banners.
+- `public/icons/icon-512.png`: 512x512 PNG rendered directly from the official logo vector for high-density Android launcher icons and splash screens.
 
 ### Metadata Linking (`src/app/layout.js`)
 Configured via Next.js metadata API:

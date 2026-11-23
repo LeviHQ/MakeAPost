@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Logo from '@/components/Logo';
+import Footer from '@/components/Footer';
 import LandingNavbar from '@/components/LandingNavbar';
 import { XIcon } from '@/components/SocialIcons';
 import {
@@ -365,25 +366,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 6. Minimal Footer */}
-      <footer className={styles.footer}>
-        <div className={styles.footerInner}>
-          <Logo size={32} />
-
-          <div className={styles.footerText}>
-            MakeAPost • Zero History Stored • 100% Privacy-First
-          </div>
-
-          <Link
-            href="/editor"
-            className="btn-brutal btn-secondary"
-            style={{ padding: '6px 16px', fontSize: '0.85rem' }}
-          >
-            <span>Open Studio</span>
-            <ArrowRight size={14} />
-          </Link>
-        </div>
-      </footer>
+      {/* 6. Global Multi-Column Neobrutalist Footer */}
+      <Footer />
     </div>
   );
 }

@@ -87,8 +87,15 @@ The 30% control sidebar features two distinct UI states:
 │   │   ├── page.module.css         # Landing page styles
 │   │   ├── opengraph-image.js      # Dynamic 1200x630 Neobrutalist OpenGraph & Twitter/X card (next/og)
 │   │   ├── manifest.js             # Web App Manifest for PWA installation
-│   │   ├── icon.svg                # Vector SVG App Icon
-│   │   ├── apple-icon.png          # Apple Touch Icon
+│   │   ├── legal.module.css        # Shared Neobrutalist typography and layout for legal pages
+│   │   ├── privacy/
+│   │   │   └── page.js             # Privacy Policy (/privacy) with zero-storage & Gemini disclosures
+│   │   ├── terms/
+│   │   │   └── page.js             # Terms of Service (/terms) with 100% creator IP ownership
+│   │   ├── refund/
+│   │   │   └── page.js             # Refund & Cancellation Policy (/refund)
+│   │   ├── contact/
+│   │   │   └── page.js             # Contact & Data Deletion (/contact) with OAuth revocation guides
 │   │   ├── editor/
 │   │   │   ├── page.js             # 30/70 Studio Workspace (/editor) with NavbarAuth & actions
 │   │   │   └── editor.module.css   # 30/70 workspace layout styles
@@ -103,6 +110,8 @@ The 30% control sidebar features two distinct UI states:
 │   │           └── route.js        # Serverless Gemini Vision API + Supabase auth verification
 │   ├── components/
 │   │   ├── Logo.js                 # Reusable MakeAPost SVG Logo + Brand Wordmark
+│   │   ├── Footer.js               # Multi-column Neobrutalist footer with compliance & legal links
+│   │   ├── Footer.module.css       # Neobrutalist footer styling
 │   │   ├── LandingNavbar.js        # Responsive Neobrutalist landing navbar with mobile hamburger menu
 │   │   ├── NavbarAuth.js           # Reusable Google OAuth button & settings link
 │   │   ├── UserThemeSync.js        # Global root-level Supabase PostgreSQL cross-device theme synchronizer
@@ -130,7 +139,8 @@ The 30% control sidebar features two distinct UI states:
 │   ├── 03-ai-generator.md
 │   ├── 04-auth-credits.md
 │   ├── 05-theme-pwa-seo.md
-│   └── 06-design-icons-and-dark-contrast.md
+│   ├── 06-design-icons-and-dark-contrast.md
+│   └── 07-legal-compliance.md
 └── PROJECT_SPEC.md                 # Master spec (must be updated on every change)
 ```
 
@@ -140,6 +150,7 @@ The 30% control sidebar features two distinct UI states:
 3. **Self-Documentation Rule:** Every time a feature, page, or component is created or modified:
    - Create or update its corresponding `.md` file inside `/docs/` explaining the component structure, props/functions, CSS classes, and logic.
    - Update the Current Build Status section below in `PROJECT_SPEC.md`.
+4. **Legal Sync Rule:** Whenever a new third-party integration, OAuth provider, AI model, or payment flow is added or modified, automatically update the relevant legal page (`/privacy`, `/terms`, or `/refund`) to keep compliance accurate.
 
 ---
 
@@ -157,3 +168,5 @@ The 30% control sidebar features two distinct UI states:
 [x] Design System Polish & Dark Contrast Overhaul: Universal Lucide & Brand Vector Icons, High-Contrast Neobrutalist Dark Tokens (`--border-color: #E4E4E7`), and Text Isolation (SocialIcons.js, ThemeToggle.js, globals.css, docs/06-design-icons-and-dark-contrast.md)
 
 [x] Phase 5: Supabase Google Auth & `/settings` Synced Preferences (NavbarAuth.js, schema.sql, settings/page.js, /api/generate auth gate, docs/04-auth-credits.md; trial/credit caps completely decoupled for future billing release)
+
+[x] Phase 6: Complete Legal Pages & Footer System (src/components/Footer.js, legal.module.css, /privacy, /terms, /refund, /contact, docs/07-legal-compliance.md)

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Logo from '@/components/Logo';
+import Footer from '@/components/Footer';
 import { createClient } from '@/lib/supabase/client';
 import {
   User,
@@ -318,6 +319,9 @@ export default function SettingsPage() {
           </div>
         </section>
       </main>
+
+      {/* Global Footer */}
+      <Footer />
 
       {/* Floating Feedback Toast */}
       {toastMessage && (
