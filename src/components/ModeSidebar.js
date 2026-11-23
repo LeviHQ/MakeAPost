@@ -2,6 +2,17 @@
 
 import { GRADIENT_PRESETS, SOLID_PRESETS } from './CanvasEditor';
 import AiStudio from './AiStudio';
+import {
+  Palette,
+  Sparkles,
+  MousePointer,
+  Square,
+  ArrowUpRight,
+  EyeOff,
+  Type,
+  Trash2,
+  ArrowRight,
+} from 'lucide-react';
 
 export default function ModeSidebar({
   activeMode,
@@ -89,10 +100,15 @@ export default function ModeSidebar({
               color: activeMode === 'editor' ? '#09090B' : 'var(--ink)',
               boxShadow: activeMode === 'editor' ? '2px 2px 0px var(--shadow-color)' : 'none',
               border: activeMode === 'editor' ? '1.5px solid var(--border-color)' : '1.5px solid transparent',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
             }}
             onClick={() => onModeChange('editor')}
           >
-            🎨 1. Editor
+            <Palette size={14} />
+            <span>1. Editor</span>
           </button>
 
           <button
@@ -105,10 +121,15 @@ export default function ModeSidebar({
               color: activeMode === 'ai' ? '#09090B' : 'var(--ink)',
               boxShadow: activeMode === 'ai' ? '2px 2px 0px var(--shadow-color)' : 'none',
               border: activeMode === 'ai' ? '1.5px solid var(--border-color)' : '1.5px solid transparent',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
             }}
             onClick={() => onModeChange('ai')}
           >
-            ✨ 2. AI Mode
+            <Sparkles size={14} />
+            <span>2. AI Mode</span>
           </button>
         </div>
       </div>
@@ -145,7 +166,7 @@ export default function ModeSidebar({
               onClick={() => onModeChange('editor')}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '1.6rem' }}>🎨</span>
+                <Palette size={26} style={{ color: 'var(--ink)' }} />
                 <span className="badge-brutal badge-yellow" style={{ fontSize: '0.7rem' }}>
                   100% Free
                 </span>
@@ -159,9 +180,10 @@ export default function ModeSidebar({
               <button
                 type="button"
                 className="btn-brutal btn-primary"
-                style={{ marginTop: '8px', padding: '8px 14px', fontSize: '0.85rem' }}
+                style={{ marginTop: '8px', padding: '8px 14px', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
               >
-                Launch Image Editor →
+                <span>Launch Image Editor</span>
+                <ArrowRight size={14} />
               </button>
             </div>
 
@@ -179,7 +201,7 @@ export default function ModeSidebar({
               onClick={() => onModeChange('ai')}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '1.6rem' }}>✨</span>
+                <Sparkles size={26} style={{ color: 'var(--ink)' }} />
                 <span className="badge-brutal badge-blue" style={{ fontSize: '0.7rem' }}>
                   Multimodal AI
                 </span>
@@ -193,9 +215,10 @@ export default function ModeSidebar({
               <button
                 type="button"
                 className="btn-brutal btn-secondary"
-                style={{ marginTop: '8px', padding: '8px 14px', fontSize: '0.85rem' }}
+                style={{ marginTop: '8px', padding: '8px 14px', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
               >
-                Open AI Studio →
+                <span>Open AI Studio</span>
+                <ArrowRight size={14} />
               </button>
             </div>
           </div>
@@ -343,10 +366,14 @@ export default function ModeSidebar({
                       fontSize: '0.72rem',
                       fontWeight: 700,
                       cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
                     }}
                     onClick={onClearAnnotations}
                   >
-                    Clear All ✕
+                    <Trash2 size={12} />
+                    <span>Clear All</span>
                   </button>
                 )}
               </div>
@@ -354,11 +381,11 @@ export default function ModeSidebar({
               {/* Tool Buttons */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '4px' }}>
                 {[
-                  { id: 'select', label: 'Pointer', icon: '↖' },
-                  { id: 'box', label: 'Box', icon: '▢' },
-                  { id: 'arrow', label: 'Arrow', icon: '↗' },
-                  { id: 'blur', label: 'Blur', icon: '🔒' },
-                  { id: 'text', label: 'Text', icon: 'T' },
+                  { id: 'select', label: 'Pointer', renderIcon: () => <MousePointer size={15} /> },
+                  { id: 'box', label: 'Box', renderIcon: () => <Square size={15} /> },
+                  { id: 'arrow', label: 'Arrow', renderIcon: () => <ArrowUpRight size={16} /> },
+                  { id: 'blur', label: 'Blur', renderIcon: () => <EyeOff size={15} /> },
+                  { id: 'text', label: 'Text', renderIcon: () => <Type size={15} /> },
                 ].map((tool) => (
                   <button
                     key={tool.id}
@@ -367,19 +394,22 @@ export default function ModeSidebar({
                     title={tool.label}
                     style={{
                       minWidth: 0,
-                      padding: '6px 2px',
-                      fontSize: '0.75rem',
+                      padding: '7px 2px',
+                      fontSize: '0.72rem',
                       backgroundColor: activeTool === tool.id ? 'var(--accent-yellow)' : 'var(--card-bg-subtle)',
                       color: activeTool === tool.id ? '#09090B' : 'var(--ink)',
                       boxShadow: activeTool === tool.id ? '2px 2px 0px var(--shadow-color)' : 'none',
                       border: '1.5px solid var(--border-color)',
                       flexDirection: 'column',
-                      gap: '2px',
+                      gap: '3px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                     }}
                     onClick={() => onToolChange(tool.id)}
                   >
-                    <span style={{ fontSize: '0.95rem' }}>{tool.icon}</span>
-                    <span style={{ fontSize: '0.65rem' }}>{tool.label}</span>
+                    <span>{tool.renderIcon()}</span>
+                    <span style={{ fontSize: '0.65rem', fontWeight: 700 }}>{tool.label}</span>
                   </button>
                 ))}
               </div>
@@ -414,15 +444,20 @@ export default function ModeSidebar({
                   type="button"
                   className="btn-brutal"
                   style={{
-                    backgroundColor: '#FEE2E2',
-                    color: '#991B1B',
+                    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                    color: '#EF4444',
                     padding: '6px 12px',
                     fontSize: '0.78rem',
                     border: '1.5px solid #EF4444',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
                   }}
                   onClick={onDeleteSelectedAnnotation}
                 >
-                  Delete Selected Annotation 🗑️
+                  <Trash2 size={13} />
+                  <span>Delete Selected Annotation</span>
                 </button>
               )}
             </div>
@@ -456,9 +491,9 @@ export default function ModeSidebar({
                         style={{
                           height: '32px',
                           borderRadius: '6px',
-                          border: isSelected ? '2.5px solid var(--ink)' : '1.5px solid #CBD5E1',
+                          border: isSelected ? '2.5px solid var(--accent-yellow)' : '1.5px solid var(--border-color)',
                           background: bgCss,
-                          boxShadow: isSelected ? '2px 2px 0px var(--ink)' : 'none',
+                          boxShadow: isSelected ? '2px 2px 0px var(--shadow-color)' : 'none',
                           transform: isSelected ? 'scale(1.05)' : 'none',
                           cursor: 'pointer',
                         }}
@@ -485,9 +520,9 @@ export default function ModeSidebar({
                         style={{
                           height: '28px',
                           borderRadius: '6px',
-                          border: isSelected ? '2.5px solid var(--ink)' : '1.5px solid #CBD5E1',
+                          border: isSelected ? '2.5px solid var(--accent-yellow)' : '1.5px solid var(--border-color)',
                           backgroundColor: solid.hex,
-                          boxShadow: isSelected ? '2px 2px 0px var(--ink)' : 'none',
+                          boxShadow: isSelected ? '2px 2px 0px var(--shadow-color)' : 'none',
                           transform: isSelected ? 'scale(1.05)' : 'none',
                           cursor: 'pointer',
                         }}
@@ -502,12 +537,12 @@ export default function ModeSidebar({
                     style={{
                       height: '28px',
                       borderRadius: '6px',
-                      border: background === 'transparent' ? '2.5px solid var(--ink)' : '1.5px solid #CBD5E1',
+                      border: background === 'transparent' ? '2.5px solid var(--accent-yellow)' : '1.5px solid var(--border-color)',
                       backgroundImage:
                         'linear-gradient(45deg, #CBD5E1 25%, transparent 25%), linear-gradient(-45deg, #CBD5E1 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #CBD5E1 75%), linear-gradient(-45deg, transparent 75%, #CBD5E1 75%)',
                       backgroundSize: '10px 10px',
                       backgroundPosition: '0 0, 0 5px, 5px -5px, -5px 0px',
-                      boxShadow: background === 'transparent' ? '2px 2px 0px var(--ink)' : 'none',
+                      boxShadow: background === 'transparent' ? '2px 2px 0px var(--shadow-color)' : 'none',
                       cursor: 'pointer',
                     }}
                   />
@@ -601,7 +636,14 @@ export default function ModeSidebar({
                     }}
                     onClick={() => onAmbientGlowChange(!ambientGlow)}
                   >
-                    {ambientGlow ? 'ON ✨' : 'OFF'}
+                    {ambientGlow ? (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <span>ON</span>
+                        <Sparkles size={12} />
+                      </span>
+                    ) : (
+                      'OFF'
+                    )}
                   </button>
                 </div>
               </div>

@@ -96,7 +96,8 @@ The 30% control sidebar features two distinct UI states:
 │   │           └── route.js        # Serverless Gemini Vision API + Supabase credit verification
 │   ├── components/
 │   │   ├── Logo.js                 # Reusable MakeAPost SVG Logo + Brand Wordmark
-│   │   ├── ThemeToggle.js          # Tactile Neobrutalist Dark / Light mode toggle
+│   │   ├── SocialIcons.js          # Vector brand SVGs for X, LinkedIn, and Reddit
+│   │   ├── ThemeToggle.js          # Tactile Neobrutalist Dark / Light mode toggle (Lucide Sun/Moon)
 │   │   ├── PwaRegister.js          # Service worker registration component
 │   │   ├── ModeSidebar.js          # 30% Dynamic Control Sidebar (Aspect ratio, frame, blur, background, pro settings)
 │   │   ├── CanvasEditor.js         # 70% Main Visual Canvas & Dropzone (HTML5 Canvas, Ctrl+V, annotations, blur, PNG export)
@@ -112,7 +113,8 @@ The 30% control sidebar features two distinct UI states:
 │   ├── 02-canvas-editor.md
 │   ├── 03-ai-generator.md
 │   ├── 04-auth-credits.md
-│   └── 05-theme-pwa-seo.md
+│   ├── 05-theme-pwa-seo.md
+│   └── 06-design-icons-and-dark-contrast.md
 └── PROJECT_SPEC.md                 # Master spec (must be updated on every change)
 ```
 
@@ -135,5 +137,7 @@ The 30% control sidebar features two distinct UI states:
 [x] Phase 3: Dual-Stage Image Compression & Gemini Multimodal Single-Shot API (imageCompress.js, sharp backend compression gate, src/app/api/generate/route.js, docs/03-ai-generator.md)
 
 [x] Phase 4: Token-Optimized AI Social Studio Mode in 30% Sidebar & Live Post Previews (AiStudio.js, Tone Chips, Editable Post Previews, X Character Limit Tracker & Direct X Tweet Intent, docs/03-ai-generator.md)
+
+[x] Design System Polish & Dark Contrast Overhaul: Universal Lucide & Brand Vector Icons, High-Contrast Neobrutalist Dark Tokens (`--border-color: #E4E4E7`), and Text Isolation (SocialIcons.js, ThemeToggle.js, globals.css, docs/06-design-icons-and-dark-contrast.md)
 
 [ ] Phase 5: Supabase Auth & 3-Day Trial / Daily Credit Tracker (docs/04-auth-credits.md)

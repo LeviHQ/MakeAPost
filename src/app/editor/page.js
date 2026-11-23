@@ -5,6 +5,7 @@ import Logo from '@/components/Logo';
 import ThemeToggle from '@/components/ThemeToggle';
 import CanvasEditor from '@/components/CanvasEditor';
 import ModeSidebar from '@/components/ModeSidebar';
+import { RotateCcw, Copy, Download, Image as ImageIcon, Sliders, Zap, ArrowRight } from 'lucide-react';
 import styles from './editor.module.css';
 
 export default function EditorPage() {
@@ -93,7 +94,7 @@ export default function EditorPage() {
             await navigator.clipboard.write([
               new ClipboardItem({ 'image/png': blob }),
             ]);
-            showToast('Copied 2x PNG to Clipboard! 📋');
+            showToast('Copied 2x PNG to Clipboard!');
           } catch {
             showToast('Clipboard write permission denied. Use Download instead.');
           }
@@ -125,7 +126,7 @@ export default function EditorPage() {
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-        showToast('Downloaded 2x PNG successfully! 📥');
+        showToast('Downloaded 2x PNG successfully!');
       } catch (err) {
         console.error(err);
         showToast('Download failed.');
@@ -168,8 +169,8 @@ export default function EditorPage() {
               onClick={handleReset}
               title="Clear canvas and import a new image"
             >
-              <span className={styles.btnTextDesktop}>New Image ↺</span>
-              <span className={styles.btnTextMobile}>↺</span>
+              <RotateCcw size={14} />
+              <span className={styles.btnTextDesktop}>New Image</span>
             </button>
           )}
 
@@ -181,8 +182,8 @@ export default function EditorPage() {
             style={{ opacity: image ? 1 : 0.6 }}
             title="Copy 2x PNG to clipboard"
           >
-            <span className={styles.btnTextDesktop}>Copy PNG 📋</span>
-            <span className={styles.btnTextMobile}>📋</span>
+            <Copy size={14} />
+            <span className={styles.btnTextDesktop}>Copy PNG</span>
           </button>
 
           <button
@@ -196,8 +197,9 @@ export default function EditorPage() {
             }}
             title="Download 2x PNG file"
           >
-            <span className={styles.btnTextDesktop}>Download 2x PNG 📥</span>
-            <span className={styles.btnTextMobile}>📥 2x</span>
+            <Download size={14} />
+            <span className={styles.btnTextDesktop}>Download 2x PNG</span>
+            <span className={styles.btnTextMobile}>2x</span>
           </button>
         </div>
       </header>
@@ -209,14 +211,16 @@ export default function EditorPage() {
           className={`${styles.mobileTabBtn} ${mobileTab === 'canvas' ? styles.mobileTabActive : ''}`}
           onClick={() => setMobileTab('canvas')}
         >
-          🖼️ Canvas Preview
+          <ImageIcon size={14} />
+          <span>Canvas</span>
         </button>
         <button
           type="button"
           className={`${styles.mobileTabBtn} ${mobileTab === 'controls' ? styles.mobileTabActive : ''}`}
           onClick={() => setMobileTab('controls')}
         >
-          ⚙️ Controls {annotations.length > 0 ? `(${annotations.length})` : ''}
+          <Sliders size={14} />
+          <span>Controls {annotations.length > 0 ? `(${annotations.length})` : ''}</span>
         </button>
       </div>
 
@@ -297,7 +301,9 @@ export default function EditorPage() {
               className={`btn-brutal btn-primary ${styles.mobileFloatingPill}`}
               onClick={() => setMobileTab('controls')}
             >
-              ⚙️ Customize Image &amp; Annotate →
+              <Sliders size={14} />
+              <span>Customize Image &amp; Annotate</span>
+              <ArrowRight size={14} />
             </button>
           )}
         </div>
@@ -306,7 +312,7 @@ export default function EditorPage() {
       {/* Floating Action Toast */}
       {toastMessage && (
         <div className={styles.toast}>
-          <span>⚡</span>
+          <Zap size={15} style={{ color: 'var(--accent-yellow)', flexShrink: 0 }} />
           <span>{toastMessage}</span>
         </div>
       )}

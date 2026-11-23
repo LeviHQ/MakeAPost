@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { Camera, FolderOpen, Code2, BarChart3 } from 'lucide-react';
 
 // Sample 1: Code Editor Snippet (Self-contained SVG data URL)
 const SAMPLE_CODE_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="460" viewBox="0 0 800 460">
@@ -574,7 +575,7 @@ export default function CanvasEditor({
 
     // Step I: Automatic Default Watermark: "made with makeapost.app"
     ctx.save();
-    const markText = '⚡ made with makeapost.app';
+    const markText = 'made with makeapost.app';
     ctx.font = 'bold 12px -apple-system, BlinkMacSystemFont, "Segoe UI", monospace';
     const markMetrics = ctx.measureText(markText);
     const pillW = markMetrics.width + 20;
@@ -843,11 +844,10 @@ export default function CanvasEditor({
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '1.8rem',
               marginBottom: '14px',
             }}
           >
-            📸
+            <Camera size={26} style={{ color: '#09090B' }} />
           </div>
 
           <h2
@@ -878,10 +878,11 @@ export default function CanvasEditor({
           <button
             type="button"
             className="btn-brutal btn-primary"
-            style={{ padding: '10px 24px', fontSize: '0.95rem', marginBottom: '24px' }}
+            style={{ padding: '10px 24px', fontSize: '0.95rem', marginBottom: '24px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
             onClick={() => fileInputRef.current?.click()}
           >
-            Browse Image 📁
+            <FolderOpen size={16} />
+            <span>Browse Image</span>
           </button>
 
           {/* Instant Sample Demos Strip */}
@@ -920,11 +921,16 @@ export default function CanvasEditor({
                   fontSize: '0.8rem',
                   backgroundColor: '#0F172A',
                   color: '#FFFFFF',
-                  borderColor: '#09090B',
+                  borderColor: 'var(--border-color)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
                 }}
                 onClick={() => loadFromDataUrl(SAMPLE_CODE_SVG)}
               >
-                💻 Code Snippet Sample
+                <Code2 size={15} />
+                <span>Code Snippet Sample</span>
               </button>
 
               <button
@@ -935,10 +941,15 @@ export default function CanvasEditor({
                   fontSize: '0.8rem',
                   backgroundColor: 'var(--card-bg-subtle)',
                   color: 'var(--ink)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
                 }}
                 onClick={() => loadFromDataUrl(SAMPLE_ANALYTICS_SVG)}
               >
-                📊 SaaS Analytics Sample
+                <BarChart3 size={15} />
+                <span>SaaS Analytics Sample</span>
               </button>
             </div>
           </div>

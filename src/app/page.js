@@ -1,6 +1,19 @@
 import Link from 'next/link';
 import Logo from '@/components/Logo';
 import ThemeToggle from '@/components/ThemeToggle';
+import { XIcon } from '@/components/SocialIcons';
+import {
+  Zap,
+  Sparkles,
+  ArrowRight,
+  Palette,
+  Lock,
+  Lightbulb,
+  UploadCloud,
+  Copy,
+  Download,
+  ShieldCheck,
+} from 'lucide-react';
 import styles from './page.module.css';
 
 export default function LandingPage() {
@@ -13,7 +26,8 @@ export default function LandingPage() {
 
           <div className={styles.navRight}>
             <div className={`${styles.navBadge} badge-brutal badge-blue`}>
-              ⚡ 30% Sidebar + 70% Canvas
+              <Zap size={13} />
+              <span>30% Sidebar + 70% Canvas</span>
             </div>
             <ThemeToggle />
             <Link
@@ -21,7 +35,8 @@ export default function LandingPage() {
               className="btn-brutal btn-primary"
               style={{ padding: '8px 18px', fontSize: '0.9rem' }}
             >
-              Go to Editor →
+              <span>Go to Editor</span>
+              <ArrowRight size={14} />
             </Link>
           </div>
         </div>
@@ -30,7 +45,8 @@ export default function LandingPage() {
       {/* 2. Hero Section */}
       <section className={styles.heroSection}>
         <div className={`${styles.heroTag} badge-brutal badge-yellow`}>
-          ✨ 30/70 SPLIT WORKSPACE: CANVAS + MULTIMODAL AI
+          <Sparkles size={13} />
+          <span>30/70 SPLIT WORKSPACE: CANVAS + MULTIMODAL AI</span>
         </div>
 
         <h1 className={styles.headline}>
@@ -49,7 +65,8 @@ export default function LandingPage() {
             href="/editor"
             className={`btn-brutal btn-primary ${styles.heroBtn}`}
           >
-            Go to Editor →
+            <span>Go to Editor</span>
+            <ArrowRight size={16} />
           </Link>
 
           <div className={styles.microCopy}>
@@ -76,7 +93,8 @@ export default function LandingPage() {
               make-a-post-studio-preview.app — [30% Dynamic Sidebar / 70% Visual Canvas]
             </div>
             <div className="badge-brutal badge-green" style={{ fontSize: '0.68rem', padding: '2px 8px' }}>
-              ● LIVE 30/70 SPLIT
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'currentColor' }} />
+              <span>LIVE 30/70 SPLIT</span>
             </div>
           </div>
 
@@ -96,10 +114,12 @@ export default function LandingPage() {
               {/* Sticky Mode Switcher Pill */}
               <div className={styles.modeSwitcherPill}>
                 <div className={`${styles.modeTab} ${styles.modeTabActive}`}>
-                  🎨 Editor
+                  <Palette size={13} />
+                  <span>Editor</span>
                 </div>
                 <div className={styles.modeTab}>
-                  ✨ AI Mode
+                  <Sparkles size={13} />
+                  <span>AI Mode</span>
                 </div>
               </div>
 
@@ -143,7 +163,10 @@ export default function LandingPage() {
                   <span>Security &amp; Privacy</span>
                 </div>
                 <div className={styles.toggleBtn}>
-                  <span>🔒 Blur Credentials</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Lock size={13} />
+                    <span>Blur Credentials</span>
+                  </span>
                   <span style={{ fontWeight: 800 }}>ACTIVE</span>
                 </div>
               </div>
@@ -159,9 +182,15 @@ export default function LandingPage() {
                   fontFamily: 'var(--font-mono)',
                   color: 'var(--muted)',
                   lineHeight: 1.4,
+                  display: 'flex',
+                  gap: '8px',
+                  alignItems: 'flex-start',
                 }}
               >
-                💡 <strong>Fresh State:</strong> Shows 2 large selection cards (Image Editor vs AI Mode). Active state provides 1-click pill toggling anytime.
+                <Lightbulb size={16} style={{ flexShrink: 0, marginTop: '2px', color: 'var(--accent-yellow)' }} />
+                <div>
+                  <strong>Fresh State:</strong> Shows 2 large selection cards (Image Editor vs AI Mode). Active state provides 1-click pill toggling anytime.
+                </div>
               </div>
             </div>
 
@@ -199,8 +228,19 @@ export default function LandingPage() {
               {/* Canvas Frame */}
               <div className={styles.mainCanvasStage}>
                 <div className={styles.dropzoneOverlay}>
-                  <span className="badge-brutal" style={{ fontSize: '0.65rem', backgroundColor: 'var(--surface)', color: 'var(--ink)' }}>
-                    ✦ Drop / Paste Screenshot [Ctrl+V]
+                  <span
+                    className="badge-brutal"
+                    style={{
+                      fontSize: '0.65rem',
+                      backgroundColor: 'var(--surface)',
+                      color: 'var(--ink)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                    }}
+                  >
+                    <UploadCloud size={12} />
+                    <span>Drop / Paste Screenshot [Ctrl+V]</span>
                   </span>
                 </div>
 
@@ -237,13 +277,17 @@ export default function LandingPage() {
                 {/* Integrated AI Post Result Snippet Floater */}
                 <div className={styles.floatingAiSnippet}>
                   <div className={styles.aiSnippetHeader}>
-                    <span style={{ color: 'var(--ink)' }}>𝕏 X (Twitter) • Generated Thread Starter</span>
+                    <span style={{ color: 'var(--ink)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      <XIcon size={12} />
+                      <span>X (Twitter) • Generated Thread Starter</span>
+                    </span>
                     <span className="badge-brutal badge-yellow" style={{ fontSize: '0.65rem', padding: '1px 6px' }}>
-                      ⚡ 234 chars
+                      <Zap size={11} />
+                      <span>234 chars</span>
                     </span>
                   </div>
                   <div className={styles.aiSnippetBody}>
-                    Stop uploading plain, unstyled screenshots 🛑 We split the studio into a 70% canvas and 30% dynamic control sidebar. Edit, blur, and generate viral copy in one screen! 👇 #buildinpublic #saas
+                    Stop uploading plain, unstyled screenshots. We split the studio into a 70% canvas and 30% dynamic control sidebar. Edit, blur, and generate viral copy in one screen! #buildinpublic #saas
                   </div>
                 </div>
               </div>
@@ -261,14 +305,16 @@ export default function LandingPage() {
                     className="btn-brutal"
                     style={{ padding: '4px 12px', fontSize: '0.78rem' }}
                   >
-                    Copy Image 📋
+                    <span>Copy Image</span>
+                    <Copy size={13} />
                   </button>
                   <button
                     type="button"
                     className="btn-brutal btn-primary"
                     style={{ padding: '4px 14px', fontSize: '0.78rem' }}
                   >
-                    Export PNG 📥
+                    <span>Export PNG</span>
+                    <Download size={13} />
                   </button>
                 </div>
               </div>
@@ -324,7 +370,7 @@ export default function LandingPage() {
       <section className={styles.privacyBanner}>
         <div className={styles.privacyBox}>
           <div className={styles.privacyIcon}>
-            <span style={{ fontSize: '1.6rem' }}>🔒</span>
+            <ShieldCheck size={28} />
           </div>
           <div>
             <div className={styles.privacyTextTitle}>
@@ -353,7 +399,8 @@ export default function LandingPage() {
             className="btn-brutal btn-secondary"
             style={{ padding: '6px 16px', fontSize: '0.85rem' }}
           >
-            Open Studio →
+            <span>Open Studio</span>
+            <ArrowRight size={14} />
           </Link>
         </div>
       </footer>

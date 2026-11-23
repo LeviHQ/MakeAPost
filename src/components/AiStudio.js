@@ -2,12 +2,26 @@
 
 import { useState } from 'react';
 import { compressImageForAI } from '@/lib/imageCompress';
+import { XIcon, LinkedInIcon, RedditIcon } from '@/components/SocialIcons';
+import {
+  Sparkles,
+  AlertCircle,
+  Hammer,
+  Zap,
+  BookOpen,
+  Code2,
+  Copy,
+  Check,
+  ExternalLink,
+  Globe,
+  ArrowLeft,
+} from 'lucide-react';
 
 const TONE_OPTIONS = [
-  { id: 'Build in Public', label: '🛠️ Build in Public', desc: 'Raw, transparent metrics & learnings' },
-  { id: 'Viral Hook', label: '⚡ Viral Hook', desc: 'Punchy curiosity gaps and scroll-stoppers' },
-  { id: 'Storytelling', label: '📖 Storytelling', desc: 'Problem-solution narrative journey' },
-  { id: 'Tech Breakdown', label: '💻 Tech Breakdown', desc: 'Architecture, stack details & code review' },
+  { id: 'Build in Public', label: 'Build in Public', icon: Hammer, desc: 'Raw, transparent metrics & learnings' },
+  { id: 'Viral Hook', label: 'Viral Hook', icon: Zap, desc: 'Punchy curiosity gaps and scroll-stoppers' },
+  { id: 'Storytelling', label: 'Storytelling', icon: BookOpen, desc: 'Problem-solution narrative journey' },
+  { id: 'Tech Breakdown', label: 'Tech Breakdown', icon: Code2, desc: 'Architecture, stack details & code review' },
 ];
 
 export default function AiStudio({
@@ -90,8 +104,8 @@ export default function AiStudio({
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       {/* 1. Header Information */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ fontSize: '1.2rem' }}>✨</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Sparkles size={16} style={{ color: 'var(--accent-yellow)' }} />
           <span
             style={{
               fontFamily: 'var(--font-heading)',
@@ -123,7 +137,7 @@ export default function AiStudio({
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800, fontSize: '0.85rem' }}>
-            <span>⚠️</span>
+            <AlertCircle size={16} style={{ color: '#EF4444' }} />
             <span>No Screenshot Loaded</span>
           </div>
           <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.45 }}>
@@ -133,10 +147,11 @@ export default function AiStudio({
             <button
               type="button"
               className="btn-brutal"
-              style={{ padding: '6px 12px', fontSize: '0.78rem', alignSelf: 'flex-start', marginTop: '4px' }}
+              style={{ padding: '6px 12px', fontSize: '0.78rem', alignSelf: 'flex-start', marginTop: '4px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
               onClick={onSwitchToEditor}
             >
-              ← Go to Canvas
+              <ArrowLeft size={13} />
+              <span>Go to Canvas</span>
             </button>
           )}
         </div>
@@ -154,6 +169,7 @@ export default function AiStudio({
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
           {TONE_OPTIONS.map((t) => {
             const isSelected = tone === t.id;
+            const IconComponent = t.icon;
             return (
               <button
                 key={t.id}
@@ -168,10 +184,15 @@ export default function AiStudio({
                   border: '1.5px solid var(--border-color)',
                   whiteSpace: 'normal',
                   textAlign: 'center',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
                 }}
                 onClick={() => setTone(t.id)}
               >
-                {t.label}
+                <IconComponent size={14} style={{ flexShrink: 0 }} />
+                <span>{t.label}</span>
               </button>
             );
           })}
@@ -209,16 +230,20 @@ export default function AiStudio({
         className="btn-brutal btn-primary"
         style={{
           padding: '12px 18px',
-          fontSize: '0.95rem',
+          fontSize: '0.92rem',
           fontWeight: 800,
           opacity: isLoading || !image ? 0.65 : 1,
           cursor: isLoading || !image ? 'not-allowed' : 'pointer',
           boxShadow: '3px 3px 0px var(--shadow-color)',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px',
         }}
         onClick={handleGenerate}
       >
         {isLoading ? (
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+          <>
             <span
               style={{
                 display: 'inline-block',
@@ -230,10 +255,13 @@ export default function AiStudio({
                 animation: 'spin 0.8s linear infinite',
               }}
             />
-            Analyzing Screenshot &amp; Writing...
-          </span>
+            <span>Analyzing Screenshot &amp; Writing...</span>
+          </>
         ) : (
-          <span>✨ Generate Posts (X, LinkedIn, Reddit)</span>
+          <>
+            <Sparkles size={16} />
+            <span>Generate Posts (X, LinkedIn, Reddit)</span>
+          </>
         )}
       </button>
 
@@ -248,9 +276,15 @@ export default function AiStudio({
             color: '#EF4444',
             fontSize: '0.8rem',
             lineHeight: 1.4,
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '8px',
           }}
         >
-          <strong>Error:</strong> {errorMessage}
+          <AlertCircle size={16} style={{ flexShrink: 0, marginTop: '2px' }} />
+          <div>
+            <strong>Error:</strong> {errorMessage}
+          </div>
         </div>
       )}
 
@@ -271,9 +305,9 @@ export default function AiStudio({
             }}
           >
             {[
-              { id: 'x', label: '𝕏 X', meta: `${xCharCount}c` },
-              { id: 'linkedin', label: '💼 LinkedIn', meta: 'Post' },
-              { id: 'reddit', label: '👾 Reddit', meta: 'Thread' },
+              { id: 'x', label: 'X', renderIcon: () => <XIcon size={13} />, meta: `${xCharCount}c` },
+              { id: 'linkedin', label: 'LinkedIn', renderIcon: () => <LinkedInIcon size={13} />, meta: 'Post' },
+              { id: 'reddit', label: 'Reddit', renderIcon: () => <RedditIcon size={13} />, meta: 'Thread' },
             ].map((p) => {
               const isActive = activePlatform === p.id;
               return (
@@ -288,9 +322,14 @@ export default function AiStudio({
                     color: isActive ? '#09090B' : 'var(--ink)',
                     boxShadow: isActive ? '2px 2px 0px var(--shadow-color)' : 'none',
                     border: isActive ? '1.5px solid var(--border-color)' : '1.5px solid transparent',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '5px',
                   }}
                   onClick={() => setActivePlatform(p.id)}
                 >
+                  {p.renderIcon()}
                   <span>{p.label}</span>
                 </button>
               );
@@ -326,7 +365,13 @@ export default function AiStudio({
                     color: '#09090B',
                   }}
                 >
-                  {activePlatform === 'x' ? '𝕏' : activePlatform === 'linkedin' ? 'in' : 'r/'}
+                  {activePlatform === 'x' ? (
+                    <XIcon size={14} />
+                  ) : activePlatform === 'linkedin' ? (
+                    <LinkedInIcon size={14} />
+                  ) : (
+                    <RedditIcon size={16} />
+                  )}
                 </div>
                 <div>
                   <div style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--ink)' }}>
@@ -336,8 +381,17 @@ export default function AiStudio({
                       ? 'Founder & Builder'
                       : 'r/webdev • u/maker'}
                   </div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>
-                    {activePlatform === 'x' ? '@builder • Just now' : activePlatform === 'linkedin' ? '1st • 1h • 🌐' : 'Posted by developer'}
+                  <div style={{ fontSize: '0.7rem', color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    {activePlatform === 'x' ? (
+                      '@builder • Just now'
+                    ) : activePlatform === 'linkedin' ? (
+                      <>
+                        <span>1st • 1h •</span>
+                        <Globe size={11} />
+                      </>
+                    ) : (
+                      'Posted by developer'
+                    )}
                   </div>
                 </div>
               </div>
@@ -412,10 +466,20 @@ export default function AiStudio({
               <button
                 type="button"
                 className="btn-brutal btn-primary"
-                style={{ flex: 1, padding: '8px 12px', fontSize: '0.82rem' }}
+                style={{ flex: 1, padding: '8px 12px', fontSize: '0.82rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                 onClick={() => handleCopy(currentPostText)}
               >
-                {copied ? 'Copied to Clipboard! 📋' : 'Copy Post 📋'}
+                {copied ? (
+                  <>
+                    <Check size={14} />
+                    <span>Copied to Clipboard!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy size={14} />
+                    <span>Copy Post</span>
+                  </>
+                )}
               </button>
 
               {activePlatform === 'x' && (
@@ -430,10 +494,12 @@ export default function AiStudio({
                     textDecoration: 'none',
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '4px',
+                    gap: '6px',
                   }}
                 >
-                  Post on 𝕏 ↗
+                  <span>Post on</span>
+                  <XIcon size={12} />
+                  <ExternalLink size={12} />
                 </a>
               )}
             </div>
