@@ -6,6 +6,73 @@ import { createClient as createServerClient } from '@/lib/supabase/server';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+function extractAndParseJson(rawText) {
+  if (!rawText || typeof rawText !== 'string') return null;
+
+  const text = rawText.trim();
+
+  // 1. Direct standard parse
+  try {
+    return JSON.parse(text);
+  } catch {}
+
+  // 2. Strip markdown code fences (```json ... ``` or ``` ... ```)
+  const fenceRegex = /```(?:json)?\s*([\s\S]*?)\s*```/i;
+  const match = text.match(fenceRegex);
+  if (match && match[1]) {
+    try {
+      return JSON.parse(match[1].trim());
+    } catch {}
+  }
+
+  // 3. Extract outermost { ... }
+  const startIdx = text.indexOf('{');
+  const endIdx = text.lastIndexOf('}');
+  if (startIdx !== -1 && endIdx > startIdx) {
+    const jsonSub = text.slice(startIdx, endIdx + 1);
+    try {
+      return JSON.parse(jsonSub);
+    } catch {}
+  }
+
+  // 4. Auto-repair unclosed quotes and braces if response was truncated
+  if (startIdx !== -1) {
+    let partial = text.slice(startIdx);
+    const unescapedQuotes = (partial.match(/(?<!\\)"/g) || []).length;
+    if (unescapedQuotes % 2 !== 0) {
+      partial += '"';
+    }
+    if (!partial.endsWith('}')) {
+      partial += '}';
+    }
+    try {
+      return JSON.parse(partial);
+    } catch {}
+  }
+
+  // 5. Robust Regex extraction for individual keys
+  const xMatch = text.match(/"x_post"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+  const liMatch = text.match(/"linkedin_post"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+  const rdMatch = text.match(/"reddit_post"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+
+  if (xMatch || liMatch || rdMatch) {
+    const unescapeJson = (s) => {
+      try {
+        return JSON.parse(`"${s}"`);
+      } catch {
+        return (s || '').replace(/\\n/g, '\n').replace(/\\"/g, '"');
+      }
+    };
+    return {
+      x_post: xMatch ? unescapeJson(xMatch[1]) : '',
+      linkedin_post: liMatch ? unescapeJson(liMatch[1]) : '',
+      reddit_post: rdMatch ? unescapeJson(rdMatch[1]) : '',
+    };
+  }
+
+  return null;
+}
+
 export async function POST(req) {
   try {
     const body = await req.json();
@@ -157,13 +224,11 @@ Return strictly a valid JSON object matching this schema:
       required: ['x_post', 'linkedin_post', 'reddit_post'],
     };
 
-    const candidateModels = [
+    const candidateModels = Array.from(new Set([
       process.env.GEMINI_MODEL,
       'gemini-flash-lite-latest',
-      'gemini-3.5-flash-lite',
-      'gemini-3.1-flash-lite',
       'gemini-3.5-flash',
-    ].filter(Boolean);
+    ].filter(Boolean)));
 
     let result = null;
     let lastError = null;
@@ -177,7 +242,7 @@ Return strictly a valid JSON object matching this schema:
             responseMimeType: 'application/json',
             responseSchema,
             temperature: 0.7,
-            maxOutputTokens: 650,
+            maxOutputTokens: 2048,
           },
         });
 
@@ -214,12 +279,10 @@ Return strictly a valid JSON object matching this schema:
     }
 
     const responseText = result.response.text();
-    let posts;
+    const posts = extractAndParseJson(responseText);
 
-    try {
-      posts = JSON.parse(responseText);
-    } catch (parseErr) {
-      console.error('Failed to parse Gemini JSON output:', responseText);
+    if (!posts || (!posts.x_post && !posts.linkedin_post && !posts.reddit_post)) {
+      console.error('Failed to parse or extract Gemini JSON output:', responseText);
       return NextResponse.json(
         { error: 'AI generated an invalid format. Please try again.' },
         { status: 502 }

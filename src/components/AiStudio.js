@@ -6,7 +6,7 @@ import { compressImageForAI } from '@/lib/imageCompress';
 import { XIcon, LinkedInIcon, RedditIcon } from '@/components/SocialIcons';
 import { GoogleIcon } from '@/components/NavbarAuth';
 import { createClient } from '@/lib/supabase/client';
-import { copyImageAndOpenComposer, downloadPngFallback } from '@/lib/shareIntent';
+import { copyImageAndOpenComposer, downloadPngFallback, isMobileDevice } from '@/lib/shareIntent';
 import {
   Sparkles,
   AlertCircle,
@@ -25,6 +25,7 @@ import {
   Download,
   X,
   Loader2,
+  Share2,
 } from 'lucide-react';
 
 const TONE_OPTIONS = [
@@ -57,9 +58,24 @@ export default function AiStudio({
   const [thumbnailUrl, setThumbnailUrl] = useState(null);
   const [copied, setCopied] = useState(false);
 
-  // Zero-Cost 1-Click Native Composer Intent & Clipboard State
+  // Zero-Cost 1-Click Native Composer Intent & Knowledge Guide Modal State
   const [isSharing, setIsSharing] = useState(false);
-  const [shareToast, setShareToast] = useState(null);
+  const [guideModalPlatform, setGuideModalPlatform] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    setIsMobile(isMobileDevice());
+  }, []);
+
+  // Close guide modal on Escape key
+  useEffect(() => {
+    if (!guideModalPlatform) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setGuideModalPlatform(null);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [guideModalPlatform]);
 
   // Reset generated posts when image is cleared (e.g. user clicked Reset / New Image)
   useEffect(() => {
@@ -69,71 +85,41 @@ export default function AiStudio({
       setPrompt('');
       setThumbnailUrl(null);
       setErrorMessage(null);
+      setGuideModalPlatform(null);
     }
   }, [image]);
 
   const handlePlatformChange = (p) => {
     setActivePlatform(p);
-    setShareToast(null);
   };
 
-  const handlePostOnPlatform = async (platform) => {
+  // 1. Opens the Knowledge Guide Modal with appropriate flow steps
+  const handleInitiatePost = (platform) => {
     if (!canvasRef?.current) {
-      setShareToast({
-        message: 'Canvas element not available. Please load a screenshot.',
-        isError: true,
-      });
-      setTimeout(() => setShareToast(null), 4000);
+      setErrorMessage('Canvas element not available. Please load a screenshot.');
       return;
     }
+    const postText = (editedPosts[platform] || currentPostText || '').trim();
+    if (!postText) {
+      setErrorMessage('Please generate or write post text before sharing.');
+      return;
+    }
+    setGuideModalPlatform(platform);
+  };
 
+  // 2. Executes the posting action from within the Knowledge Guide Modal
+  const handleExecutePost = async () => {
+    if (!guideModalPlatform || !canvasRef?.current) return;
+    const platform = guideModalPlatform;
     setIsSharing(true);
-    const platformLabel =
-      platform === 'x' ? 'X (Twitter)' : platform === 'linkedin' ? 'LinkedIn' : 'Reddit';
-
     try {
       const canvas = canvasRef.current;
-      const postText = editedPosts[platform] || currentPostText || '';
-      const result = await copyImageAndOpenComposer(canvas, platform, postText);
-
-      if (result.cancelled) {
-        setIsSharing(false);
-        return;
-      }
-
-      if (result.directShare) {
-        setShareToast({
-          platform: platformLabel,
-          message: `Shared directly to ${platformLabel} with image and text attached!`,
-          dataUrl: result.dataUrl,
-          isDownload: false,
-          isError: false,
-        });
-      } else if (result.copied) {
-        setShareToast({
-          platform: platformLabel,
-          message: `Post text pre-filled in ${platformLabel}! Image copied to clipboard — press Ctrl+V (or Paste) in the composer to attach screenshot.`,
-          dataUrl: result.dataUrl,
-          isDownload: false,
-          isError: false,
-        });
-      } else {
-        setShareToast({
-          platform: platformLabel,
-          message: `Post text pre-filled in ${platformLabel}! Screenshot downloaded — click attach in the composer.`,
-          dataUrl: result.dataUrl,
-          isDownload: true,
-          isError: false,
-        });
-      }
-      setTimeout(() => setShareToast(null), 9000);
+      const postText = (editedPosts[platform] || currentPostText || '').trim();
+      await copyImageAndOpenComposer(canvas, platform, postText);
+      setGuideModalPlatform(null);
     } catch (err) {
       console.error('Error posting to platform:', err);
-      setShareToast({
-        message: `Failed to open ${platformLabel} composer: ${err.message || 'Unknown error'}`,
-        isError: true,
-      });
-      setTimeout(() => setShareToast(null), 5000);
+      setErrorMessage(`Failed to open ${platform} composer: ${err.message || 'Unknown error'}`);
     } finally {
       setIsSharing(false);
     }
@@ -735,11 +721,11 @@ export default function AiStudio({
                     gap: '8px',
                   }}
                   disabled={isSharing}
-                  onClick={() => handlePostOnPlatform('x')}
-                  title="Share directly or open X with pre-filled text and image"
+                  onClick={() => handleInitiatePost('x')}
+                  title="Open X posting guide and composer"
                 >
                   <XIcon size={14} />
-                  <span>{isSharing ? 'Sharing...' : 'Post on X'}</span>
+                  <span>Post on X</span>
                   <ExternalLink size={13} style={{ opacity: 0.7 }} />
                 </button>
               )}
@@ -759,11 +745,11 @@ export default function AiStudio({
                     gap: '8px',
                   }}
                   disabled={isSharing}
-                  onClick={() => handlePostOnPlatform('linkedin')}
-                  title="Share directly or open LinkedIn with pre-filled text and image"
+                  onClick={() => handleInitiatePost('linkedin')}
+                  title="Open LinkedIn posting guide and composer"
                 >
                   <LinkedInIcon size={15} />
-                  <span>{isSharing ? 'Sharing...' : 'Post on LinkedIn'}</span>
+                  <span>Post on LinkedIn</span>
                   <ExternalLink size={13} style={{ opacity: 0.7 }} />
                 </button>
               )}
@@ -783,11 +769,11 @@ export default function AiStudio({
                     gap: '8px',
                   }}
                   disabled={isSharing}
-                  onClick={() => handlePostOnPlatform('reddit')}
-                  title="Share directly or open Reddit with pre-filled text and image"
+                  onClick={() => handleInitiatePost('reddit')}
+                  title="Open Reddit posting guide and submission composer"
                 >
                   <RedditIcon size={16} />
-                  <span>{isSharing ? 'Sharing...' : 'Post on Reddit'}</span>
+                  <span>Post on Reddit</span>
                   <ExternalLink size={13} style={{ opacity: 0.7 }} />
                 </button>
               )}
@@ -813,91 +799,428 @@ export default function AiStudio({
                 {copied ? <Check size={14} style={{ color: '#16A34A' }} /> : <Copy size={14} />}
                 <span>{copied ? 'Copied to Clipboard!' : 'Copy Text'}</span>
               </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-              {/* Neobrutalist Notification Toast Banner */}
-              {shareToast && (
+      {/* 4. Responsive Neobrutalist Knowledge Guide Modal */}
+      {guideModalPlatform && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="guide-modal-title"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(3px)',
+            zIndex: 10000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px',
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isSharing) {
+              setGuideModalPlatform(null);
+            }
+          }}
+        >
+          <div
+            className="card-brutal"
+            style={{
+              maxWidth: '460px',
+              width: '100%',
+              backgroundColor: 'var(--surface)',
+              border: '3px solid var(--ink)',
+              borderRadius: 'var(--radius-sm)',
+              boxShadow: 'var(--shadow-card-hover, 6px 6px 0 var(--ink))',
+              padding: '20px 22px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '14px',
+              position: 'relative',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+            }}
+          >
+            {/* Top Modal Header */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                borderBottom: '2px solid var(--border-color)',
+                paddingBottom: '12px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <div
                   style={{
-                    marginTop: '4px',
-                    padding: '12px 14px',
-                    backgroundColor: shareToast.isError ? '#FEE2E2' : 'var(--card-bg-subtle)',
-                    border: shareToast.isError ? '2px solid #EF4444' : 'var(--border)',
-                    borderRadius: 'var(--radius-sm)',
-                    boxShadow: 'var(--shadow-card)',
+                    width: '34px',
+                    height: '34px',
+                    borderRadius: 'var(--radius-xs)',
+                    backgroundColor: 'var(--card-bg-subtle)',
+                    border: '2px solid var(--border-color)',
                     display: 'flex',
-                    flexDirection: 'column',
-                    gap: '8px',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
                   }}
                 >
+                  {guideModalPlatform === 'x' && <XIcon size={16} />}
+                  {guideModalPlatform === 'linkedin' && <LinkedInIcon size={17} />}
+                  {guideModalPlatform === 'reddit' && <RedditIcon size={18} />}
+                </div>
+                <div>
+                  <h3
+                    id="guide-modal-title"
+                    style={{ margin: 0, fontSize: '1.02rem', fontWeight: 800, color: 'var(--ink)' }}
+                  >
+                    {isMobile
+                      ? `Share to ${guideModalPlatform === 'x' ? 'X (Twitter)' : guideModalPlatform === 'linkedin' ? 'LinkedIn' : 'Reddit'}`
+                      : `Posting to ${guideModalPlatform === 'x' ? 'X (Twitter)' : guideModalPlatform === 'linkedin' ? 'LinkedIn' : 'Reddit'}`}
+                  </h3>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--muted)', fontFamily: 'var(--font-mono)' }}>
+                    {isMobile ? 'Direct 1-tap mobile sharing' : 'Easy 2-step publishing flow'}
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setGuideModalPlatform(null)}
+                style={{
+                  background: 'none',
+                  border: '2px solid var(--border-color)',
+                  borderRadius: 'var(--radius-xs)',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'var(--ink)',
+                }}
+                title="Close guide"
+                aria-label="Close"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Step-by-Step Instructions */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '9px' }}>
+              {isMobile ? (
+                <>
                   <div
                     style={{
                       display: 'flex',
-                      alignItems: 'flex-start',
-                      justifyContent: 'space-between',
-                      gap: '8px',
+                      gap: '10px',
+                      padding: '11px',
+                      backgroundColor: 'var(--card-bg-subtle)',
+                      border: '2px solid var(--border-color)',
+                      borderRadius: 'var(--radius-xs)',
                     }}
                   >
                     <div
                       style={{
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: '8px',
-                        fontSize: '0.82rem',
-                        fontWeight: 700,
-                        color: shareToast.isError ? '#B91C1C' : 'var(--ink)',
-                        lineHeight: 1.45,
-                      }}
-                    >
-                      {shareToast.isError ? (
-                        <AlertCircle size={16} style={{ flexShrink: 0, marginTop: '2px' }} />
-                      ) : (
-                        <Check size={16} style={{ color: '#16A34A', flexShrink: 0, marginTop: '2px' }} />
-                      )}
-                      <span>{shareToast.message}</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setShareToast(null)}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        color: 'var(--muted)',
-                        padding: '2px',
-                        flexShrink: 0,
-                      }}
-                      aria-label="Dismiss toast"
-                    >
-                      <X size={14} />
-                    </button>
-                  </div>
-
-                  {shareToast.dataUrl && !shareToast.isError && (
-                    <div
-                      style={{
+                        width: '22px',
+                        height: '22px',
+                        borderRadius: '50%',
+                        backgroundColor: 'var(--accent-yellow)',
+                        border: '2px solid var(--ink)',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '8px',
-                        paddingTop: '4px',
-                        borderTop: '1px dashed var(--border-color)',
+                        justifyContent: 'center',
+                        fontWeight: 800,
+                        fontSize: '0.72rem',
+                        flexShrink: 0,
                       }}
                     >
-                      <button
-                        type="button"
-                        className="btn-brutal"
-                        style={{ padding: '4px 10px', fontSize: '0.74rem', gap: '5px' }}
-                        onClick={() => downloadPngFallback(shareToast.dataUrl)}
-                      >
-                        <Download size={12} />
-                        <span>Download PNG</span>
-                      </button>
-                      <span style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>
-                        (Use if manual file upload is preferred)
-                      </span>
+                      1
                     </div>
-                  )}
-                </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <div style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--ink)' }}>
+                        Launch Native Share
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--muted)', lineHeight: 1.4 }}>
+                        Tap the button below to launch your phone&apos;s share sheet with both your post text and screenshot attached.
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: '10px',
+                      padding: '11px',
+                      backgroundColor: 'var(--card-bg-subtle)',
+                      border: '2px solid var(--border-color)',
+                      borderRadius: 'var(--radius-xs)',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '22px',
+                        height: '22px',
+                        borderRadius: '50%',
+                        backgroundColor: 'var(--accent-yellow)',
+                        border: '2px solid var(--ink)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: 800,
+                        fontSize: '0.72rem',
+                        flexShrink: 0,
+                      }}
+                    >
+                      2
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <div style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--ink)' }}>
+                        Select {guideModalPlatform === 'x' ? 'X' : guideModalPlatform === 'linkedin' ? 'LinkedIn' : 'Reddit'}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--muted)', lineHeight: 1.4 }}>
+                        Pick the app from the share options to open it directly with media and text ready to publish.
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : guideModalPlatform === 'linkedin' ? (
+                <>
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: '10px',
+                      padding: '11px',
+                      backgroundColor: 'var(--card-bg-subtle)',
+                      border: '2px solid var(--border-color)',
+                      borderRadius: 'var(--radius-xs)',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '22px',
+                        height: '22px',
+                        borderRadius: '50%',
+                        backgroundColor: 'var(--accent-yellow)',
+                        border: '2px solid var(--ink)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: 800,
+                        fontSize: '0.72rem',
+                        flexShrink: 0,
+                      }}
+                    >
+                      1
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <div style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--ink)' }}>
+                        Pre-filled Post &amp; Auto-Download
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--muted)', lineHeight: 1.4 }}>
+                        LinkedIn will open with your generated post copy pre-filled. Your graphic is simultaneously saved to your downloads.
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: '10px',
+                      padding: '11px',
+                      backgroundColor: 'var(--card-bg-subtle)',
+                      border: '2px solid var(--border-color)',
+                      borderRadius: 'var(--radius-xs)',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '22px',
+                        height: '22px',
+                        borderRadius: '50%',
+                        backgroundColor: 'var(--accent-yellow)',
+                        border: '2px solid var(--ink)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: 800,
+                        fontSize: '0.72rem',
+                        flexShrink: 0,
+                      }}
+                    >
+                      2
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <div style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--ink)' }}>
+                        Attach Media in LinkedIn
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--muted)', lineHeight: 1.4 }}>
+                        In LinkedIn&apos;s composer, click the <strong>Media (photo) icon</strong> at the bottom and choose the downloaded screenshot to attach it.
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: '10px',
+                      padding: '11px',
+                      backgroundColor: 'var(--card-bg-subtle)',
+                      border: '2px solid var(--border-color)',
+                      borderRadius: 'var(--radius-xs)',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '22px',
+                        height: '22px',
+                        borderRadius: '50%',
+                        backgroundColor: 'var(--accent-yellow)',
+                        border: '2px solid var(--ink)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: 800,
+                        fontSize: '0.72rem',
+                        flexShrink: 0,
+                      }}
+                    >
+                      1
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <div style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--ink)' }}>
+                        Pre-filled Composer
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--muted)', lineHeight: 1.4 }}>
+                        {guideModalPlatform === 'x' ? 'X' : 'Reddit'} will open in a new tab with your post text already filled in.
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: '10px',
+                      padding: '11px',
+                      backgroundColor: 'var(--card-bg-subtle)',
+                      border: '2px solid var(--border-color)',
+                      borderRadius: 'var(--radius-xs)',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '22px',
+                        height: '22px',
+                        borderRadius: '50%',
+                        backgroundColor: 'var(--accent-yellow)',
+                        border: '2px solid var(--ink)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: 800,
+                        fontSize: '0.72rem',
+                        flexShrink: 0,
+                      }}
+                    >
+                      2
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <div style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--ink)' }}>
+                        Paste Image (Ctrl + V)
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--muted)', lineHeight: 1.4 }}>
+                        Your screenshot is automatically copied to your clipboard. Simply press <strong>Ctrl + V</strong> in the composer to attach it!
+                      </div>
+                    </div>
+                  </div>
+                </>
               )}
+            </div>
+
+            {/* Thumbnail Graphic Preview */}
+            {thumbnailUrl && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '7px 10px',
+                  backgroundColor: 'var(--card-bg-subtle)',
+                  borderRadius: 'var(--radius-xs)',
+                  border: '1px dashed var(--border-color)',
+                  fontSize: '0.72rem',
+                  color: 'var(--muted)',
+                }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={thumbnailUrl}
+                  alt="Screenshot thumbnail"
+                  style={{ width: '32px', height: '24px', objectFit: 'cover', borderRadius: '3px', border: '1px solid var(--border-color)' }}
+                />
+                <span>Balanced graphic ready to accompany your post</span>
+              </div>
+            )}
+
+            {/* Modal Bottom Action Footer */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
+              <button
+                type="button"
+                className="btn-brutal btn-primary"
+                style={{
+                  flex: 1,
+                  padding: '11px 14px',
+                  fontSize: '0.85rem',
+                  fontWeight: 800,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                }}
+                disabled={isSharing}
+                onClick={handleExecutePost}
+              >
+                {isSharing ? (
+                  <>
+                    <Loader2 size={15} className="animate-spin" />
+                    <span>Opening...</span>
+                  </>
+                ) : (
+                  <>
+                    {guideModalPlatform === 'x' && <XIcon size={14} />}
+                    {guideModalPlatform === 'linkedin' && <LinkedInIcon size={15} />}
+                    {guideModalPlatform === 'reddit' && <RedditIcon size={16} />}
+                    <span>
+                      {isMobile
+                        ? `Share to ${guideModalPlatform === 'x' ? 'X' : guideModalPlatform === 'linkedin' ? 'LinkedIn' : 'Reddit'}`
+                        : guideModalPlatform === 'linkedin'
+                        ? 'Open LinkedIn & Download Graphic'
+                        : `Open ${guideModalPlatform === 'x' ? 'X' : 'Reddit'} & Copy Image`}
+                    </span>
+                    <ExternalLink size={13} style={{ opacity: 0.7 }} />
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                className="btn-brutal"
+                style={{
+                  padding: '11px 14px',
+                  fontSize: '0.82rem',
+                  fontWeight: 700,
+                  backgroundColor: 'var(--card-bg-subtle)',
+                }}
+                onClick={() => setGuideModalPlatform(null)}
+                disabled={isSharing}
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </div>

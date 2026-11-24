@@ -105,11 +105,12 @@ Mounted within the 30% Left Sidebar of `/editor` when **"✨ AI Mode"** is activ
    - Platform-styled author header (handle, avatar badge, timestamp).
    - Editable textarea allowing real-time edits to the generated copy with live character tracking.
    - Mini thumbnail preview of the user's beautified canvas screenshot attached directly to the post preview.
-   - Action bar: One-click "Copy Text" button and full-width "Post on X / LinkedIn / Reddit" buttons.
-   - **1-Click Direct Share & Balanced Social Export (`src/lib/shareIntent.js`):**
-     - Downsamples high-DPI retina canvases to a balanced 1600px max dimension with high-quality bicubic smoothing (~250-400KB PNG blob), preventing clipboard memory quota issues and slow upload lags.
-     - On mobile / supported browsers: Invokes native Web Share Level 2 (`navigator.share({ text, files: [file] })`) to share both image and text simultaneously directly to target social apps.
-     - On desktop browsers: Copies the balanced image to the system clipboard and opens `https://twitter.com/intent/tweet?text=...`, LinkedIn feed, or Reddit submit with text pre-filled. Pressing `Ctrl+V` inside the composer immediately attaches the screenshot.
+   - Action bar: One-click "Copy Text" button and full-width platform trigger buttons ("Post on X", "Post on LinkedIn", "Post on Reddit").
+   - **Knowledge Guide Modal (`src/components/AiStudio.js` & `src/lib/shareIntent.js`):**
+     - Clicking any platform post button triggers a responsive, Neobrutalist step-by-step Knowledge Guide popup.
+     - Automatically adapts instructions based on platform and device (Mobile 1-tap Native Share vs. Desktop 2-step clipboard paste).
+     - Provides tactile close via backdrop click, Escape key, or top-right cross button.
+     - Modal action button initiates the direct export: pre-fills text, copies balanced image to clipboard (or auto-downloads for LinkedIn), and opens composer.
 
 ---
 

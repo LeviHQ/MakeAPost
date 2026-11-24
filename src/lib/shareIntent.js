@@ -167,7 +167,7 @@ export async function copyCanvasToClipboard(canvas) {
 
 /**
  * Generates platform-specific web intent URL with pre-filled text.
- * Uses twitter.com/intent/tweet to prevent modern X redirects from stripping text.
+ * Uses x.com/intent/post (modern canonical X standard).
  * @param {'x'|'twitter'|'linkedin'|'reddit'} platform
  * @param {string} text
  * @returns {string}
@@ -177,7 +177,8 @@ export function getPlatformIntentUrl(platform, text = '') {
   const cleanText = (text || '').trim();
 
   if (normalized === 'x' || normalized === 'twitter') {
-    return `https://twitter.com/intent/tweet?text=${encodeURIComponent(cleanText)}`;
+    // Official modern X standard endpoint that pre-fills composer text reliably
+    return `https://x.com/intent/post?text=${encodeURIComponent(cleanText)}`;
   }
 
   if (normalized === 'linkedin') {
@@ -192,13 +193,23 @@ export function getPlatformIntentUrl(platform, text = '') {
     return `https://www.reddit.com/submit?title=${encodeURIComponent(titleLine)}&text=${encodeURIComponent(bodyLines)}`;
   }
 
-  return 'https://twitter.com';
+  return 'https://x.com';
 }
 
 /**
- * Shares image and text directly via Web Share Level 2 (on mobile and supported OS),
- * or copies the balanced image to clipboard and opens the platform's native web composer
- * with pre-filled text in a new tab.
+ * Checks if the current client is a mobile device (iOS/Android/Touch phone).
+ */
+export function isMobileDevice() {
+  if (typeof navigator === 'undefined') return false;
+  return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent || '') ||
+    (Boolean(navigator.maxTouchPoints && navigator.maxTouchPoints > 2) && /Macintosh/i.test(navigator.userAgent || ''));
+}
+
+/**
+ * Handles Option A Social Sharing:
+ * - On Mobile: Uses native Web Share Level 2 (navigator.share) so text + image go directly to native app.
+ * - On Desktop for X & Reddit: Pre-fills text via URL intent and copies balanced image to clipboard (Ctrl+V attaches it).
+ * - On Desktop for LinkedIn: Opens LinkedIn with pre-filled text and auto-downloads the balanced screenshot (since LinkedIn doesn't support Ctrl+V image paste).
  *
  * @param {HTMLCanvasElement} canvas
  * @param {'x'|'linkedin'|'reddit'} platform
@@ -211,19 +222,21 @@ export async function copyImageAndOpenComposer(canvas, platform, text) {
   }
 
   const cleanText = (text || '').trim();
+  const intentUrl = getPlatformIntentUrl(platform, cleanText);
   const filename = `makeapost-${platform}-${Date.now()}.png`;
 
-  // 1. Generate balanced social image (max 1600px, crisp bicubic smoothing, ~300KB)
-  const { blob, dataUrl } = await createBalancedSocialBlob(canvas, 1600);
+  // 1. Prepare balanced social image (max 1600px, crisp, lightweight ~300KB)
+  const balanced = await createBalancedSocialBlob(canvas, 1600);
+  const dataUrl = balanced.dataUrl;
 
-  // 2. Direct Web Share Level 2 check (sends BOTH image file and post text directly)
-  if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+  // 2. MOBILE FLOW: Native Web Share Sheet (Passes both text and image file directly)
+  if (isMobileDevice() && typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
     try {
       let file;
       try {
-        file = new File([blob], filename, { type: 'image/png' });
+        file = new File([balanced.blob], filename, { type: 'image/png' });
       } catch {
-        file = blob;
+        file = balanced.blob;
         file.name = filename;
       }
 
@@ -253,15 +266,13 @@ export async function copyImageAndOpenComposer(canvas, platform, text) {
           dataUrl,
         };
       }
-      console.warn('Native Web Share Level 2 failed, falling back to Web Intent + Clipboard:', shareErr);
+      console.warn('Mobile Web Share dismissed or failed, falling back to desktop flow:', shareErr);
     }
   }
 
-  // 3. Desktop Web Fallback:
-  // Pre-copy balanced image to clipboard and launch web composer intent with text pre-filled
+  // 3. DESKTOP FLOW:
+  // Step 3a: Copy balanced image to clipboard FIRST while MakeAPost tab has active focus!
   let copied = false;
-  let downloaded = false;
-
   if (
     typeof navigator !== 'undefined' &&
     navigator.clipboard &&
@@ -269,24 +280,38 @@ export async function copyImageAndOpenComposer(canvas, platform, text) {
     window.ClipboardItem
   ) {
     try {
-      const item = new ClipboardItem({ 'image/png': blob });
+      const item = new ClipboardItem({ 'image/png': balanced.blob });
       await navigator.clipboard.write([item]);
       copied = true;
     } catch (clipErr) {
-      console.warn('Clipboard write failed, downloading image as fallback:', clipErr);
-      downloadPngFallback(blob, filename);
-      downloaded = true;
+      console.warn('Clipboard write failed while focused:', clipErr);
     }
-  } else {
-    downloadPngFallback(blob, filename);
-    downloaded = true;
   }
 
-  const intentUrl = getPlatformIntentUrl(platform, cleanText);
-
-  // Open the native composer tab
+  // Step 3b: Open target platform composer in new tab
   if (typeof window !== 'undefined') {
-    window.open(intentUrl, '_blank', 'noopener,noreferrer');
+    const win = window.open(intentUrl, '_blank', 'noopener,noreferrer');
+    if (!win || win.closed || typeof win.closed === 'undefined') {
+      const a = document.createElement('a');
+      a.href = intentUrl;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+  }
+
+  // Step 3c: For LinkedIn on Desktop, auto-download the screenshot because LinkedIn's
+  // web composer does NOT support pasting images via Ctrl+V into the post body.
+  let downloaded = false;
+  if (platform === 'linkedin') {
+    downloadPngFallback(balanced.blob, filename);
+    downloaded = true;
+  } else if (!copied) {
+    // For X & Reddit, only download if clipboard write truly failed
+    downloadPngFallback(balanced.blob, filename);
+    downloaded = true;
   }
 
   return {
