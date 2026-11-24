@@ -168,6 +168,10 @@
   position: relative;
 }
 
+.canvasPane {
+  position: relative;
+}
+
 /* Mobile View Management (< 900px) */
 @media (max-width: 899px) {
   .workspaceLayout {
@@ -212,6 +216,7 @@
     display: flex !important;
     height: 100%;
     overflow: auto;
+    position: relative;
   }
 }
 
@@ -348,5 +353,100 @@
     bottom: 74px;
     right: 14px;
     padding: 2px 4px;
+  }
+}
+
+/* Floating Canvas Zoom Bar (Bottom-Left Corner of 70% Canvas) */
+.canvasZoomBar {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  z-index: 35;
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--surface);
+  border: var(--border-thick);
+  border-radius: var(--radius-md);
+  box-shadow: 3px 3px 0px var(--shadow-color);
+  padding: 3px 4px;
+  gap: 2px;
+}
+
+.zoomBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  box-shadow: none;
+  background-color: transparent;
+  color: var(--ink);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.zoomBtn:hover:not(:disabled) {
+  background-color: var(--accent-yellow);
+  color: #09090B;
+}
+
+.zoomBtn:active:not(:disabled) {
+  transform: translate(1px, 1px);
+}
+
+.zoomBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.zoomPercentBadge {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: var(--ink);
+  padding: 4px 8px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  transition: all 0.1s ease;
+  min-width: 46px;
+  text-align: center;
+  user-select: none;
+}
+
+.zoomPercentBadge:hover {
+  background-color: var(--accent-yellow);
+  color: #09090B;
+}
+
+.zoomPercentBadge:active {
+  transform: translate(1px, 1px);
+}
+
+.zoomDivider {
+  width: 1.5px;
+  height: 18px;
+  background-color: var(--border-color);
+  margin: 0 2px;
+}
+
+@media (max-width: 899px) {
+  .canvasZoomBar {
+    bottom: 74px;
+    left: 14px;
+    padding: 2px 4px;
+  }
+  .zoomBtn {
+    width: 26px;
+    height: 26px;
+  }
+  .zoomPercentBadge {
+    font-size: 0.72rem;
+    padding: 3px 6px;
+    min-width: 40px;
   }
 }

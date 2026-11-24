@@ -74,11 +74,13 @@ To maximize performance, minimize latency, and ensure that every screenshot sent
 ### Vision Prompt Strategy
 Gemini is instructed through system directives to:
 1. **Transcribe & Understand Visual Details:** Read visible code syntax, framework imports, console/terminal logs, revenue/MRR figures, charts, and highlighted regions (user-drawn red/yellow boxes or arrows).
-2. **Apply User Tone:**
-   - `🛠️ Build in Public`: Transparent numbers, learnings, milestones, and challenges.
-   - `⚡ Viral Hook`: Curiosity gaps, counter-intuitive statements, short punchy lines.
-   - `📖 Storytelling`: Problem -> revelation -> outcome narrative structure.
-   - `💻 Tech Breakdown`: Engineering choices, architecture trade-offs, and technical rationale.
+2. **Apply User Tone (6 Core Developer & Tech Archetypes):**
+   - `🔨 Build in Public`: Transparent numbers, MRR milestones, user growth, and builder lessons.
+   - `🚀 Ship & Launch`: High-energy feature drops, v1.0 releases, repos & project launches.
+   - `💻 Tech Breakdown`: Engineering choices, system architecture trade-offs, and code review.
+   - `⚡ Viral Hook`: Curiosity gaps, counter-intuitive statements, and punchy scroll-stopping hooks.
+   - `📖 Founder Story`: Problem -> debugging war story -> breakthrough outcome narrative journey.
+   - `💡 How It Works (ELI5)`: Dead-simple, plain-English breakdown of complex technical concepts.
 3. **Respect Strict Platform Lengths:**
    - `x_post`: Strictly under 280 chars, direct builder tone, no hashtag spam.
    - `linkedin_post`: Double-spaced lines for mobile readability, lesson/takeaway, closing discussion prompt.
@@ -91,7 +93,7 @@ Gemini is instructed through system directives to:
 Mounted within the 30% Left Sidebar of `/editor` when **"✨ AI Mode"** is active:
 
 1. **State & Tone Selection:**
-   - 4 Neobrutalist tone selector chips (`Build in Public`, `Viral Hook`, `Storytelling`, `Tech Breakdown`).
+   - 6 Neobrutalist tone selector chips in a balanced 2-column grid (`Build in Public`, `Ship & Launch`, `Tech Breakdown`, `Viral Hook`, `Founder Story`, `How It Works`) with real-time dynamic micro-descriptions.
    - Optional extra context textarea to guide specific topics or campaigns.
 2. **Empty Canvas Guard:**
    - If no image is currently on the 70% canvas, displays a Neobrutalist banner guiding the user to paste (`Ctrl+V`) or load an image first.
@@ -103,11 +105,15 @@ Mounted within the 30% Left Sidebar of `/editor` when **"✨ AI Mode"** is activ
    - Platform-styled author header (handle, avatar badge, timestamp).
    - Editable textarea allowing real-time edits to the generated copy with live character tracking.
    - Mini thumbnail preview of the user's beautified canvas screenshot attached directly to the post preview.
-   - Action bar: One-click "Copy Post 📋" button with instant tactile feedback.
-   - For X: "Post on 𝕏 ↗" button directly opening `https://twitter.com/intent/tweet?text=...`.
+   - Action bar: One-click "Copy Text" button and full-width "Post on X / LinkedIn / Reddit" buttons.
+   - **1-Click Direct Share & Balanced Social Export (`src/lib/shareIntent.js`):**
+     - Downsamples high-DPI retina canvases to a balanced 1600px max dimension with high-quality bicubic smoothing (~250-400KB PNG blob), preventing clipboard memory quota issues and slow upload lags.
+     - On mobile / supported browsers: Invokes native Web Share Level 2 (`navigator.share({ text, files: [file] })`) to share both image and text simultaneously directly to target social apps.
+     - On desktop browsers: Copies the balanced image to the system clipboard and opens `https://twitter.com/intent/tweet?text=...`, LinkedIn feed, or Reddit submit with text pre-filled. Pressing `Ctrl+V` inside the composer immediately attaches the screenshot.
 
 ---
 
 ## 4. Privacy & Stateless Architecture Guarantee
 - **Zero Database Persistence:** No prompt, generated post, or screenshot is written to any database.
-- **In-Memory Lifespan:** Posts live exclusively in React client memory during the active browser session.
+- **In-Memory Lifespan:** Posts live exclusively in React client memory during the active studio session.
+- **Cross-Mode State Preservation:** `<AiStudio />` is kept continuously mounted in `ModeSidebar.js` using CSS display toggling, ensuring generated posts and custom edits persist seamlessly when switching between '1. Editor' and '2. AI Mode'. The state is only cleared when the user clicks 'New Image (Reset)' or navigates away from `/editor`.

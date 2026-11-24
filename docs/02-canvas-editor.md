@@ -80,3 +80,28 @@ In the bottom-right corner of the 70% canvas workspace, a floating Neobrutalist 
 - **Undo (Back ↩️):** Reverts the canvas to the previous state after drawing, deleting, clearing, or repositioning annotations. Keyboard shortcut: `Ctrl+Z` (or `Cmd+Z` on macOS).
 - **Redo (Next ↪️):** Restores undone actions back to the canvas. Keyboard shortcuts: `Ctrl+Y` or `Ctrl+Shift+Z` (or `Cmd+Shift+Z` on macOS).
 - **Smooth Repositioning Batching:** When repositioning annotations in `select` mode, real-time preview utilizes a transient offset so mouse movements render at 60fps, committing exactly a single undo state upon mouse release.
+
+---
+
+## 7. Two-Finger Pinch-to-Zoom & Floating Zoom Controls (`zoomScale`)
+
+To allow users to inspect and annotate high-density screenshots and UI details with precision, the 70% canvas workspace features **Two-Finger Pinch-to-Zoom**, trackpad gesture support, and a floating tactile Zoom widget:
+
+### 7.1. Mobile & Touch Screen Two-Finger Pinch-to-Zoom
+- **Multi-Touch Gesture Detection:** `CanvasEditor.js` tracks `e.touches.length === 2`. When two fingers are placed on the screen, initial distance is calculated with `Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY)`.
+- **Fluid Dynamic Scaling:** As fingers pinch in or out, `zoomScale` scales smoothly between **40% (0.4x)** and **300% (3.0x)**.
+- **Accidental Touch Protection:** Any pending single-touch drawing action is immediately cancelled when a 2nd touch is detected, and a short 250ms cooldown prevents lifting fingers from dropping stray annotations.
+- **Non-Passive Event Handlers:** Container has non-passive native `touchmove` listeners calling `e.preventDefault()`, which prevents the mobile browser from zooming the outer webpage while smoothly scaling the canvas image.
+
+### 7.2. Desktop Trackpad & Precision Wheel Support
+- Non-passive native `wheel` listener detects `e.ctrlKey || e.metaKey` (the browser event fired by MacBook and Windows precision trackpad pinch gestures, as well as Ctrl + mouse wheel).
+- Smoothly zooms in and out from center without whole-page zooming.
+
+### 7.3. Floating Zoom Controls Toolbar (`.canvasZoomBar`)
+- **Symmetrical Placement:** Positioned at the bottom-left corner of the 70% canvas (`bottom: 24px; left: 24px;` on desktop and `bottom: 74px; left: 14px;` on mobile), perfectly balancing the bottom-right Undo/Redo history bar.
+- **`[ ZoomOut 🔍− | 100% | ZoomIn 🔍+ ]` Controls:**
+  - `ZoomOut (−)`: Decrements zoom by 15% (clamped to 40%).
+  - `ZoomPercentBadge`: Displays current zoom percentage (e.g. `100%`, `130%`). Clicking the badge instantly resets the zoom to `100% (1.0x)`.
+  - `ZoomIn (+)`: Increments zoom by 15% (clamped to 300%).
+- **Pixel-Accurate Coordinate Transformation:** Because `getCanvasPoint(e)` computes coordinates based on dynamic `canvas.getBoundingClientRect()`, annotation drawing and hit-testing remain 100% pixel-perfect regardless of whether the canvas is zoomed to 50%, 100%, or 250%.
+- **Zero Export Distortion:** Canvas downloads and clipboard copies export from the 2x Retina backing store directly, ensuring HD export is never affected by CSS viewport zoom level.

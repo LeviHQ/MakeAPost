@@ -18,8 +18,8 @@ export async function compressImageForAI(canvasOrDataUrl) {
     const origW = img.width || img.naturalWidth || 800;
     const origH = img.height || img.naturalHeight || 600;
 
-    // Never upscale smaller images; cap max width at 768px
-    const maxWidth = 768;
+    // Never upscale smaller images; cap max width at 640px
+    const maxWidth = 640;
     let targetW = origW;
     let targetH = origH;
 
@@ -49,8 +49,8 @@ export async function compressImageForAI(canvasOrDataUrl) {
     // Draw downscaled image
     ctx.drawImage(img, 0, 0, targetW, targetH);
 
-    // Export as JPEG at 0.65 quality
-    const dataUrl = offscreenCanvas.toDataURL('image/jpeg', 0.65);
+    // Export as JPEG at 0.60 quality
+    const dataUrl = offscreenCanvas.toDataURL('image/jpeg', 0.60);
     const base64 = dataUrl.replace(/^data:image\/[a-zA-Z0-9.+]+;base64,/, '');
 
     return {
@@ -66,7 +66,7 @@ export async function compressImageForAI(canvasOrDataUrl) {
   if (typeof HTMLCanvasElement !== 'undefined' && canvasOrDataUrl instanceof HTMLCanvasElement) {
     const origW = canvasOrDataUrl.width;
     const origH = canvasOrDataUrl.height;
-    const maxWidth = 768;
+    const maxWidth = 640;
 
     let targetW = origW;
     let targetH = origH;
@@ -95,7 +95,7 @@ export async function compressImageForAI(canvasOrDataUrl) {
 
     ctx.drawImage(canvasOrDataUrl, 0, 0, targetW, targetH);
 
-    const dataUrl = offscreenCanvas.toDataURL('image/jpeg', 0.65);
+    const dataUrl = offscreenCanvas.toDataURL('image/jpeg', 0.60);
     const base64 = dataUrl.replace(/^data:image\/[a-zA-Z0-9.+]+;base64,/, '');
 
     return {

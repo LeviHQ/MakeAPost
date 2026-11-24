@@ -6,7 +6,7 @@ import Logo from '@/components/Logo';
 import NavbarAuth from '@/components/NavbarAuth';
 import CanvasEditor from '@/components/CanvasEditor';
 import ModeSidebar from '@/components/ModeSidebar';
-import { RotateCcw, Copy, Download, Image as ImageIcon, Sliders, Zap, ArrowRight, Menu, X, Home, Undo2, Redo2 } from 'lucide-react';
+import { RotateCcw, Copy, Download, Image as ImageIcon, Sliders, Zap, ArrowRight, Menu, X, Home, Undo2, Redo2, ZoomIn, ZoomOut } from 'lucide-react';
 import styles from './editor.module.css';
 
 export default function EditorPage() {
@@ -21,6 +21,7 @@ export default function EditorPage() {
 
   // Canvas Framing & Image State
   const [image, setImage] = useState(null);
+  const [zoomScale, setZoomScale] = useState(1);
   const [aspectRatio, setAspectRatio] = useState('auto');
   const [background, setBackground] = useState('cyber');
   const [padding, setPadding] = useState(48);
@@ -62,7 +63,7 @@ export default function EditorPage() {
     setAnnotations(newAnnotations);
   }, [annotations]);
 
-  // Undo (Back ↩️)
+  // Undo (Back)
   const handleUndo = useCallback(() => {
     if (undoStack.length === 0) return;
     const previous = undoStack[undoStack.length - 1];
@@ -70,10 +71,10 @@ export default function EditorPage() {
     setRedoStack((prev) => [...prev, annotations]);
     setAnnotations(previous);
     setSelectedAnnotationId(null);
-    showToast('Undo: Step Back ↩️');
+    showToast('Undo: Step Back');
   }, [undoStack, annotations, showToast]);
 
-  // Redo (Next ↪️)
+  // Redo (Next)
   const handleRedo = useCallback(() => {
     if (redoStack.length === 0) return;
     const next = redoStack[redoStack.length - 1];
@@ -81,7 +82,7 @@ export default function EditorPage() {
     setUndoStack((prev) => [...prev, annotations]);
     setAnnotations(next);
     setSelectedAnnotationId(null);
-    showToast('Redo: Step Forward ↪️');
+    showToast('Redo: Step Forward');
   }, [redoStack, annotations, showToast]);
 
   // Delete Selected Annotation
@@ -113,6 +114,7 @@ export default function EditorPage() {
     setUndoStack([]);
     setRedoStack([]);
     setSelectedAnnotationId(null);
+    setZoomScale(1);
     setMobileTab('canvas');
     showToast('Canvas reset. Load a new image!');
   }, [showToast]);
@@ -199,7 +201,7 @@ export default function EditorPage() {
         a.download = `makeapost-${Date.now()}.png`;
         document.body.appendChild(a);
         a.click();
-        document.body.removeChild(a);
+        a.remove();
         showToast('Downloaded HD PNG successfully!');
       } catch (err) {
         console.error(err);
@@ -418,6 +420,7 @@ export default function EditorPage() {
             image={image}
             onImageLoaded={(img) => {
               setImage(img);
+              setZoomScale(1);
               setMobileTab('canvas');
             }}
             aspectRatio={aspectRatio}
@@ -437,10 +440,49 @@ export default function EditorPage() {
             onAnnotationsChange={handleAnnotationsChange}
             selectedAnnotationId={selectedAnnotationId}
             onSelectAnnotation={setSelectedAnnotationId}
+            zoomScale={zoomScale}
+            onZoomChange={setZoomScale}
           />
 
+          {/* Floating Zoom Toolbar (Bottom-Left Corner of 70% Canvas) */}
+          {image ? (
+            <div className={styles.canvasZoomBar}>
+              <button
+                type="button"
+                className={styles.zoomBtn}
+                onClick={() => setZoomScale((z) => Math.max(0.4, Number((z - 0.15).toFixed(2))))}
+                disabled={zoomScale <= 0.4}
+                title="Zoom Out (Pinch in / Ctrl + Scroll Down)"
+                aria-label="Zoom out"
+              >
+                <ZoomOut size={14} />
+              </button>
+              <div className={styles.zoomDivider} />
+              <button
+                type="button"
+                className={styles.zoomPercentBadge}
+                onClick={() => setZoomScale(1)}
+                title="Click to Reset Zoom (100%)"
+                aria-label="Reset zoom to 100%"
+              >
+                {Math.round(zoomScale * 100)}%
+              </button>
+              <div className={styles.zoomDivider} />
+              <button
+                type="button"
+                className={styles.zoomBtn}
+                onClick={() => setZoomScale((z) => Math.min(3.0, Number((z + 0.15).toFixed(2))))}
+                disabled={zoomScale >= 3.0}
+                title="Zoom In (Pinch out / Ctrl + Scroll Up)"
+                aria-label="Zoom in"
+              >
+                <ZoomIn size={14} />
+              </button>
+            </div>
+          ) : null}
+
           {/* Floating Undo (Back) & Redo (Next) Toolbar (Right-Bottom Corner of 70% Canvas) */}
-          {image && (
+          {image ? (
             <div className={styles.canvasHistoryBar}>
               <button
                 type="button"
@@ -466,10 +508,10 @@ export default function EditorPage() {
                 <Redo2 size={15} />
               </button>
             </div>
-          )}
+          ) : null}
 
           {/* Floating Mobile Pill to Switch to Controls */}
-          {image && mobileTab === 'canvas' && (
+          {image && mobileTab === 'canvas' ? (
             <button
               type="button"
               className={`btn-brutal btn-primary ${styles.mobileFloatingPill}`}
@@ -479,17 +521,17 @@ export default function EditorPage() {
               <span>Customize Image &amp; Annotate</span>
               <ArrowRight size={14} />
             </button>
-          )}
+          ) : null}
         </div>
       </div>
 
       {/* Floating Action Toast */}
-      {toastMessage && (
+      {toastMessage ? (
         <div className={styles.toast}>
           <Zap size={15} style={{ color: 'var(--accent-yellow)', flexShrink: 0 }} />
           <span>{toastMessage}</span>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

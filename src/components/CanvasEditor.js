@@ -104,6 +104,8 @@ export default function CanvasEditor({
   selectedAnnotationId,
   onSelectAnnotation,
   canvasRef,
+  zoomScale = 1,
+  onZoomChange,
 }) {
   const fileInputRef = useRef(null);
   const containerRef = useRef(null);
@@ -115,6 +117,11 @@ export default function CanvasEditor({
   const [textPromptOpen, setTextPromptOpen] = useState(false);
   const [pendingTextPos, setPendingTextPos] = useState(null);
   const [textInputVal, setTextInputVal] = useState('');
+  const [isPinching, setIsPinching] = useState(false);
+  const pinchRef = useRef({ startDist: 0, startZoom: 1, isPinching: false });
+  const pinchCooldownRef = useRef(0);
+  const zoomScaleRef = useRef(zoomScale);
+  zoomScaleRef.current = zoomScale;
 
   // 1. Image Ingestion Helper
   const loadFromDataUrl = useCallback(
@@ -909,6 +916,7 @@ export default function CanvasEditor({
 
   const handleMouseDown = (e) => {
     if (!image) return;
+    if (Date.now() < pinchCooldownRef.current) return;
     const pt = getCanvasPoint(e);
 
     if (activeTool === 'select') {
@@ -1101,6 +1109,106 @@ export default function CanvasEditor({
     }
   };
 
+  // Touch Handlers for Canvas (Coordinates Single-Touch Drawing with Multi-Touch Pinch)
+  const handleTouchStart = (e) => {
+    if (e.touches.length >= 2 || pinchRef.current.isPinching || Date.now() < pinchCooldownRef.current) {
+      setIsDrawing(false);
+      setCurrentShape(null);
+      setDragState(null);
+      setDragOffset(null);
+      return;
+    }
+    if (activeTool !== 'select') e.preventDefault();
+    handleMouseDown(e);
+  };
+
+  const handleTouchMove = (e) => {
+    if (e.touches.length >= 2 || pinchRef.current.isPinching || Date.now() < pinchCooldownRef.current) {
+      return;
+    }
+    if (activeTool !== 'select') e.preventDefault();
+    handleMouseMove(e);
+  };
+
+  const handleTouchEnd = () => {
+    if (pinchRef.current.isPinching) {
+      return;
+    }
+    handleMouseUp();
+  };
+
+  // Native Non-Passive Event Listeners for Smooth 2-Finger Pinch-to-Zoom & Trackpad Wheel Zoom
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleTouchStartNative = (e) => {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        const t1 = e.touches[0];
+        const t2 = e.touches[1];
+        const dist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+        pinchRef.current = {
+          startDist: dist,
+          startZoom: zoomScaleRef.current,
+          isPinching: true,
+        };
+        setIsPinching(true);
+        setIsDrawing(false);
+        setCurrentShape(null);
+        setDragState(null);
+        setDragOffset(null);
+      }
+    };
+
+    const handleTouchMoveNative = (e) => {
+      if (e.touches.length === 2 && pinchRef.current.isPinching) {
+        e.preventDefault();
+        const t1 = e.touches[0];
+        const t2 = e.touches[1];
+        const currentDist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+        if (pinchRef.current.startDist > 0 && onZoomChange) {
+          const ratio = currentDist / pinchRef.current.startDist;
+          const nextZoom = Math.min(3.0, Math.max(0.4, pinchRef.current.startZoom * ratio));
+          onZoomChange(Number(nextZoom.toFixed(2)));
+        }
+      }
+    };
+
+    const handleTouchEndNative = (e) => {
+      if (pinchRef.current.isPinching && e.touches.length < 2) {
+        pinchRef.current.isPinching = false;
+        setIsPinching(false);
+        pinchCooldownRef.current = Date.now() + 250;
+      }
+    };
+
+    const handleWheelNative = (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        const zoomDelta = -e.deltaY * 0.005;
+        if (onZoomChange) {
+          onZoomChange((prev) => {
+            const next = Math.min(3.0, Math.max(0.4, prev + zoomDelta));
+            return Number(next.toFixed(2));
+          });
+        }
+      }
+    };
+
+    container.addEventListener('touchstart', handleTouchStartNative, { passive: false });
+    container.addEventListener('touchmove', handleTouchMoveNative, { passive: false });
+    container.addEventListener('touchend', handleTouchEndNative, { passive: false });
+    container.addEventListener('wheel', handleWheelNative, { passive: false });
+
+    return () => {
+      container.removeEventListener('touchstart', handleTouchStartNative);
+      container.removeEventListener('touchmove', handleTouchMoveNative);
+      container.removeEventListener('touchend', handleTouchEndNative);
+      container.removeEventListener('wheel', handleWheelNative);
+    };
+  }, [onZoomChange]);
+
   return (
     <div
       ref={containerRef}
@@ -1285,15 +1393,9 @@ export default function CanvasEditor({
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
-            onTouchStart={(e) => {
-              if (activeTool !== 'select') e.preventDefault();
-              handleMouseDown(e);
-            }}
-            onTouchMove={(e) => {
-              if (activeTool !== 'select') e.preventDefault();
-              handleMouseMove(e);
-            }}
-            onTouchEnd={handleMouseUp}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
             style={{
               maxWidth: '100%',
               maxHeight: 'calc(100vh - 150px)',
@@ -1309,14 +1411,18 @@ export default function CanvasEditor({
                   ? 'pointer'
                   : 'crosshair',
               display: 'block',
-              touchAction: activeTool === 'select' ? 'auto' : 'none',
+              touchAction: 'none',
+              transform: `scale(${zoomScale})`,
+              transformOrigin: 'center center',
+              transition: isPinching ? 'none' : 'transform 0.12s cubic-bezier(0.16, 1, 0.3, 1)',
+              willChange: 'transform',
             }}
           />
         </div>
       )}
 
       {/* Floating Modal for Text Annotation Input */}
-      {textPromptOpen && (
+      {textPromptOpen ? (
         <div
           style={{
             position: 'absolute',
@@ -1372,7 +1478,7 @@ export default function CanvasEditor({
             </div>
           </form>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

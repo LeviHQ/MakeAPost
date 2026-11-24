@@ -229,18 +229,17 @@ export default function ModeSidebar({
           </div>
         )}
 
-        {/* State B: AI Post Mode Studio (Phases 3 & 4) */}
-        {activeMode === 'ai' && (
+        {/* State B: AI Post Mode Studio (Kept mounted to preserve generated posts across mode toggles) */}
+        <div style={{ display: activeMode === 'ai' ? 'block' : 'none' }}>
           <AiStudio
             canvasRef={canvasRef}
             image={image}
             onSwitchToEditor={() => onModeChange('editor')}
           />
-        )}
+        </div>
 
         {/* State C: Active Image Editor Controls (Reordered & Enhanced) */}
-        {activeMode === 'editor' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+        <div style={{ display: activeMode === 'editor' ? 'flex' : 'none', flexDirection: 'column', gap: '18px' }}>
             {/* 1. Aspect Ratio */}
             <div className="card-brutal" style={{ padding: '14px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -438,16 +437,16 @@ export default function ModeSidebar({
                   gap: '6px',
                 }}
               >
-                {activeTool === 'zoom' && <span>🔍 <strong>Zoom 2x:</strong> Drag a box over any detail or code snippet to magnify it 2x.</span>}
-                {activeTool === 'spotlight' && <span>🎯 <strong>Spotlight:</strong> Drag a box to dim the surrounding image and focus attention.</span>}
-                {activeTool === 'highlighter' && <span>🖍️ <strong>Highlighter:</strong> Drag across text or lines to apply a fluorescent translucent tint.</span>}
-                {activeTool === 'badge' && <span>🔢 <strong>Step Badges:</strong> Click anywhere on canvas to drop numbered steps (1, 2, 3...).</span>}
-                {activeTool === 'circle' && <span>⭕ <strong>Circle:</strong> Drag diagonally to create an oval or circular highlight callout.</span>}
-                {activeTool === 'blur' && <span>👁️ <strong>Blur:</strong> Drag a box over sensitive API keys, passwords, or emails to redact.</span>}
-                {activeTool === 'box' && <span>⏹️ <strong>Box:</strong> Drag diagonally to frame important UI sections with a colored border.</span>}
-                {activeTool === 'arrow' && <span>↗️ <strong>Arrow:</strong> Drag from start to end to point directly at a feature or button.</span>}
-                {activeTool === 'text' && <span>💬 <strong>Text:</strong> Click anywhere on canvas to write a custom Neobrutalist pill note.</span>}
-                {activeTool === 'select' && <span>👆 <strong>Pointer:</strong> Click and drag any annotation to reposition, or select to delete.</span>}
+                {activeTool === 'zoom' && <><ZoomIn size={13} style={{ flexShrink: 0 }} /><span><strong>Zoom 2x:</strong> Drag a box over any detail or code snippet to magnify it 2x.</span></>}
+                {activeTool === 'spotlight' && <><Focus size={13} style={{ flexShrink: 0 }} /><span><strong>Spotlight:</strong> Drag a box to dim the surrounding image and focus attention.</span></>}
+                {activeTool === 'highlighter' && <><Highlighter size={13} style={{ flexShrink: 0 }} /><span><strong>Highlighter:</strong> Drag across text or lines to apply a fluorescent translucent tint.</span></>}
+                {activeTool === 'badge' && <><ListOrdered size={13} style={{ flexShrink: 0 }} /><span><strong>Step Badges:</strong> Click anywhere on canvas to drop numbered steps (1, 2, 3...).</span></>}
+                {activeTool === 'circle' && <><Circle size={13} style={{ flexShrink: 0 }} /><span><strong>Circle:</strong> Drag diagonally to create an oval or circular highlight callout.</span></>}
+                {activeTool === 'blur' && <><EyeOff size={13} style={{ flexShrink: 0 }} /><span><strong>Blur:</strong> Drag a box over sensitive API keys, passwords, or emails to redact.</span></>}
+                {activeTool === 'box' && <><Square size={13} style={{ flexShrink: 0 }} /><span><strong>Box:</strong> Drag diagonally to frame important UI sections with a colored border.</span></>}
+                {activeTool === 'arrow' && <><ArrowUpRight size={13} style={{ flexShrink: 0 }} /><span><strong>Arrow:</strong> Drag from start to end to point directly at a feature or button.</span></>}
+                {activeTool === 'text' && <><Type size={13} style={{ flexShrink: 0 }} /><span><strong>Text:</strong> Click anywhere on canvas to write a custom Neobrutalist pill note.</span></>}
+                {activeTool === 'select' && <><MousePointer size={13} style={{ flexShrink: 0 }} /><span><strong>Pointer:</strong> Click and drag any annotation to reposition, or select to delete.</span></>}
               </div>
 
               {/* Color Picker for Annotations (6 Vibrant Neobrutal Presets) */}
@@ -749,8 +748,7 @@ export default function ModeSidebar({
               </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
     </aside>
   );
 }

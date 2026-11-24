@@ -11,9 +11,11 @@ import {
   Sparkles,
   AlertCircle,
   Hammer,
+  Rocket,
+  Code2,
   Zap,
   BookOpen,
-  Code2,
+  Lightbulb,
   Copy,
   Check,
   ExternalLink,
@@ -22,13 +24,16 @@ import {
   Lock,
   Download,
   X,
+  Loader2,
 } from 'lucide-react';
 
 const TONE_OPTIONS = [
-  { id: 'Build in Public', label: 'Build in Public', icon: Hammer, desc: 'Raw, transparent metrics & learnings' },
-  { id: 'Viral Hook', label: 'Viral Hook', icon: Zap, desc: 'Punchy curiosity gaps and scroll-stoppers' },
-  { id: 'Storytelling', label: 'Storytelling', icon: BookOpen, desc: 'Problem-solution narrative journey' },
-  { id: 'Tech Breakdown', label: 'Tech Breakdown', icon: Code2, desc: 'Architecture, stack details & code review' },
+  { id: 'Build in Public', label: 'Build in Public', icon: Hammer, desc: 'Transparent metrics, MRR milestones & builder lessons' },
+  { id: 'Ship & Launch', label: 'Ship & Launch', icon: Rocket, desc: 'Feature drops, v1.0 releases, repos & project launches' },
+  { id: 'Tech Breakdown', label: 'Tech Breakdown', icon: Code2, desc: 'Architecture deep-dive, stack choices & code review' },
+  { id: 'Viral Hook', label: 'Viral Hook', icon: Zap, desc: 'Scroll-stopping curiosity gaps & contrarian one-liners' },
+  { id: 'Founder Story', label: 'Founder Story', icon: BookOpen, desc: 'Problem-solution narrative & debugging war stories' },
+  { id: 'How It Works', label: 'How It Works (ELI5)', icon: Lightbulb, desc: 'Dead-simple explanation of complex technical concepts' },
 ];
 
 export default function AiStudio({
@@ -56,6 +61,17 @@ export default function AiStudio({
   const [isSharing, setIsSharing] = useState(false);
   const [shareToast, setShareToast] = useState(null);
 
+  // Reset generated posts when image is cleared (e.g. user clicked Reset / New Image)
+  useEffect(() => {
+    if (!image) {
+      setPosts(null);
+      setEditedPosts({ x: '', linkedin: '', reddit: '' });
+      setPrompt('');
+      setThumbnailUrl(null);
+      setErrorMessage(null);
+    }
+  }, [image]);
+
   const handlePlatformChange = (p) => {
     setActivePlatform(p);
     setShareToast(null);
@@ -80,10 +96,23 @@ export default function AiStudio({
       const postText = editedPosts[platform] || currentPostText || '';
       const result = await copyImageAndOpenComposer(canvas, platform, postText);
 
-      if (result.copied) {
+      if (result.cancelled) {
+        setIsSharing(false);
+        return;
+      }
+
+      if (result.directShare) {
         setShareToast({
           platform: platformLabel,
-          message: `✅ Image copied to clipboard! Press Ctrl+V (or Paste) inside the ${platformLabel} composer.`,
+          message: `Shared directly to ${platformLabel} with image and text attached!`,
+          dataUrl: result.dataUrl,
+          isDownload: false,
+          isError: false,
+        });
+      } else if (result.copied) {
+        setShareToast({
+          platform: platformLabel,
+          message: `Post text pre-filled in ${platformLabel}! Image copied to clipboard — press Ctrl+V (or Paste) in the composer to attach screenshot.`,
           dataUrl: result.dataUrl,
           isDownload: false,
           isError: false,
@@ -91,7 +120,7 @@ export default function AiStudio({
       } else {
         setShareToast({
           platform: platformLabel,
-          message: `📥 Image downloaded! Attach the downloaded screenshot inside the ${platformLabel} composer.`,
+          message: `Post text pre-filled in ${platformLabel}! Screenshot downloaded — click attach in the composer.`,
           dataUrl: result.dataUrl,
           isDownload: true,
           isError: false,
@@ -285,7 +314,7 @@ export default function AiStudio({
             <span>Continue with Google</span>
           </button>
           <div style={{ fontSize: '0.72rem', color: 'var(--muted)', fontFamily: 'var(--font-mono)' }}>
-            Tip: 🎨 Image Editor on the left is 100% free &amp; unlimited without login!
+            Tip: Image Editor on the left is 100% free &amp; unlimited without login!
           </div>
         </div>
       )}
@@ -344,13 +373,13 @@ export default function AiStudio({
                 className="btn-brutal"
                 style={{
                   padding: '8px 6px',
-                  fontSize: '0.75rem',
+                  fontSize: '0.74rem',
+                  fontWeight: 700,
                   backgroundColor: isSelected ? 'var(--accent-yellow)' : 'var(--card-bg-subtle)',
                   color: isSelected ? '#09090B' : 'var(--ink)',
                   boxShadow: isSelected ? '2px 2px 0px var(--shadow-color)' : 'none',
                   border: '1.5px solid var(--border-color)',
-                  whiteSpace: 'normal',
-                  textAlign: 'center',
+                  whiteSpace: 'nowrap',
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -364,6 +393,32 @@ export default function AiStudio({
             );
           })}
         </div>
+
+        {/* Dynamic Micro-Description for Selected Tone */}
+        {(() => {
+          const selected = TONE_OPTIONS.find((t) => t.id === tone);
+          return selected ? (
+            <div
+              style={{
+                backgroundColor: 'var(--card-bg-subtle)',
+                padding: '7px 10px',
+                borderRadius: 'var(--radius-sm)',
+                border: '1px solid var(--border-color)',
+                fontSize: '0.72rem',
+                color: 'var(--ink)',
+                lineHeight: 1.4,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+            >
+              <Lightbulb size={13} style={{ flexShrink: 0, color: 'var(--ink)' }} />
+              <div>
+                <strong>{selected.label}:</strong> {selected.desc}
+              </div>
+            </div>
+          ) : null;
+        })()}
       </div>
 
       {/* 5. Context Prompt Textarea */}
@@ -430,15 +485,13 @@ export default function AiStudio({
         >
           {isLoading ? (
             <>
-              <span
+              <Loader2
+                size={18}
+                className="animate-spin"
                 style={{
                   display: 'inline-block',
-                  width: '14px',
-                  height: '14px',
-                  border: '2px solid #09090B',
-                  borderTopColor: 'transparent',
-                  borderRadius: '50%',
-                  animation: 'spin 0.8s linear infinite',
+                  animation: 'spin 0.75s linear infinite',
+                  color: '#09090B',
                 }}
               />
               <span>Analyzing Screenshot &amp; Writing...</span>
@@ -664,96 +717,102 @@ export default function AiStudio({
               </div>
             )}
 
-            {/* Action Buttons: 1-Click Native Intent + Clipboard & Copy Text */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                {/* 1. Primary 1-Click Native Composer Intent Button */}
-                {activePlatform === 'x' && (
-                  <button
-                    type="button"
-                    className="btn-brutal btn-primary"
-                    style={{
-                      flex: 1,
-                      padding: '10px 14px',
-                      fontSize: '0.84rem',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '8px',
-                    }}
-                    disabled={isSharing}
-                    onClick={() => handlePostOnPlatform('x')}
-                    title="Copy canvas image to clipboard and open X post composer"
-                  >
-                    <XIcon size={14} />
-                    <span>{isSharing ? 'Copying & Opening...' : '🚀 Post on X'}</span>
-                  </button>
-                )}
-
-                {activePlatform === 'linkedin' && (
-                  <button
-                    type="button"
-                    className="btn-brutal btn-primary"
-                    style={{
-                      flex: 1,
-                      padding: '10px 14px',
-                      fontSize: '0.84rem',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '8px',
-                    }}
-                    disabled={isSharing}
-                    onClick={() => handlePostOnPlatform('linkedin')}
-                    title="Copy canvas image to clipboard and open LinkedIn post composer"
-                  >
-                    <LinkedInIcon size={15} />
-                    <span>{isSharing ? 'Copying & Opening...' : '🚀 Post on LinkedIn'}</span>
-                  </button>
-                )}
-
-                {activePlatform === 'reddit' && (
-                  <button
-                    type="button"
-                    className="btn-brutal btn-primary"
-                    style={{
-                      flex: 1,
-                      padding: '10px 14px',
-                      fontSize: '0.84rem',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '8px',
-                    }}
-                    disabled={isSharing}
-                    onClick={() => handlePostOnPlatform('reddit')}
-                    title="Copy canvas image to clipboard and open Reddit submission composer"
-                  >
-                    <RedditIcon size={16} />
-                    <span>{isSharing ? 'Copying & Opening...' : '🚀 Post on Reddit'}</span>
-                  </button>
-                )}
-
-                {/* Secondary Copy Text Button */}
+            {/* Action Buttons: 1-Click Native Intent + Clipboard & Copy Text (Full Width Stack) */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+              {/* 1. Primary 1-Click Native Composer Intent Button (Full Width) */}
+              {activePlatform === 'x' && (
                 <button
                   type="button"
-                  className="btn-brutal"
+                  className="btn-brutal btn-primary"
                   style={{
-                    padding: '10px 16px',
-                    fontSize: '0.82rem',
+                    width: '100%',
+                    padding: '11px 14px',
+                    fontSize: '0.85rem',
+                    fontWeight: 800,
                     display: 'inline-flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '6px',
-                    backgroundColor: 'var(--surface)',
+                    gap: '8px',
                   }}
-                  onClick={() => handleCopy(currentPostText)}
-                  title="Copy generated post text to clipboard"
+                  disabled={isSharing}
+                  onClick={() => handlePostOnPlatform('x')}
+                  title="Share directly or open X with pre-filled text and image"
                 >
-                  {copied ? <Check size={14} /> : <Copy size={14} />}
-                  <span>{copied ? 'Copied!' : 'Copy Text'}</span>
+                  <XIcon size={14} />
+                  <span>{isSharing ? 'Sharing...' : 'Post on X'}</span>
+                  <ExternalLink size={13} style={{ opacity: 0.7 }} />
                 </button>
-              </div>
+              )}
+
+              {activePlatform === 'linkedin' && (
+                <button
+                  type="button"
+                  className="btn-brutal btn-primary"
+                  style={{
+                    width: '100%',
+                    padding: '11px 14px',
+                    fontSize: '0.85rem',
+                    fontWeight: 800,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                  }}
+                  disabled={isSharing}
+                  onClick={() => handlePostOnPlatform('linkedin')}
+                  title="Share directly or open LinkedIn with pre-filled text and image"
+                >
+                  <LinkedInIcon size={15} />
+                  <span>{isSharing ? 'Sharing...' : 'Post on LinkedIn'}</span>
+                  <ExternalLink size={13} style={{ opacity: 0.7 }} />
+                </button>
+              )}
+
+              {activePlatform === 'reddit' && (
+                <button
+                  type="button"
+                  className="btn-brutal btn-primary"
+                  style={{
+                    width: '100%',
+                    padding: '11px 14px',
+                    fontSize: '0.85rem',
+                    fontWeight: 800,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                  }}
+                  disabled={isSharing}
+                  onClick={() => handlePostOnPlatform('reddit')}
+                  title="Share directly or open Reddit with pre-filled text and image"
+                >
+                  <RedditIcon size={16} />
+                  <span>{isSharing ? 'Sharing...' : 'Post on Reddit'}</span>
+                  <ExternalLink size={13} style={{ opacity: 0.7 }} />
+                </button>
+              )}
+
+              {/* 2. Secondary Full-Width Copy Text Button */}
+              <button
+                type="button"
+                className="btn-brutal"
+                style={{
+                  width: '100%',
+                  padding: '10px 16px',
+                  fontSize: '0.84rem',
+                  fontWeight: 700,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  backgroundColor: 'var(--surface)',
+                }}
+                onClick={() => handleCopy(currentPostText)}
+                title="Copy generated post text to clipboard"
+              >
+                {copied ? <Check size={14} style={{ color: '#16A34A' }} /> : <Copy size={14} />}
+                <span>{copied ? 'Copied to Clipboard!' : 'Copy Text'}</span>
+              </button>
 
               {/* Neobrutalist Notification Toast Banner */}
               {shareToast && (

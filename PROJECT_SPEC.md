@@ -14,7 +14,8 @@ The `/editor` studio workspace operates on a strict **30/70 Neobrutalist Split-S
 ### Right Panel (70% Width) — Main Visual Canvas & Dropzone
 - **Always Visible:** Remains permanently visible across all modes so users never lose sight of their visual context.
 - **Image Dropzone & Ingestion:** Supports `Ctrl+V` clipboard paste from anywhere on the screen, file drag-and-drop, or browse button.
-- **Native HTML5 Canvas Engine:** 100% client-side rendering with instant feedback for background gradients, padding, corner radius, drop shadows, aspect ratios (`16:9`, `4:3`, `1:1`, `9:16`), and interactive redaction/blur boxes.
+- **Native HTML5 Canvas Engine:** 100% client-side rendering with instant feedback for background gradients, padding, corner radius, drop shadows, aspect ratios (`16:9`, `4:3`, `1:1`, `9:16`), interactive redaction/blur boxes, and 10-tool annotation suite.
+- **Two-Finger Pinch-to-Zoom & Navigation:** Native multi-touch gesture support (`0.4x` to `3.0x` zoom), laptop trackpad pinch-to-zoom (`Ctrl + Wheel`), non-passive whole-page zoom prevention, and tactile floating bottom-left zoom controls (`[ − | 100% | + ]`).
 - **Export Toolbar:** Instant client-side PNG export (`canvas.toBlob`), clipboard copy, and zoom controls.
 
 ### Left Panel (30% Width) — Dynamic Mode Panel
@@ -165,7 +166,7 @@ The 30% control sidebar features two distinct UI states:
 
 [x] Phase 3: Dual-Stage Image Compression & Gemini Multimodal Single-Shot API (imageCompress.js, sharp backend compression gate, src/app/api/generate/route.js, docs/03-ai-generator.md)
 
-[x] Phase 4: Token-Optimized AI Social Studio Mode in 30% Sidebar & Live Post Previews (AiStudio.js, Tone Chips, Editable Post Previews, X Character Limit Tracker & Direct X Tweet Intent, docs/03-ai-generator.md)
+[x] Phase 4: Token-Optimized AI Social Studio Mode in 30% Sidebar with 6 Developer Tones (Build in Public, Ship & Launch, Tech Breakdown, Viral Hook, Founder Story, How It Works) & Live Post Previews (AiStudio.js, Tone Chips, Editable Post Previews, X Character Limit Tracker & Direct X Tweet Intent, docs/03-ai-generator.md)
 
 [x] Design System Polish & Dark Contrast Overhaul: Universal Lucide & Brand Vector Icons, High-Contrast Neobrutalist Dark Tokens (`--border-color: #E4E4E7`), and Text Isolation (SocialIcons.js, ThemeToggle.js, globals.css, docs/06-design-icons-and-dark-contrast.md)
 

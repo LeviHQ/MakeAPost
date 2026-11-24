@@ -64,19 +64,22 @@ export async function POST(req) {
       );
     }
 
-    // 4. Backend Compression Gate (Sharp: 640px max width, 60% JPEG)
-    // Ensures visual data fits inside 1 single minimal vision token tile
+    // 4. Backend Compression Gate (Fast-Path: bypass Sharp if client already compressed <= 85KB)
     let finalBase64;
     try {
       const cleanBase64 = imageBase64.replace(/^data:image\/[a-zA-Z0-9.+]+;base64,/, '');
       const rawBuffer = Buffer.from(cleanBase64, 'base64');
 
-      const compressedBuffer = await sharp(rawBuffer)
-        .resize({ width: 640, withoutEnlargement: true })
-        .jpeg({ quality: 60 })
-        .toBuffer();
-
-      finalBase64 = compressedBuffer.toString('base64');
+      if (rawBuffer.length <= 85000) {
+        // Fast-path: client already downscaled & compressed image
+        finalBase64 = cleanBase64;
+      } else {
+        const compressedBuffer = await sharp(rawBuffer)
+          .resize({ width: 640, withoutEnlargement: true })
+          .jpeg({ quality: 60 })
+          .toBuffer();
+        finalBase64 = compressedBuffer.toString('base64');
+      }
     } catch (compressionErr) {
       console.error('Backend image compression error:', compressionErr);
       return NextResponse.json(
@@ -88,10 +91,26 @@ export async function POST(req) {
     // 5. Gemini Multimodal Single-Shot Configuration
     const genAI = new GoogleGenerativeAI(apiKey);
 
+    const TONE_INSTRUCTIONS = {
+      'Build in Public':
+        'Transparent, authentic, and metrics-driven. Highlight raw numbers (MRR, user growth, benchmarks, conversion rates, or milestones shown in the image), lessons learned, and behind-the-scenes progress.',
+      'Ship & Launch':
+        'High-energy, celebratory, and action-oriented. Announce the new feature drop, open-source repo, UI overhaul, or v1.0 release visible in the screenshot. Clearly convey what problem it solves and invite developers to test it out.',
+      'Tech Breakdown':
+        'Engineering-focused, architectural, and educational. Analyze the code snippet, tech stack, data pipeline, performance win, or database schema shown in the image. Speak peer-to-peer to software engineers and tech leads.',
+      'Viral Hook':
+        'Scroll-stopping, punchy, and curiosity-gap driven. Open with an arresting first line that stops developers mid-scroll, challenges conventional industry wisdom, or shares an unexpected tech discovery.',
+      'Founder Story':
+        'Narrative-driven, vulnerable, and relatable. Frame the post as a problem-solution journey: the initial frustration, the 2 AM debugging nightmare, the breakthrough moment, and the hard-won engineering lesson.',
+      'How It Works':
+        'Dead-simple, crystal-clear ELI5 explanation. Break down the code, algorithm, or system architecture shown in the image in plain English so even junior devs or non-technical readers understand the magic instantly.',
+    };
+
     const systemInstruction = `You are MakeAPost's viral social strategist and technical copywriter for builders, SaaS founders, and creators.
 Your task is to analyze the provided screenshot (reading all visible code, UI components, metrics, charts, and user-drawn highlight annotations) and generate 3 tailored social media posts in a single shot.
 
 Selected Tone: "${tone}"
+Tone Directive: ${TONE_INSTRUCTIONS[tone] || TONE_INSTRUCTIONS['Build in Public']}
 ${prompt ? `Additional User Context: "${prompt}"` : ''}
 
 Strict Platform Guidelines:
@@ -140,9 +159,10 @@ Return strictly a valid JSON object matching this schema:
 
     const candidateModels = [
       process.env.GEMINI_MODEL,
-      'gemini-3.5-flash',
+      'gemini-flash-lite-latest',
       'gemini-3.5-flash-lite',
-      'gemini-3.8-flash',
+      'gemini-3.1-flash-lite',
+      'gemini-3.5-flash',
     ].filter(Boolean);
 
     let result = null;
@@ -157,6 +177,7 @@ Return strictly a valid JSON object matching this schema:
             responseMimeType: 'application/json',
             responseSchema,
             temperature: 0.7,
+            maxOutputTokens: 650,
           },
         });
 
