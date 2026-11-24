@@ -110,6 +110,8 @@ export default function CanvasEditor({
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentShape, setCurrentShape] = useState(null);
+  const [dragState, setDragState] = useState(null);
+  const [dragOffset, setDragOffset] = useState(null);
   const [textPromptOpen, setTextPromptOpen] = useState(false);
   const [pendingTextPos, setPendingTextPos] = useState(null);
   const [textInputVal, setTextInputVal] = useState('');
@@ -446,11 +448,75 @@ export default function CanvasEditor({
       ctx.restore();
     }
 
-    // Step H: Draw Annotations
-    const allAnnotations = currentShape ? [...annotations, currentShape] : annotations;
+    // Step H: Draw Annotations (10 Tools: Select, Box, Circle, Arrow, Text, Blur, Zoom 2x, Highlight, Spotlight, Step Badges)
+    let allAnnotations = currentShape ? [...annotations, currentShape] : annotations;
+    if (dragOffset) {
+      allAnnotations = allAnnotations.map((ann) => {
+        if (ann.id !== dragOffset.id) return ann;
+        if (ann.type === 'arrow') {
+          return {
+            ...ann,
+            x1: ann.x1 + dragOffset.dx,
+            y1: ann.y1 + dragOffset.dy,
+            x2: ann.x2 + dragOffset.dx,
+            y2: ann.y2 + dragOffset.dy,
+          };
+        } else {
+          return {
+            ...ann,
+            x: ann.x + dragOffset.dx,
+            y: ann.y + dragOffset.dy,
+          };
+        }
+      });
+    }
 
+    // 1. Draw Spotlight Masks First (Dims entire content canvas with crisp cutouts over spotlighted areas)
+    const spotlights = allAnnotations.filter((a) => a.type === 'spotlight');
+    if (spotlights.length > 0) {
+      ctx.save();
+      ctx.beginPath();
+      // Outer content frame
+      ctx.rect(contentX, contentY, contentW, contentH);
+      // Cutout rectangles for each spotlight
+      spotlights.forEach((sp) => {
+        const sbx = Math.min(sp.x, sp.x + sp.w);
+        const sby = Math.min(sp.y, sp.y + sp.h);
+        const sbw = Math.abs(sp.w);
+        const sbh = Math.abs(sp.h);
+        if (sbw > 4 && sbh > 4) {
+          ctx.rect(sbx, sby, sbw, sbh);
+        }
+      });
+      // Dim everything except the cutouts
+      ctx.fillStyle = 'rgba(9, 9, 11, 0.58)';
+      ctx.fill('evenodd');
+
+      // Draw focus border and badge on each spotlight
+      spotlights.forEach((sp) => {
+        const sbx = Math.min(sp.x, sp.x + sp.w);
+        const sby = Math.min(sp.y, sp.y + sp.h);
+        const sbw = Math.abs(sp.w);
+        const sbh = Math.abs(sp.h);
+        if (sbw > 4 && sbh > 4) {
+          ctx.strokeStyle = sp.color || '#FFD93D';
+          ctx.lineWidth = 3;
+          if (ctx.roundRect) {
+            ctx.beginPath();
+            ctx.roundRect(sbx, sby, sbw, sbh, 6);
+            ctx.stroke();
+          } else {
+            ctx.strokeRect(sbx, sby, sbw, sbh);
+          }
+        }
+      });
+      ctx.restore();
+    }
+
+    // 2. Draw All Other Annotations
     allAnnotations.forEach((ann) => {
       ctx.save();
+
       if (ann.type === 'blur') {
         // True Pixelation Redaction
         const bx = Math.min(ann.x, ann.x + ann.w);
@@ -479,13 +545,181 @@ export default function CanvasEditor({
             ctx.fillRect(bx, by, bw, bh);
           }
 
-          // Subtle Privacy Outline & Badge
+          // Subtle Privacy Outline
           ctx.strokeStyle = '#FFD93D';
           ctx.lineWidth = 1.5;
           ctx.setLineDash([4, 3]);
           ctx.strokeRect(bx, by, bw, bh);
           ctx.setLineDash([]);
         }
+      } else if (ann.type === 'zoom') {
+        // High-Resolution 2x Loupe / Magnifier Lens
+        const bx = Math.min(ann.x, ann.x + ann.w);
+        const by = Math.min(ann.y, ann.y + ann.h);
+        const bw = Math.abs(ann.w);
+        const bh = Math.abs(ann.h);
+
+        if (bw > 8 && bh > 8 && image?.element) {
+          const cx = bx + bw / 2;
+          const cy = by + bh / 2;
+
+          const imgX = contentX;
+          const imgY = contentY + titlebarHeight;
+          const targetImgW = contentW;
+          const targetImgH = contentH - titlebarHeight;
+
+          const origScaleX = image.element.naturalWidth / targetImgW;
+          const origScaleY = image.element.naturalHeight / targetImgH;
+
+          const imgCx = (cx - imgX) * origScaleX;
+          const imgCy = (cy - imgY) * origScaleY;
+
+          const zoomFactor = 2.0;
+          const srcW = (bw * origScaleX) / zoomFactor;
+          const srcH = (bh * origScaleY) / zoomFactor;
+
+          const srcX = Math.max(0, Math.min(image.element.naturalWidth - srcW, imgCx - srcW / 2));
+          const srcY = Math.max(0, Math.min(image.element.naturalHeight - srcH, imgCy - srcH / 2));
+
+          ctx.save();
+
+          // Hard Neobrutalist Shadow for Zoom Loupe
+          ctx.fillStyle = '#09090B';
+          if (ctx.roundRect) {
+            ctx.beginPath();
+            ctx.roundRect(bx + 4, by + 4, bw, bh, 8);
+            ctx.fill();
+          } else {
+            ctx.fillRect(bx + 4, by + 4, bw, bh);
+          }
+
+          // Rounded Clip for Magnified Image
+          ctx.save();
+          ctx.beginPath();
+          if (ctx.roundRect) {
+            ctx.roundRect(bx, by, bw, bh, 8);
+          } else {
+            ctx.rect(bx, by, bw, bh);
+          }
+          ctx.clip();
+
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(bx, by, bw, bh);
+
+          try {
+            ctx.drawImage(image.element, srcX, srcY, srcW, srcH, bx, by, bw, bh);
+          } catch {
+            // fallback safe
+          }
+          ctx.restore();
+
+          // Crisp Neobrutalist Border on Loupe
+          ctx.strokeStyle = ann.color || '#FFD93D';
+          ctx.lineWidth = 3.5;
+          if (ctx.roundRect) {
+            ctx.beginPath();
+            ctx.roundRect(bx, by, bw, bh, 8);
+            ctx.stroke();
+          } else {
+            ctx.strokeRect(bx, by, bw, bh);
+          }
+
+          // Corner "2x ZOOM" Tag
+          if (bw > 55 && bh > 35) {
+            const tagText = '2x ZOOM';
+            ctx.font = '800 10px -apple-system, BlinkMacSystemFont, "Segoe UI", monospace';
+            const tMetrics = ctx.measureText(tagText);
+            const tW = tMetrics.width + 10;
+            const tH = 17;
+            const tX = bx + bw - tW - 5;
+            const tY = by + 5;
+
+            ctx.fillStyle = '#09090B';
+            ctx.fillRect(tX, tY, tW, tH);
+            ctx.strokeStyle = ann.color || '#FFD93D';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(tX, tY, tW, tH);
+
+            ctx.fillStyle = '#FFD93D';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(tagText, tX + tW / 2, tY + tH / 2);
+          }
+
+          ctx.restore();
+        }
+      } else if (ann.type === 'highlighter') {
+        // Translucent Fluorescent Marker Highlight
+        const bx = Math.min(ann.x, ann.x + ann.w);
+        const by = Math.min(ann.y, ann.y + ann.h);
+        const bw = Math.abs(ann.w);
+        const bh = Math.abs(ann.h);
+
+        if (bw > 2 && bh > 2) {
+          ctx.save();
+          ctx.globalAlpha = 0.42;
+          ctx.fillStyle = ann.color || '#FFD93D';
+          if (ctx.roundRect) {
+            ctx.beginPath();
+            ctx.roundRect(bx, by, bw, bh, 4);
+            ctx.fill();
+          } else {
+            ctx.fillRect(bx, by, bw, bh);
+          }
+          ctx.restore();
+        }
+      } else if (ann.type === 'circle') {
+        // Circular / Oval Callout
+        const bx = Math.min(ann.x, ann.x + ann.w);
+        const by = Math.min(ann.y, ann.y + ann.h);
+        const bw = Math.abs(ann.w);
+        const bh = Math.abs(ann.h);
+
+        if (bw > 2 && bh > 2) {
+          const cx = bx + bw / 2;
+          const cy = by + bh / 2;
+          const rx = bw / 2;
+          const ry = bh / 2;
+
+          ctx.save();
+          ctx.beginPath();
+          ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+          ctx.fillStyle = `${ann.color || '#EF4444'}18`;
+          ctx.fill();
+          ctx.strokeStyle = ann.color || '#EF4444';
+          ctx.lineWidth = 3.5;
+          ctx.stroke();
+          ctx.restore();
+        }
+      } else if (ann.type === 'badge') {
+        // Tactile Numbered Step Counter Badge (1, 2, 3...)
+        const r = ann.radius || 14;
+        ctx.save();
+
+        // Neobrutalist Hard Offset Shadow
+        ctx.beginPath();
+        ctx.arc(ann.x + 2, ann.y + 2, r, 0, Math.PI * 2);
+        ctx.fillStyle = '#09090B';
+        ctx.fill();
+
+        // Badge Surface Circle
+        ctx.beginPath();
+        ctx.arc(ann.x, ann.y, r, 0, Math.PI * 2);
+        ctx.fillStyle = ann.color === '#09090B' ? '#FFD93D' : (ann.color || '#FFD93D');
+        ctx.fill();
+
+        // Bold Outer Border
+        ctx.strokeStyle = '#09090B';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        // Step Number Text
+        ctx.fillStyle = '#09090B';
+        ctx.font = '800 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(String(ann.step || 1), ann.x, ann.y + 0.5);
+        ctx.restore();
       } else if (ann.type === 'box') {
         const bx = Math.min(ann.x, ann.x + ann.w);
         const by = Math.min(ann.y, ann.y + ann.h);
@@ -554,8 +788,12 @@ export default function CanvasEditor({
           const w = Math.abs(ann.x2 - ann.x1) + 16;
           const h = Math.abs(ann.y2 - ann.y1) + 16;
           ctx.strokeRect(minX, minY, w, h);
+        } else if (ann.type === 'badge') {
+          ctx.beginPath();
+          ctx.arc(ann.x, ann.y, (ann.radius || 14) + 6, 0, Math.PI * 2);
+          ctx.stroke();
         } else if (ann.type === 'text') {
-          ctx.strokeRect(ann.x - 3, ann.y - 3, 100, 32);
+          ctx.strokeRect(ann.x - 3, ann.y - 3, 110, 32);
         } else {
           ctx.strokeRect(
             Math.min(ann.x, ann.x + ann.w) - 4,
@@ -674,7 +912,7 @@ export default function CanvasEditor({
     const pt = getCanvasPoint(e);
 
     if (activeTool === 'select') {
-      // Hit test existing annotations
+      // Hit test existing annotations (all 10 types supported)
       const clicked = [...annotations].reverse().find((ann) => {
         if (ann.type === 'arrow') {
           const minX = Math.min(ann.x1, ann.x2) - 10;
@@ -682,9 +920,20 @@ export default function CanvasEditor({
           const minY = Math.min(ann.y1, ann.y2) - 10;
           const maxY = Math.max(ann.y1, ann.y2) + 10;
           return pt.x >= minX && pt.x <= maxX && pt.y >= minY && pt.y <= maxY;
+        } else if (ann.type === 'badge') {
+          return Math.hypot(pt.x - ann.x, pt.y - ann.y) <= (ann.radius || 14) + 6;
+        } else if (ann.type === 'circle') {
+          const cx = ann.x + ann.w / 2;
+          const cy = ann.y + ann.h / 2;
+          const rx = Math.max(6, Math.abs(ann.w) / 2);
+          const ry = Math.max(6, Math.abs(ann.h) / 2);
+          const dx = pt.x - cx;
+          const dy = pt.y - cy;
+          return (dx * dx) / (rx * rx) + (dy * dy) / (ry * ry) <= 1.25;
         } else if (ann.type === 'text') {
-          return pt.x >= ann.x && pt.x <= ann.x + 120 && pt.y >= ann.y && pt.y <= ann.y + 35;
+          return pt.x >= ann.x && pt.x <= ann.x + 130 && pt.y >= ann.y && pt.y <= ann.y + 35;
         } else {
+          // box, blur, zoom, highlighter, spotlight
           const bx = Math.min(ann.x, ann.x + ann.w);
           const by = Math.min(ann.y, ann.y + ann.h);
           const bw = Math.abs(ann.w);
@@ -692,8 +941,16 @@ export default function CanvasEditor({
           return pt.x >= bx && pt.x <= bx + bw && pt.y >= by && pt.y <= by + bh;
         }
       });
+
       // Click on blank area deselects!
       onSelectAnnotation(clicked ? clicked.id : null);
+      if (clicked) {
+        setDragState({
+          id: clicked.id,
+          startPt: pt,
+          origAnn: { ...clicked },
+        });
+      }
       return;
     }
 
@@ -707,7 +964,24 @@ export default function CanvasEditor({
       return;
     }
 
-    if (activeTool === 'box' || activeTool === 'blur') {
+    if (activeTool === 'badge') {
+      // 1-Click Placement for Numbered Step Badges (1, 2, 3...)
+      const badgeCount = annotations.filter((a) => a.type === 'badge').length;
+      const newBadge = {
+        id: `ann_${Date.now()}`,
+        type: 'badge',
+        x: pt.x,
+        y: pt.y,
+        step: badgeCount + 1,
+        radius: 14,
+        color: annotationColor || '#FFD93D',
+      };
+      onAnnotationsChange([...annotations, newBadge]);
+      return;
+    }
+
+    const SHAPE_TOOLS = ['box', 'blur', 'zoom', 'circle', 'highlighter', 'spotlight'];
+    if (SHAPE_TOOLS.includes(activeTool)) {
       setIsDrawing(true);
       setCurrentShape({
         id: `ann_${Date.now()}`,
@@ -733,10 +1007,21 @@ export default function CanvasEditor({
   };
 
   const handleMouseMove = (e) => {
+    // 1. Repositioning Annotation in Select Mode (Smooth real-time preview via dragOffset)
+    if (dragState) {
+      const pt = getCanvasPoint(e);
+      const dx = pt.x - dragState.startPt.x;
+      const dy = pt.y - dragState.startPt.y;
+      setDragOffset({ id: dragState.id, dx, dy });
+      return;
+    }
+
+    // 2. Active Drawing
     if (!isDrawing || !currentShape) return;
     const pt = getCanvasPoint(e);
 
-    if (currentShape.type === 'box' || currentShape.type === 'blur') {
+    const SHAPE_TOOLS = ['box', 'blur', 'zoom', 'circle', 'highlighter', 'spotlight'];
+    if (SHAPE_TOOLS.includes(currentShape.type)) {
       setCurrentShape((prev) => (prev ? { ...prev, w: pt.x - prev.x, h: pt.y - prev.y } : null));
     } else if (currentShape.type === 'arrow') {
       setCurrentShape((prev) => (prev ? { ...prev, x2: pt.x, y2: pt.y } : null));
@@ -744,12 +1029,41 @@ export default function CanvasEditor({
   };
 
   const handleMouseUp = () => {
+    // 1. Commit Repositioned Annotation once on mouse release
+    if (dragState) {
+      if (dragOffset && (Math.abs(dragOffset.dx) > 1 || Math.abs(dragOffset.dy) > 1)) {
+        const finalAnnotations = annotations.map((ann) => {
+          if (ann.id !== dragState.id) return ann;
+          if (ann.type === 'arrow') {
+            return {
+              ...ann,
+              x1: dragState.origAnn.x1 + dragOffset.dx,
+              y1: dragState.origAnn.y1 + dragOffset.dy,
+              x2: dragState.origAnn.x2 + dragOffset.dx,
+              y2: dragState.origAnn.y2 + dragOffset.dy,
+            };
+          } else {
+            return {
+              ...ann,
+              x: dragState.origAnn.x + dragOffset.dx,
+              y: dragState.origAnn.y + dragOffset.dy,
+            };
+          }
+        });
+        onAnnotationsChange(finalAnnotations);
+      }
+      setDragState(null);
+      setDragOffset(null);
+      return;
+    }
+
     if (!isDrawing || !currentShape) return;
     setIsDrawing(false);
 
     // Filter out micro-clicks (< 6px)
     let isValid = false;
-    if (currentShape.type === 'box' || currentShape.type === 'blur') {
+    const SHAPE_TOOLS = ['box', 'blur', 'zoom', 'circle', 'highlighter', 'spotlight'];
+    if (SHAPE_TOOLS.includes(currentShape.type)) {
       isValid = Math.abs(currentShape.w) > 6 && Math.abs(currentShape.h) > 6;
     } else if (currentShape.type === 'arrow') {
       const dist = Math.hypot(currentShape.x2 - currentShape.x1, currentShape.y2 - currentShape.y1);
@@ -758,7 +1072,6 @@ export default function CanvasEditor({
 
     if (isValid) {
       onAnnotationsChange([...annotations, currentShape]);
-      // BUG FIX: Do NOT automatically set selectedAnnotationId, so no dashed box lingers!
     }
     setCurrentShape(null);
   };
@@ -987,9 +1300,13 @@ export default function CanvasEditor({
               objectFit: 'contain',
               cursor:
                 activeTool === 'select'
-                  ? 'default'
+                  ? dragState
+                    ? 'grabbing'
+                    : 'default'
                   : activeTool === 'text'
                   ? 'text'
+                  : activeTool === 'badge'
+                  ? 'pointer'
                   : 'crosshair',
               display: 'block',
               touchAction: activeTool === 'select' ? 'auto' : 'none',

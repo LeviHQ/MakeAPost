@@ -6,7 +6,7 @@ import Logo from '@/components/Logo';
 import NavbarAuth from '@/components/NavbarAuth';
 import CanvasEditor from '@/components/CanvasEditor';
 import ModeSidebar from '@/components/ModeSidebar';
-import { RotateCcw, Copy, Download, Image as ImageIcon, Sliders, Zap, ArrowRight, Menu, X, Home } from 'lucide-react';
+import { RotateCcw, Copy, Download, Image as ImageIcon, Sliders, Zap, ArrowRight, Menu, X, Home, Undo2, Redo2 } from 'lucide-react';
 import styles from './editor.module.css';
 
 export default function EditorPage() {
@@ -41,6 +41,10 @@ export default function EditorPage() {
   const [annotations, setAnnotations] = useState([]);
   const [selectedAnnotationId, setSelectedAnnotationId] = useState(null);
 
+  // Undo / Redo History Stacks
+  const [undoStack, setUndoStack] = useState([]);
+  const [redoStack, setRedoStack] = useState([]);
+
   // Toast / Feedback State
   const [toastMessage, setToastMessage] = useState(null);
 
@@ -51,33 +55,101 @@ export default function EditorPage() {
     }, 2500);
   }, []);
 
-  // Keyboard Delete Annotation Listener
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedAnnotationId) {
-        // Prevent deleting if typing in input
-        const targetTag = e.target?.tagName?.toLowerCase();
-        if (targetTag === 'input' || targetTag === 'textarea') return;
+  // Record Undo State on New Annotation / Edit
+  const handleAnnotationsChange = useCallback((newAnnotations) => {
+    setUndoStack((prev) => [...prev, annotations]);
+    setRedoStack([]);
+    setAnnotations(newAnnotations);
+  }, [annotations]);
 
-        setAnnotations((prev) => prev.filter((ann) => ann.id !== selectedAnnotationId));
-        setSelectedAnnotationId(null);
-        e.preventDefault();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedAnnotationId]);
+  // Undo (Back ↩️)
+  const handleUndo = useCallback(() => {
+    if (undoStack.length === 0) return;
+    const previous = undoStack[undoStack.length - 1];
+    setUndoStack((prev) => prev.slice(0, prev.length - 1));
+    setRedoStack((prev) => [...prev, annotations]);
+    setAnnotations(previous);
+    setSelectedAnnotationId(null);
+    showToast('Undo: Step Back ↩️');
+  }, [undoStack, annotations, showToast]);
+
+  // Redo (Next ↪️)
+  const handleRedo = useCallback(() => {
+    if (redoStack.length === 0) return;
+    const next = redoStack[redoStack.length - 1];
+    setRedoStack((prev) => prev.slice(0, prev.length - 1));
+    setUndoStack((prev) => [...prev, annotations]);
+    setAnnotations(next);
+    setSelectedAnnotationId(null);
+    showToast('Redo: Step Forward ↪️');
+  }, [redoStack, annotations, showToast]);
+
+  // Delete Selected Annotation
+  const handleDeleteSelectedAnnotation = useCallback(() => {
+    if (selectedAnnotationId) {
+      setUndoStack((prev) => [...prev, annotations]);
+      setRedoStack([]);
+      setAnnotations((prev) => prev.filter((ann) => ann.id !== selectedAnnotationId));
+      setSelectedAnnotationId(null);
+      showToast('Annotation deleted');
+    }
+  }, [selectedAnnotationId, annotations, showToast]);
+
+  // Clear All Annotations
+  const handleClearAnnotations = useCallback(() => {
+    if (annotations.length > 0) {
+      setUndoStack((prev) => [...prev, annotations]);
+      setRedoStack([]);
+      setAnnotations([]);
+      setSelectedAnnotationId(null);
+      showToast('All annotations cleared');
+    }
+  }, [annotations, showToast]);
 
   // Canvas Action 1: Reset / New Image
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     setImage(null);
     setAnnotations([]);
+    setUndoStack([]);
+    setRedoStack([]);
     setSelectedAnnotationId(null);
     setMobileTab('canvas');
-    showToast('Canvas cleared for new image');
-  };
+    showToast('Canvas reset. Load a new image!');
+  }, [showToast]);
 
-  // Canvas Action 2: Copy High-Res 2x PNG to Clipboard
+  // Keyboard Shortcuts (Delete, Backspace, Ctrl+Z Undo, Ctrl+Y Redo)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const targetTag = e.target?.tagName?.toLowerCase();
+      if (targetTag === 'input' || targetTag === 'textarea') return;
+
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedAnnotationId) {
+        handleDeleteSelectedAnnotation();
+        e.preventDefault();
+        return;
+      }
+
+      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+      const cmdOrCtrl = isMac ? e.metaKey : e.ctrlKey;
+
+      if (cmdOrCtrl && (e.key === 'z' || e.key === 'Z')) {
+        e.preventDefault();
+        if (e.shiftKey) {
+          handleRedo();
+        } else {
+          handleUndo();
+        }
+      } else if (cmdOrCtrl && (e.key === 'y' || e.key === 'Y')) {
+        e.preventDefault();
+        handleRedo();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedAnnotationId, handleDeleteSelectedAnnotation, handleUndo, handleRedo]);
+
+  // Canvas Action 2: Copy High-Res HD PNG to Clipboard
   const handleCopyPng = async () => {
     const canvas = canvasRef.current;
     if (!canvas || !image) {
@@ -96,7 +168,7 @@ export default function EditorPage() {
             await navigator.clipboard.write([
               new ClipboardItem({ 'image/png': blob }),
             ]);
-            showToast('Copied 2x PNG to Clipboard!');
+            showToast('Copied HD PNG to Clipboard!');
           } catch {
             showToast('Clipboard write permission denied. Use Download instead.');
           }
@@ -108,7 +180,7 @@ export default function EditorPage() {
     }, 25);
   };
 
-  // Canvas Action 3: Download High-Res 2x PNG
+  // Canvas Action 3: Download High-Res HD PNG
   const handleDownloadPng = () => {
     const canvas = canvasRef.current;
     if (!canvas || !image) {
@@ -128,26 +200,12 @@ export default function EditorPage() {
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-        showToast('Downloaded 2x PNG successfully!');
+        showToast('Downloaded HD PNG successfully!');
       } catch (err) {
         console.error(err);
         showToast('Download failed.');
       }
     }, 25);
-  };
-
-  // Delete Selected Annotation
-  const handleDeleteSelectedAnnotation = () => {
-    if (selectedAnnotationId) {
-      setAnnotations((prev) => prev.filter((ann) => ann.id !== selectedAnnotationId));
-      setSelectedAnnotationId(null);
-    }
-  };
-
-  const handleClearAnnotations = () => {
-    setAnnotations([]);
-    setSelectedAnnotationId(null);
-    showToast('All annotations cleared');
   };
 
   return (
@@ -193,7 +251,7 @@ export default function EditorPage() {
             onClick={handleCopyPng}
             disabled={!image}
             style={{ opacity: image ? 1 : 0.6 }}
-            title="Copy 2x PNG to clipboard"
+            title="Copy HD PNG to clipboard"
           >
             <Copy size={14} />
             <span>Copy PNG</span>
@@ -208,10 +266,10 @@ export default function EditorPage() {
               opacity: image ? 1 : 0.6,
               fontWeight: 800,
             }}
-            title="Download 2x PNG file"
+            title="Download HD PNG file"
           >
             <Download size={14} />
-            <span>Download 2x PNG</span>
+            <span>Download HD PNG</span>
           </button>
         </div>
 
@@ -228,10 +286,10 @@ export default function EditorPage() {
               padding: '6px 10px',
               fontSize: '0.8rem',
             }}
-            title="Download PNG"
+            title="Download HD PNG"
           >
             <Download size={13} />
-            <span>PNG</span>
+            <span>HD PNG</span>
           </button>
 
           <button
@@ -248,7 +306,7 @@ export default function EditorPage() {
         {/* Mobile Dropdown Menu */}
         {mobileMenuOpen && (
           <div className={styles.mobileDropdown}>
-            <NavbarAuth />
+            <NavbarAuth fullWidth onNavigate={() => setMobileMenuOpen(false)} />
 
             {image && (
               <button
@@ -275,7 +333,7 @@ export default function EditorPage() {
               style={{ opacity: image ? 1 : 0.6 }}
             >
               <Copy size={15} />
-              <span>Copy 2x PNG</span>
+              <span>Copy HD PNG</span>
             </button>
 
             <Link
@@ -376,10 +434,39 @@ export default function EditorPage() {
             activeTool={activeTool}
             annotationColor={annotationColor}
             annotations={annotations}
-            onAnnotationsChange={setAnnotations}
+            onAnnotationsChange={handleAnnotationsChange}
             selectedAnnotationId={selectedAnnotationId}
             onSelectAnnotation={setSelectedAnnotationId}
           />
+
+          {/* Floating Undo (Back) & Redo (Next) Toolbar (Right-Bottom Corner of 70% Canvas) */}
+          {image && (
+            <div className={styles.canvasHistoryBar}>
+              <button
+                type="button"
+                className={`btn-brutal ${styles.historyBtn}`}
+                onClick={handleUndo}
+                disabled={undoStack.length === 0}
+                title="Back / Undo (Ctrl+Z)"
+                aria-label="Undo action"
+              >
+                <Undo2 size={15} />
+                <span className={styles.historyBtnText}>Back</span>
+              </button>
+              <div className={styles.historyDivider} />
+              <button
+                type="button"
+                className={`btn-brutal ${styles.historyBtn}`}
+                onClick={handleRedo}
+                disabled={redoStack.length === 0}
+                title="Next / Redo (Ctrl+Y)"
+                aria-label="Redo action"
+              >
+                <span className={styles.historyBtnText}>Next</span>
+                <Redo2 size={15} />
+              </button>
+            </div>
+          )}
 
           {/* Floating Mobile Pill to Switch to Controls */}
           {image && mobileTab === 'canvas' && (

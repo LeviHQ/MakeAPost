@@ -7,9 +7,14 @@ import {
   Sparkles,
   MousePointer,
   Square,
+  Circle,
   ArrowUpRight,
   EyeOff,
   Type,
+  ZoomIn,
+  Highlighter,
+  Focus,
+  ListOrdered,
   Trash2,
   ArrowRight,
 } from 'lucide-react';
@@ -378,14 +383,19 @@ export default function ModeSidebar({
                 )}
               </div>
 
-              {/* Tool Buttons */}
+              {/* Tool Buttons (10 Comprehensive Studio Tools: 2 rows of 5) */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '4px' }}>
                 {[
                   { id: 'select', label: 'Pointer', renderIcon: () => <MousePointer size={15} /> },
                   { id: 'box', label: 'Box', renderIcon: () => <Square size={15} /> },
+                  { id: 'circle', label: 'Circle', renderIcon: () => <Circle size={15} /> },
                   { id: 'arrow', label: 'Arrow', renderIcon: () => <ArrowUpRight size={16} /> },
-                  { id: 'blur', label: 'Blur', renderIcon: () => <EyeOff size={15} /> },
                   { id: 'text', label: 'Text', renderIcon: () => <Type size={15} /> },
+                  { id: 'blur', label: 'Blur', renderIcon: () => <EyeOff size={15} /> },
+                  { id: 'zoom', label: 'Zoom 2x', renderIcon: () => <ZoomIn size={15} /> },
+                  { id: 'highlighter', label: 'Highlight', renderIcon: () => <Highlighter size={15} /> },
+                  { id: 'spotlight', label: 'Spotlight', renderIcon: () => <Focus size={15} /> },
+                  { id: 'badge', label: 'Step 123', renderIcon: () => <ListOrdered size={15} /> },
                 ].map((tool) => (
                   <button
                     key={tool.id}
@@ -409,16 +419,42 @@ export default function ModeSidebar({
                     onClick={() => onToolChange(tool.id)}
                   >
                     <span>{tool.renderIcon()}</span>
-                    <span style={{ fontSize: '0.65rem', fontWeight: 700 }}>{tool.label}</span>
+                    <span style={{ fontSize: '0.62rem', fontWeight: 700, whiteSpace: 'nowrap' }}>{tool.label}</span>
                   </button>
                 ))}
               </div>
 
-              {/* Color Picker for Annotations */}
+              {/* Dynamic Micro-Hint for Active Tool */}
+              <div
+                style={{
+                  backgroundColor: 'var(--card-bg-subtle)',
+                  padding: '7px 10px',
+                  borderRadius: 'var(--radius-sm)',
+                  border: '1px solid var(--border-color)',
+                  fontSize: '0.72rem',
+                  color: 'var(--ink)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                {activeTool === 'zoom' && <span>🔍 <strong>Zoom 2x:</strong> Drag a box over any detail or code snippet to magnify it 2x.</span>}
+                {activeTool === 'spotlight' && <span>🎯 <strong>Spotlight:</strong> Drag a box to dim the surrounding image and focus attention.</span>}
+                {activeTool === 'highlighter' && <span>🖍️ <strong>Highlighter:</strong> Drag across text or lines to apply a fluorescent translucent tint.</span>}
+                {activeTool === 'badge' && <span>🔢 <strong>Step Badges:</strong> Click anywhere on canvas to drop numbered steps (1, 2, 3...).</span>}
+                {activeTool === 'circle' && <span>⭕ <strong>Circle:</strong> Drag diagonally to create an oval or circular highlight callout.</span>}
+                {activeTool === 'blur' && <span>👁️ <strong>Blur:</strong> Drag a box over sensitive API keys, passwords, or emails to redact.</span>}
+                {activeTool === 'box' && <span>⏹️ <strong>Box:</strong> Drag diagonally to frame important UI sections with a colored border.</span>}
+                {activeTool === 'arrow' && <span>↗️ <strong>Arrow:</strong> Drag from start to end to point directly at a feature or button.</span>}
+                {activeTool === 'text' && <span>💬 <strong>Text:</strong> Click anywhere on canvas to write a custom Neobrutalist pill note.</span>}
+                {activeTool === 'select' && <span>👆 <strong>Pointer:</strong> Click and drag any annotation to reposition, or select to delete.</span>}
+              </div>
+
+              {/* Color Picker for Annotations (6 Vibrant Neobrutal Presets) */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>Tool Color:</span>
                 <div style={{ display: 'flex', gap: '6px' }}>
-                  {['#EF4444', '#FFD93D', '#38BDF8', '#09090B'].map((col) => (
+                  {['#EF4444', '#FFD93D', '#10B981', '#38BDF8', '#8B5CF6', '#09090B'].map((col) => (
                     <button
                       key={col}
                       type="button"

@@ -243,41 +243,110 @@
 /* Toast Message */
 .toast {
   position: fixed;
-  bottom: 24px;
+  bottom: 74px;
   right: 24px;
   background-color: var(--ink);
   color: #FFFFFF;
-  padding: 10px 18px;
+  padding: 8px 14px;
   border-radius: var(--radius-sm);
   border: var(--border);
-  box-shadow: 4px 4px 0px var(--accent-yellow);
+  box-shadow: 3px 3px 0px var(--accent-yellow);
   font-family: var(--font-mono);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 700;
   display: flex;
   align-items: center;
   gap: 8px;
   z-index: 100;
   animation: slideUp 0.15s ease-out;
+  pointer-events: none;
+  white-space: nowrap;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 899px) {
   .toast {
-    left: 16px;
-    right: 16px;
-    bottom: 16px;
-    text-align: center;
-    justify-content: center;
+    right: 14px;
+    left: auto;
+    bottom: 122px;
+    padding: 7px 12px;
+    font-size: 0.78rem;
+    max-width: calc(100vw - 28px);
   }
 }
 
 @keyframes slideUp {
   from {
-    transform: translateY(12px);
+    transform: translateY(8px);
     opacity: 0;
   }
   to {
     transform: translateY(0);
     opacity: 1;
+  }
+}
+
+/* Floating Canvas History Bar (Bottom-Right Corner of 70% Canvas) */
+.canvasHistoryBar {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  z-index: 35;
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--surface);
+  border: var(--border-thick);
+  border-radius: var(--radius-md);
+  box-shadow: 3px 3px 0px var(--shadow-color);
+  padding: 3px 4px;
+  gap: 2px;
+}
+
+.historyBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border: none;
+  box-shadow: none;
+  background-color: transparent;
+  color: var(--ink);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.historyBtn:hover:not(:disabled) {
+  background-color: var(--accent-yellow);
+  color: #09090B;
+}
+
+.historyBtn:active:not(:disabled) {
+  transform: translate(1px, 1px);
+}
+
+.historyBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.historyBtnText {
+  font-family: var(--font-heading);
+  font-weight: 700;
+}
+
+.historyDivider {
+  width: 1.5px;
+  height: 18px;
+  background-color: var(--border-color);
+  margin: 0 2px;
+}
+
+@media (max-width: 899px) {
+  .canvasHistoryBar {
+    bottom: 74px;
+    right: 14px;
+    padding: 2px 4px;
   }
 }

@@ -28,7 +28,7 @@ export function GoogleIcon({ size = 16 }) {
   );
 }
 
-export default function NavbarAuth({ className = '', style = {} }) {
+export default function NavbarAuth({ className = '', style = {}, fullWidth = false, onNavigate }) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -118,7 +118,8 @@ export default function NavbarAuth({ className = '', style = {} }) {
     <div
       className={className}
       style={{
-        display: 'inline-flex',
+        display: fullWidth ? 'flex' : 'inline-flex',
+        width: fullWidth ? '100%' : 'auto',
         alignItems: 'center',
         gap: '8px',
         ...style,
@@ -130,12 +131,16 @@ export default function NavbarAuth({ className = '', style = {} }) {
           onClick={handleGoogleLogin}
           className="btn-brutal"
           style={{
-            padding: '6px 12px',
-            fontSize: '0.82rem',
+            width: fullWidth ? '100%' : 'auto',
+            justifyContent: fullWidth ? 'center' : 'flex-start',
+            padding: fullWidth ? '9px 12px' : '6px 12px',
+            fontSize: fullWidth ? '0.85rem' : '0.82rem',
             gap: '6px',
             cursor: 'pointer',
             backgroundColor: 'var(--surface)',
             color: 'var(--ink)',
+            display: 'inline-flex',
+            alignItems: 'center',
           }}
           title="Sign in with Google"
         >
@@ -147,10 +152,13 @@ export default function NavbarAuth({ className = '', style = {} }) {
       {!loading && user && (
         <Link
           href="/settings"
+          onClick={() => onNavigate?.()}
           className="btn-brutal"
           style={{
-            padding: '6px 12px',
-            fontSize: '0.82rem',
+            width: fullWidth ? '100%' : 'auto',
+            justifyContent: fullWidth ? 'center' : 'flex-start',
+            padding: fullWidth ? '9px 12px' : '6px 12px',
+            fontSize: fullWidth ? '0.85rem' : '0.82rem',
             display: 'inline-flex',
             alignItems: 'center',
             gap: '6px',

@@ -26,7 +26,7 @@ The 30% control sidebar features two distinct UI states:
 2. **Active Workspace State (Sticky Switcher + Contextual Controls):**
    - **Sticky Mode Switcher Pill:** Anchored at the top of the sidebar: `[ 🎨 Editor | ✨ AI Mode ]` with the active mode highlighted in `#FFD93D` for instant 1-click toggling.
    - **Contextual Control Body:** Below the switcher, only the active mode's controls are rendered:
-     - *In Image Editor Mode:* Frame controls, aspect ratios, preset gradients, padding slider, and blur tool toggle.
+     - *In Image Editor Mode:* Frame controls, aspect ratios, preset gradients, padding slider, and 10-tool annotation suite (Pointer, Box, Circle, Arrow, Text, Blur, Zoom 2x, Highlighter, Spotlight, Step Badges 123).
      - *In AI Post Mode:* Target platform tabs (`𝕏 X`, `💼 LinkedIn`, `👾 Reddit`), optional custom context/prompt input, single-shot generation CTA, and formatted post preview cards with character counters & copy buttons.
 
 ---
@@ -159,7 +159,7 @@ The 30% control sidebar features two distinct UI states:
 ## 7. Current Build Status
 [x] Phase 1: Next.js Setup, Neobrutalism Design System (globals.css, Logo.js), Landing Page with 30/70 Studio Preview (src/app/page.js, docs/01-landing-page.md)
 
-[x] Phase 2: 30/70 Studio Workspace Architecture & 70% Canvas Visual Engine (src/app/editor/page.js, CanvasEditor.js, ModeSidebar.js, docs/02-canvas-editor.md)
+[x] Phase 2: 30/70 Studio Workspace Architecture & 70% Canvas Visual Engine with 10-Tool Annotation Suite (src/app/editor/page.js, CanvasEditor.js, ModeSidebar.js, docs/02-canvas-editor.md)
 
 [x] Production Platform Features: Zero-flash Dark/Light Mode, Multi-Platform Favicons, Dynamic OpenGraph Image, and PWA Web App (src/components/ThemeToggle.js, src/app/opengraph-image.js, src/app/manifest.js, public/sw.js, docs/05-theme-pwa-seo.md)
 
