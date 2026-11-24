@@ -145,10 +145,10 @@ export default function TermsPage() {
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>
               <Share2 size={18} />
-              <span>4. Third-Party Services &amp; Social Integration</span>
+              <span>4. Third-Party Services &amp; Native Social Intents</span>
             </h2>
             <p className={styles.sectionText}>
-              MakeAPost integrates with Google OAuth for authentication, Google Gemini for visual understanding, and third-party social APIs (X, LinkedIn, Reddit). Your interactions with these services are subject to their respective terms and privacy policies. MakeAPost is not responsible for suspensions, algorithm changes, or account actions taken by external platforms.
+              MakeAPost integrates with Google OAuth for authentication, Google Gemini for visual understanding, and native web intents for social platforms (X, LinkedIn, Reddit). We do not store your social account credentials. Your interactions with these external services are subject to their respective terms and privacy policies. MakeAPost is not responsible for content moderation decisions, algorithm updates, or account actions taken by third-party platforms.
             </p>
           </section>
 

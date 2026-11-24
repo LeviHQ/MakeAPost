@@ -167,28 +167,28 @@ export default function PrivacyPage() {
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>
               <Share2 size={18} />
-              <span>4. Connected Social Accounts (OAuth 2.0 Security)</span>
+              <span>4. Zero-Token Social Sharing (Client-Side Intent &amp; Clipboard)</span>
             </h2>
             <p className={styles.sectionText}>
-              When you connect third-party platforms (such as X/Twitter, LinkedIn, or Reddit) to publish posts:
+              MakeAPost operates a 100% zero-token, privacy-first sharing architecture for X (Twitter), LinkedIn, and Reddit:
             </p>
             <ul className={styles.list}>
               <li className={styles.listItem}>
                 <span className={styles.listBullet} />
                 <span>
-                  <strong>Encrypted Credentials:</strong> OAuth 2.0 access and refresh tokens are encrypted at rest using industry-standard AES-256-GCM.
+                  <strong>No Social OAuth Tokens Stored:</strong> We do not request, store, or manage any third-party social media passwords, API keys, or access tokens on our servers.
                 </span>
               </li>
               <li className={styles.listItem}>
                 <span className={styles.listBullet} />
                 <span>
-                  <strong>Explicit Action Only:</strong> MakeAPost will NEVER post, read private direct messages, or alter your account without your explicit, real-time click on the "Publish" button.
+                  <strong>System Clipboard Image Copy:</strong> When you click &quot;Post on [Platform]&quot;, your edited high-resolution PNG graphic is written directly to your device&apos;s system clipboard via the native browser Clipboard API (<code>navigator.clipboard.write</code>).
                 </span>
               </li>
               <li className={styles.listItem}>
                 <span className={styles.listBullet} />
                 <span>
-                  <strong>Instant Revocation:</strong> You can disconnect your social accounts at any time from your Account Settings, which permanently purges the stored access tokens.
+                  <strong>Native Web Intent Launch:</strong> The official platform composer is opened in a new tab with your generated post copy pre-filled. You simply press <code>Ctrl+V</code> (or Paste) to attach your graphic and publish directly from your authenticated browser session.
                 </span>
               </li>
             </ul>

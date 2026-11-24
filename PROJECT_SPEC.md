@@ -106,16 +106,8 @@ The 30% control sidebar features two distinct UI states:
 │   │   │   └── callback/
 │   │   │       └── route.js        # Supabase OAuth session exchange callback
 │   │   └── api/
-│   │       ├── generate/
-│   │       │   └── route.js        # Serverless Gemini Vision API + Supabase auth verification
-│   │       ├── connect/
-│   │       │   ├── [platform]/
-│   │       │   │   ├── route.js            # Social OAuth 2.0 connect initiation (LinkedIn & X PKCE)
-│   │       │   │   ├── callback/route.js   # OAuth code exchange & AES-256 token database storage
-│   │       │   │   └── disconnect/route.js # Disconnect social account & token purge
-│   │       │   └── status/route.js         # Social connection status endpoint (no tokens exposed)
-│   │       └── publish/
-│   │           └── [platform]/route.js     # Direct 1-click publishing API (LinkedIn Images REST + X Media v2)
+│   │       └── generate/
+│   │           └── route.js        # Serverless Gemini Vision API + Supabase auth verification
 │   ├── components/
 │   │   ├── Logo.js                 # Reusable MakeAPost SVG Logo + Brand Wordmark
 │   │   ├── Footer.js               # Multi-column Neobrutalist footer with compliance & legal links
@@ -128,17 +120,16 @@ The 30% control sidebar features two distinct UI states:
 │   │   ├── PwaRegister.js          # Service worker registration component
 │   │   ├── ModeSidebar.js          # 30% Dynamic Control Sidebar (Aspect ratio, frame, blur, background, pro settings)
 │   │   ├── CanvasEditor.js         # 70% Main Visual Canvas & Dropzone (HTML5 Canvas, Ctrl+V, annotations, blur, PNG export)
-│   │   └── AiStudio.js             # AI Post Generation & Direct 1-Click Publishing sub-view inside 30% sidebar
+│   │   └── AiStudio.js             # AI Post Generation & 1-Click Native Intent Sharing inside 30% sidebar
 │   └── lib/
-│       ├── crypto.js               # AES-256-GCM server-side OAuth token encryption & decryption utility
+│       ├── shareIntent.js          # Client-side clipboard image copy & native social composer intent builder (X, LinkedIn, Reddit)
 │       ├── imageCompress.js        # Client-side 768px JPEG compression utility
 │       └── supabase/
 │           ├── client.js           # Browser client (@supabase/ssr)
 │           ├── server.js           # Server SSR client with cookies (@supabase/ssr)
 │           └── admin.js            # Service-role admin client (@supabase/supabase-js)
 ├── supabase/
-│   ├── schema.sql                  # PostgreSQL public.users schema, RLS policies & on_auth_user_created trigger
-│   └── social_connections.sql      # PostgreSQL public.social_connections table, RLS & indexes
+│   └── schema.sql                  # PostgreSQL public.users schema, RLS policies & on_auth_user_created trigger
 ├── public/
 │   ├── sw.js                       # Lightweight PWA Service Worker caching app shell
 │   ├── og-image.png                # Pre-rendered 1200x630 static fallback OpenGraph card
@@ -150,7 +141,7 @@ The 30% control sidebar features two distinct UI states:
 │   ├── 04-auth-credits.md
 │   ├── 05-theme-pwa-seo.md
 │   ├── 06-design-icons-and-dark-contrast.md
-│   ├── 06-social-oauth-publish.md
+│   ├── 06-native-share-intent.md
 │   └── 07-legal-compliance.md
 └── PROJECT_SPEC.md                 # Master spec (must be updated on every change)
 ```
@@ -180,4 +171,4 @@ The 30% control sidebar features two distinct UI states:
 
 [x] Phase 5: Supabase Google Auth & `/settings` Synced Preferences (NavbarAuth.js, schema.sql, settings/page.js, /api/generate auth gate, docs/04-auth-credits.md; trial/credit caps completely decoupled for future billing release)
 
-[x] Phase 6 & Direct Social Publishing: Direct 1-Click OAuth Publishing for LinkedIn & X, Reddit Coming Soon, AES-256-GCM Token Encryption, Legal Pages & Footer Suite (social_connections.sql, crypto.js, /api/connect, /api/publish, AiStudio.js, settings/page.js, docs/06-social-oauth-publish.md, docs/07-legal-compliance.md)
+[x] Phase 6: Zero-Cost 1-Click Native Composer Intent Flow (X, LinkedIn, Reddit), Clipboard PNG Copy, and Full Legal & Compliance Suite (shareIntent.js, AiStudio.js, settings/page.js, Footer.js, /privacy, /terms, /refund, /contact, docs/06-native-share-intent.md, docs/07-legal-compliance.md)

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Logo from '@/components/Logo';
 import Footer from '@/components/Footer';
@@ -15,21 +15,16 @@ import {
   LogOut,
   Check,
   ShieldCheck,
-  ArrowLeft,
   Home,
   Menu,
   X,
-  Share2,
-  ExternalLink,
-  Trash2,
-  Clock,
-  AlertCircle,
+  Zap,
+  Lock,
 } from 'lucide-react';
 import styles from './settings.module.css';
 
-function SettingsContent() {
+export default function SettingsPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -43,34 +38,11 @@ function SettingsContent() {
   });
   const [toastMessage, setToastMessage] = useState(null);
 
-  // Social Connections State
-  const [connections, setConnections] = useState({
-    linkedin: { connected: false, username: null },
-    x: { connected: false, username: null },
-    reddit: { connected: false, comingSoon: true },
-  });
-  const [disconnectingPlatform, setDisconnectingPlatform] = useState(null);
-
   const showToast = (msg) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3500);
+    setTimeout(() => setToastMessage(null), 3000);
   };
 
-  // Check URL query parameters for connection notifications
-  useEffect(() => {
-    const connected = searchParams.get('connected');
-    const error = searchParams.get('error');
-
-    if (connected === 'linkedin') {
-      showToast('LinkedIn account connected successfully! 🚀');
-    } else if (connected === 'x') {
-      showToast('X (Twitter) account connected successfully! 🚀');
-    } else if (error) {
-      showToast(`Connection alert: ${error}`);
-    }
-  }, [searchParams]);
-
-  // Load user profile & social connections
   useEffect(() => {
     let isMounted = true;
     const supabase = createClient();
@@ -90,7 +62,7 @@ function SettingsContent() {
 
         setUser(user);
 
-        // 1. Fetch profile from Supabase
+        // Fetch user profile from PostgreSQL
         const { data: profileData } = await supabase
           .from('users')
           .select('*')
@@ -106,17 +78,8 @@ function SettingsContent() {
             localStorage.setItem('makeapost-theme', activeTheme);
           } catch {}
         }
-
-        // 2. Fetch Social Connections Status
-        const connRes = await fetch('/api/connect/status');
-        if (connRes.ok && isMounted) {
-          const connData = await connRes.json();
-          if (connData?.connections) {
-            setConnections(connData.connections);
-          }
-        }
       } catch (err) {
-        console.error('Failed to load settings data:', err);
+        console.error('Failed to load settings:', err);
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -156,32 +119,6 @@ function SettingsContent() {
     } catch (err) {
       console.error('Failed to sync theme to Supabase exception:', err?.message || err);
       showToast('Error saving theme to account. Please retry.');
-    }
-  };
-
-  // Handle Disconnect Social Account
-  const handleDisconnect = async (platform) => {
-    setDisconnectingPlatform(platform);
-    try {
-      const res = await fetch(`/api/connect/${platform}/disconnect`, {
-        method: 'POST',
-      });
-      const data = await res.json();
-
-      if (res.ok && data.success) {
-        setConnections((prev) => ({
-          ...prev,
-          [platform]: { connected: false, username: null },
-        }));
-        showToast(`Disconnected ${platform.toUpperCase()} account successfully.`);
-      } else {
-        showToast(data.error || 'Failed to disconnect account.');
-      }
-    } catch (err) {
-      console.error('Disconnect error:', err);
-      showToast('Network error while disconnecting account.');
-    } finally {
-      setDisconnectingPlatform(null);
     }
   };
 
@@ -288,7 +225,7 @@ function SettingsContent() {
             </div>
           </div>
           <p className={styles.pageSubtitle}>
-            Manage your connected social accounts, profile, and cross-device design preferences.
+            Manage your creator profile, trial status, and cross-device design preferences.
           </p>
         </div>
 
@@ -342,198 +279,105 @@ function SettingsContent() {
           </div>
         </section>
 
-        {/* Card 2: Connected Social Accounts (Direct 1-Click Publishing) */}
+        {/* Card 2: Plan & Credit Status */}
         <section className={styles.cardSection}>
           <div className={styles.cardHeader}>
             <div className={styles.cardTitle}>
-              <Share2 size={18} />
-              <span>Connected Social Accounts</span>
+              <Zap size={18} />
+              <span>Plan &amp; Access Status</span>
             </div>
             <div className="badge-brutal badge-yellow" style={{ fontSize: '0.72rem', padding: '2px 8px' }}>
-              DIRECT 1-CLICK PUBLISH
+              100% FREE BETA
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.94rem', fontWeight: 800 }}>
+              <span style={{ color: '#16A34A' }}>●</span>
+              <span>Unlimited Free Access • 5 AI Credits / Day</span>
+            </div>
+            <p style={{ fontSize: '0.84rem', color: 'var(--muted)', margin: 0, lineHeight: 1.5 }}>
+              Enjoy unrestricted canvas styling, 2x high-resolution PNG exports, and multimodal Gemini AI post generation.
+              No credit card required.
+            </p>
+          </div>
+        </section>
+
+        {/* Card 3: Privacy-First 1-Click Social Sharing */}
+        <section className={styles.cardSection}>
+          <div className={styles.cardHeader}>
+            <div className={styles.cardTitle}>
+              <Lock size={18} />
+              <span>Zero-Storage Social Sharing</span>
+            </div>
+            <div className="badge-brutal badge-green" style={{ fontSize: '0.72rem', padding: '2px 8px' }}>
+              NO TOKENS STORED
             </div>
           </div>
 
           <p style={{ fontSize: '0.86rem', color: 'var(--muted)', margin: 0, lineHeight: 1.5 }}>
-            Connect your personal social accounts to publish screenshots and AI-crafted copy directly from the MakeAPost studio in one click.
-            OAuth tokens are encrypted with <strong>AES-256-GCM</strong> and used strictly when you click &quot;Publish&quot;.
+            MakeAPost connects to your favorite social networks using <strong>client-side native web intent URLs</strong> and your device&apos;s system clipboard.
+            We never request, store, or access your social media passwords, API keys, or OAuth tokens.
           </p>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            {/* LinkedIn Account Row */}
-            <div className={styles.socialRow}>
-              <div className={styles.socialLeft}>
-                <div className={styles.socialIconWrapper} style={{ backgroundColor: '#0077B5', color: '#FFFFFF' }}>
-                  <LinkedInIcon size={20} />
-                </div>
-                <div className={styles.socialInfo}>
-                  <div className={styles.socialName}>
-                    <span>LinkedIn</span>
-                    {connections.linkedin.connected ? (
-                      <span className="badge-brutal badge-green" style={{ fontSize: '0.68rem', padding: '1px 8px', border: '1.5px solid var(--border-color)' }}>
-                        ● Connected
-                      </span>
-                    ) : (
-                      <span className="badge-brutal" style={{ fontSize: '0.68rem', padding: '1px 8px', backgroundColor: 'var(--surface)', color: 'var(--muted)', border: '1.5px solid var(--border-color)' }}>
-                        Not Connected
-                      </span>
-                    )}
-                  </div>
-                  <div className={styles.socialSubtext}>
-                    {connections.linkedin.connected
-                      ? `Connected as ${connections.linkedin.username}`
-                      : 'Publish graphics and thought leadership commentary directly to your LinkedIn personal feed.'}
-                  </div>
-                </div>
-              </div>
-
-              <div className={styles.socialAction}>
-                {connections.linkedin.connected ? (
-                  <button
-                    type="button"
-                    onClick={() => handleDisconnect('linkedin')}
-                    disabled={disconnectingPlatform === 'linkedin'}
-                    className="btn-brutal"
-                    style={{
-                      padding: '7px 14px',
-                      fontSize: '0.82rem',
-                      backgroundColor: '#FEE2E2',
-                      color: '#DC2626',
-                      borderColor: '#DC2626',
-                      gap: '6px',
-                    }}
-                  >
-                    <Trash2 size={13} />
-                    <span>{disconnectingPlatform === 'linkedin' ? 'Disconnecting...' : 'Disconnect'}</span>
-                  </button>
-                ) : (
-                  <a
-                    href="/api/connect/linkedin"
-                    className="btn-brutal btn-primary"
-                    style={{
-                      padding: '7px 16px',
-                      fontSize: '0.82rem',
-                      textDecoration: 'none',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                    }}
-                  >
-                    <LinkedInIcon size={14} />
-                    <span>Connect LinkedIn</span>
-                  </a>
-                )}
-              </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '4px' }}>
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 12px',
+                border: 'var(--border)',
+                borderRadius: 'var(--radius-xs)',
+                backgroundColor: 'var(--bg-secondary)',
+                fontSize: '0.82rem',
+                fontWeight: 700,
+              }}
+            >
+              <XIcon size={14} />
+              <span>X (Twitter) Intent</span>
+              <Check size={13} style={{ color: '#16A34A' }} />
             </div>
 
-            {/* X (Twitter) Account Row */}
-            <div className={styles.socialRow}>
-              <div className={styles.socialLeft}>
-                <div className={styles.socialIconWrapper} style={{ backgroundColor: '#09090B', color: '#FFFFFF' }}>
-                  <XIcon size={18} />
-                </div>
-                <div className={styles.socialInfo}>
-                  <div className={styles.socialName}>
-                    <span>X (Twitter)</span>
-                    {connections.x.connected ? (
-                      <span className="badge-brutal badge-green" style={{ fontSize: '0.68rem', padding: '1px 8px', border: '1.5px solid var(--border-color)' }}>
-                        ● Connected
-                      </span>
-                    ) : (
-                      <span className="badge-brutal" style={{ fontSize: '0.68rem', padding: '1px 8px', backgroundColor: 'var(--surface)', color: 'var(--muted)', border: '1.5px solid var(--border-color)' }}>
-                        Not Connected
-                      </span>
-                    )}
-                  </div>
-                  <div className={styles.socialSubtext}>
-                    {connections.x.connected
-                      ? `Connected as ${connections.x.username}`
-                      : 'Publish viral tweets and threads with attached screenshot in 1 click via official X API.'}
-                  </div>
-                </div>
-              </div>
-
-              <div className={styles.socialAction}>
-                {connections.x.connected ? (
-                  <button
-                    type="button"
-                    onClick={() => handleDisconnect('x')}
-                    disabled={disconnectingPlatform === 'x'}
-                    className="btn-brutal"
-                    style={{
-                      padding: '7px 14px',
-                      fontSize: '0.82rem',
-                      backgroundColor: '#FEE2E2',
-                      color: '#DC2626',
-                      borderColor: '#DC2626',
-                      gap: '6px',
-                    }}
-                  >
-                    <Trash2 size={13} />
-                    <span>{disconnectingPlatform === 'x' ? 'Disconnecting...' : 'Disconnect'}</span>
-                  </button>
-                ) : (
-                  <a
-                    href="/api/connect/x"
-                    className="btn-brutal btn-primary"
-                    style={{
-                      padding: '7px 16px',
-                      fontSize: '0.82rem',
-                      textDecoration: 'none',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                    }}
-                  >
-                    <XIcon size={13} />
-                    <span>Connect X</span>
-                  </a>
-                )}
-              </div>
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 12px',
+                border: 'var(--border)',
+                borderRadius: 'var(--radius-xs)',
+                backgroundColor: 'var(--bg-secondary)',
+                fontSize: '0.82rem',
+                fontWeight: 700,
+              }}
+            >
+              <LinkedInIcon size={14} />
+              <span>LinkedIn Intent</span>
+              <Check size={13} style={{ color: '#16A34A' }} />
             </div>
 
-            {/* Reddit Account Row (Coming Soon) */}
-            <div className={styles.socialRow} style={{ opacity: 0.85 }}>
-              <div className={styles.socialLeft}>
-                <div className={styles.socialIconWrapper} style={{ backgroundColor: '#FF4500', color: '#FFFFFF' }}>
-                  <RedditIcon size={20} />
-                </div>
-                <div className={styles.socialInfo}>
-                  <div className={styles.socialName}>
-                    <span>Reddit</span>
-                    <span className="badge-brutal badge-yellow" style={{ fontSize: '0.68rem', padding: '1px 6px' }}>
-                      COMING SOON
-                    </span>
-                  </div>
-                  <div className={styles.socialSubtext}>
-                    Direct 1-click publishing to Reddit communities with flair tags is in active development.
-                    AI post generation and manual copy remain 100% active.
-                  </div>
-                </div>
-              </div>
-
-              <div className={styles.socialAction}>
-                <button
-                  type="button"
-                  disabled
-                  className="btn-brutal"
-                  style={{
-                    padding: '7px 14px',
-                    fontSize: '0.82rem',
-                    opacity: 0.6,
-                    cursor: 'not-allowed',
-                    gap: '6px',
-                  }}
-                >
-                  <Clock size={13} />
-                  <span>Coming Soon</span>
-                </button>
-              </div>
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 12px',
+                border: 'var(--border)',
+                borderRadius: 'var(--radius-xs)',
+                backgroundColor: 'var(--bg-secondary)',
+                fontSize: '0.82rem',
+                fontWeight: 700,
+              }}
+            >
+              <RedditIcon size={14} />
+              <span>Reddit Intent</span>
+              <Check size={13} style={{ color: '#16A34A' }} />
             </div>
           </div>
         </section>
 
-        {/* Card 3: Cross-Device Preferences (Synced to Supabase) */}
+        {/* Card 4: Cross-Device Preferences (Synced to Supabase) */}
         <section className={styles.cardSection}>
           <div className={styles.cardHeader}>
             <div className={styles.cardTitle}>
@@ -611,30 +455,5 @@ function SettingsContent() {
         </div>
       )}
     </div>
-  );
-}
-
-export default function SettingsPage() {
-  return (
-    <Suspense
-      fallback={
-        <div
-          style={{
-            minHeight: '100vh',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: 'var(--bg-primary)',
-          }}
-        >
-          <div className="badge-brutal badge-yellow" style={{ fontSize: '0.9rem', padding: '8px 16px' }}>
-            <Sparkles size={16} />
-            <span>Loading Settings...</span>
-          </div>
-        </div>
-      }
-    >
-      <SettingsContent />
-    </Suspense>
   );
 }

@@ -257,14 +257,11 @@ export default function ContactPage() {
                 <span className="badge-brutal badge-yellow" style={{ fontSize: '0.72rem', padding: '2px 8px' }}>
                   STEP 2
                 </span>
-                <strong style={{ fontSize: '0.92rem' }}>Automatic Token Invalidation &amp; Disconnect</strong>
+                <strong style={{ fontSize: '0.92rem' }}>Zero Social OAuth Tokens Stored</strong>
               </div>
               <p style={{ fontSize: '0.84rem', margin: 0, color: 'var(--text-secondary)' }}>
-                When you click &quot;Disconnect&quot; for any social account inside your{' '}
-                <Link href="/settings" style={{ textDecoration: 'underline', fontWeight: 600 }}>
-                  Account Settings
-                </Link>
-                , MakeAPost immediately deletes the encrypted OAuth access token and refresh token from your database row.
+                MakeAPost operates via client-side native web intents (X, LinkedIn, Reddit) and device clipboard.
+                We never request, store, or manage any social media access tokens, passwords, or API keys in our databases.
               </p>
             </div>
 

@@ -6,6 +6,7 @@ import { compressImageForAI } from '@/lib/imageCompress';
 import { XIcon, LinkedInIcon, RedditIcon } from '@/components/SocialIcons';
 import { GoogleIcon } from '@/components/NavbarAuth';
 import { createClient } from '@/lib/supabase/client';
+import { copyImageAndOpenComposer, downloadPngFallback } from '@/lib/shareIntent';
 import {
   Sparkles,
   AlertCircle,
@@ -19,10 +20,8 @@ import {
   Globe,
   ArrowLeft,
   Lock,
-  Send,
-  Loader2,
-  Clock,
-  Share2,
+  Download,
+  X,
 } from 'lucide-react';
 
 const TONE_OPTIONS = [
@@ -53,90 +52,61 @@ export default function AiStudio({
   const [thumbnailUrl, setThumbnailUrl] = useState(null);
   const [copied, setCopied] = useState(false);
 
-  // Social Connections & Direct 1-Click Publishing State
-  const [connections, setConnections] = useState({
-    linkedin: { connected: false, username: null },
-    x: { connected: false, username: null },
-    reddit: { connected: false, comingSoon: true },
-  });
-  const [isPublishing, setIsPublishing] = useState(false);
-  const [publishSuccessUrl, setPublishSuccessUrl] = useState(null);
-  const [publishError, setPublishError] = useState(null);
-
-  // Fetch social connections status when user logs in
-  useEffect(() => {
-    let isMounted = true;
-    async function fetchConnStatus() {
-      try {
-        const res = await fetch('/api/connect/status');
-        if (res.ok && isMounted) {
-          const data = await res.json();
-          if (data?.connections) {
-            setConnections(data.connections);
-          }
-        }
-      } catch (e) {
-        console.warn('Could not fetch social connection status:', e);
-      }
-    }
-    if (user) {
-      fetchConnStatus();
-    }
-    return () => {
-      isMounted = false;
-    };
-  }, [user]);
+  // Zero-Cost 1-Click Native Composer Intent & Clipboard State
+  const [isSharing, setIsSharing] = useState(false);
+  const [shareToast, setShareToast] = useState(null);
 
   const handlePlatformChange = (p) => {
     setActivePlatform(p);
-    setPublishSuccessUrl(null);
-    setPublishError(null);
+    setShareToast(null);
   };
 
-  const handleDirectPublish = async (platform) => {
+  const handlePostOnPlatform = async (platform) => {
     if (!canvasRef?.current) {
-      setPublishError('Canvas is not ready. Please load a screenshot.');
+      setShareToast({
+        message: 'Canvas element not available. Please load a screenshot.',
+        isError: true,
+      });
+      setTimeout(() => setShareToast(null), 4000);
       return;
     }
 
-    setIsPublishing(true);
-    setPublishError(null);
-    setPublishSuccessUrl(null);
+    setIsSharing(true);
+    const platformLabel =
+      platform === 'x' ? 'X (Twitter)' : platform === 'linkedin' ? 'LinkedIn' : 'Reddit';
 
     try {
       const canvas = canvasRef.current;
-      const imageBase64 = canvas.toDataURL('image/png');
-      const text = editedPosts[platform] || '';
+      const postText = editedPosts[platform] || currentPostText || '';
+      const result = await copyImageAndOpenComposer(canvas, platform, postText);
 
-      if (!text.trim()) {
-        throw new Error('Post content cannot be empty.');
+      if (result.copied) {
+        setShareToast({
+          platform: platformLabel,
+          message: `✅ Image copied to clipboard! Press Ctrl+V (or Paste) inside the ${platformLabel} composer.`,
+          dataUrl: result.dataUrl,
+          isDownload: false,
+          isError: false,
+        });
+      } else {
+        setShareToast({
+          platform: platformLabel,
+          message: `📥 Image downloaded! Attach the downloaded screenshot inside the ${platformLabel} composer.`,
+          dataUrl: result.dataUrl,
+          isDownload: true,
+          isError: false,
+        });
       }
-
-      const res = await fetch(`/api/publish/${platform}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          text,
-          imageBase64,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || `Failed to publish to ${platform.toUpperCase()}`);
-      }
-
-      setPublishSuccessUrl(data.postUrl);
+      setTimeout(() => setShareToast(null), 9000);
     } catch (err) {
-      console.error(`Direct publish error for ${platform}:`, err);
-      setPublishError(
-        err.message || 'Error publishing post. Please verify your connection in Settings.'
-      );
+      console.error('Error posting to platform:', err);
+      setShareToast({
+        message: `Failed to open ${platformLabel} composer: ${err.message || 'Unknown error'}`,
+        isError: true,
+      });
+      setTimeout(() => setShareToast(null), 5000);
     } finally {
-      setIsPublishing(false);
+      setIsSharing(false);
     }
   };
 
@@ -694,208 +664,82 @@ export default function AiStudio({
               </div>
             )}
 
-            {/* Success Banner (Live Post Link) */}
-            {publishSuccessUrl && (
-              <div
-                style={{
-                  padding: '10px 14px',
-                  backgroundColor: 'rgba(74, 222, 128, 0.15)',
-                  border: '2px solid #22C55E',
-                  borderRadius: 'var(--radius-xs)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '8px',
-                  boxShadow: '2px 2px 0px var(--shadow-color)',
-                }}
-              >
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    fontSize: '0.82rem',
-                    fontWeight: 800,
-                    color: '#166534',
-                  }}
-                >
-                  <Check size={16} />
-                  <span>Published to {activePlatform.toUpperCase()}!</span>
-                </div>
-                <a
-                  href={publishSuccessUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-brutal"
-                  style={{
-                    padding: '4px 10px',
-                    fontSize: '0.78rem',
-                    textDecoration: 'none',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    backgroundColor: '#FFFFFF',
-                    color: '#09090B',
-                  }}
-                >
-                  <span>View Live Post</span>
-                  <ExternalLink size={12} />
-                </a>
-              </div>
-            )}
-
-            {/* Error Banner */}
-            {publishError && (
-              <div
-                style={{
-                  padding: '8px 12px',
-                  backgroundColor: '#FEE2E2',
-                  border: '2px solid #EF4444',
-                  borderRadius: 'var(--radius-xs)',
-                  color: '#B91C1C',
-                  fontSize: '0.78rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                }}
-              >
-                <AlertCircle size={14} style={{ flexShrink: 0 }} />
-                <span>{publishError}</span>
-              </div>
-            )}
-
-            {/* Action Buttons: 1-Click Direct Publish, Copy & Connect Link */}
+            {/* Action Buttons: 1-Click Native Intent + Clipboard & Copy Text */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                {/* 1. Direct Publish Button for X */}
+                {/* 1. Primary 1-Click Native Composer Intent Button */}
                 {activePlatform === 'x' && (
-                  connections.x.connected ? (
-                    <button
-                      type="button"
-                      className="btn-brutal btn-primary"
-                      style={{
-                        flex: 1,
-                        padding: '9px 14px',
-                        fontSize: '0.82rem',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px',
-                      }}
-                      disabled={isPublishing}
-                      onClick={() => handleDirectPublish('x')}
-                    >
-                      {isPublishing ? (
-                        <>
-                          <Loader2 size={14} className="animate-spin" />
-                          <span>Publishing to X...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Send size={14} />
-                          <span>🚀 Publish Now to X</span>
-                        </>
-                      )}
-                    </button>
-                  ) : (
-                    <Link
-                      href="/settings"
-                      className="btn-brutal btn-secondary"
-                      style={{
-                        flex: 1,
-                        padding: '9px 12px',
-                        fontSize: '0.82rem',
-                        textDecoration: 'none',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px',
-                      }}
-                      title="Connect your X account in Settings for direct 1-click publishing"
-                    >
-                      <XIcon size={13} />
-                      <span>Connect X in Settings →</span>
-                    </Link>
-                  )
-                )}
-
-                {/* 2. Direct Publish Button for LinkedIn */}
-                {activePlatform === 'linkedin' && (
-                  connections.linkedin.connected ? (
-                    <button
-                      type="button"
-                      className="btn-brutal btn-primary"
-                      style={{
-                        flex: 1,
-                        padding: '9px 14px',
-                        fontSize: '0.82rem',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px',
-                      }}
-                      disabled={isPublishing}
-                      onClick={() => handleDirectPublish('linkedin')}
-                    >
-                      {isPublishing ? (
-                        <>
-                          <Loader2 size={14} className="animate-spin" />
-                          <span>Publishing to LinkedIn...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Send size={14} />
-                          <span>🚀 Publish Now to LinkedIn</span>
-                        </>
-                      )}
-                    </button>
-                  ) : (
-                    <Link
-                      href="/settings"
-                      className="btn-brutal btn-secondary"
-                      style={{
-                        flex: 1,
-                        padding: '9px 12px',
-                        fontSize: '0.82rem',
-                        textDecoration: 'none',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px',
-                      }}
-                      title="Connect your LinkedIn account in Settings for direct 1-click publishing"
-                    >
-                      <LinkedInIcon size={13} />
-                      <span>Connect LinkedIn in Settings →</span>
-                    </Link>
-                  )
-                )}
-
-                {/* 3. Reddit Coming Soon Badge */}
-                {activePlatform === 'reddit' && (
-                  <div
-                    className="badge-brutal badge-yellow"
+                  <button
+                    type="button"
+                    className="btn-brutal btn-primary"
                     style={{
                       flex: 1,
-                      padding: '9px 12px',
-                      fontSize: '0.78rem',
+                      padding: '10px 14px',
+                      fontSize: '0.84rem',
                       display: 'inline-flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: '6px',
+                      gap: '8px',
                     }}
+                    disabled={isSharing}
+                    onClick={() => handlePostOnPlatform('x')}
+                    title="Copy canvas image to clipboard and open X post composer"
                   >
-                    <Clock size={13} />
-                    <span>Direct Publish — Coming Soon</span>
-                  </div>
+                    <XIcon size={14} />
+                    <span>{isSharing ? 'Copying & Opening...' : '🚀 Post on X'}</span>
+                  </button>
                 )}
 
-                {/* Universal Copy Post Button */}
+                {activePlatform === 'linkedin' && (
+                  <button
+                    type="button"
+                    className="btn-brutal btn-primary"
+                    style={{
+                      flex: 1,
+                      padding: '10px 14px',
+                      fontSize: '0.84rem',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                    }}
+                    disabled={isSharing}
+                    onClick={() => handlePostOnPlatform('linkedin')}
+                    title="Copy canvas image to clipboard and open LinkedIn post composer"
+                  >
+                    <LinkedInIcon size={15} />
+                    <span>{isSharing ? 'Copying & Opening...' : '🚀 Post on LinkedIn'}</span>
+                  </button>
+                )}
+
+                {activePlatform === 'reddit' && (
+                  <button
+                    type="button"
+                    className="btn-brutal btn-primary"
+                    style={{
+                      flex: 1,
+                      padding: '10px 14px',
+                      fontSize: '0.84rem',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                    }}
+                    disabled={isSharing}
+                    onClick={() => handlePostOnPlatform('reddit')}
+                    title="Copy canvas image to clipboard and open Reddit submission composer"
+                  >
+                    <RedditIcon size={16} />
+                    <span>{isSharing ? 'Copying & Opening...' : '🚀 Post on Reddit'}</span>
+                  </button>
+                )}
+
+                {/* Secondary Copy Text Button */}
                 <button
                   type="button"
                   className="btn-brutal"
                   style={{
-                    padding: '9px 14px',
+                    padding: '10px 16px',
                     fontSize: '0.82rem',
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -904,31 +748,95 @@ export default function AiStudio({
                     backgroundColor: 'var(--surface)',
                   }}
                   onClick={() => handleCopy(currentPostText)}
+                  title="Copy generated post text to clipboard"
                 >
                   {copied ? <Check size={14} /> : <Copy size={14} />}
-                  <span>{copied ? 'Copied!' : 'Copy Post'}</span>
+                  <span>{copied ? 'Copied!' : 'Copy Text'}</span>
                 </button>
               </div>
 
-              {/* Optional X fallback intent link if not connected */}
-              {activePlatform === 'x' && !connections.x.connected && (
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <a
-                    href={`https://x.com/intent/tweet?text=${encodeURIComponent(currentPostText)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+              {/* Neobrutalist Notification Toast Banner */}
+              {shareToast && (
+                <div
+                  style={{
+                    marginTop: '4px',
+                    padding: '12px 14px',
+                    backgroundColor: shareToast.isError ? '#FEE2E2' : 'var(--card-bg-subtle)',
+                    border: shareToast.isError ? '2px solid #EF4444' : 'var(--border)',
+                    borderRadius: 'var(--radius-sm)',
+                    boxShadow: 'var(--shadow-card)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px',
+                  }}
+                >
+                  <div
                     style={{
-                      fontSize: '0.72rem',
-                      color: 'var(--muted)',
-                      textDecoration: 'underline',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '4px',
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      justifyContent: 'space-between',
+                      gap: '8px',
                     }}
                   >
-                    <span>Or open fallback Tweet Composer</span>
-                    <ExternalLink size={10} />
-                  </a>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '8px',
+                        fontSize: '0.82rem',
+                        fontWeight: 700,
+                        color: shareToast.isError ? '#B91C1C' : 'var(--ink)',
+                        lineHeight: 1.45,
+                      }}
+                    >
+                      {shareToast.isError ? (
+                        <AlertCircle size={16} style={{ flexShrink: 0, marginTop: '2px' }} />
+                      ) : (
+                        <Check size={16} style={{ color: '#16A34A', flexShrink: 0, marginTop: '2px' }} />
+                      )}
+                      <span>{shareToast.message}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShareToast(null)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: 'var(--muted)',
+                        padding: '2px',
+                        flexShrink: 0,
+                      }}
+                      aria-label="Dismiss toast"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+
+                  {shareToast.dataUrl && !shareToast.isError && (
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        paddingTop: '4px',
+                        borderTop: '1px dashed var(--border-color)',
+                      }}
+                    >
+                      <button
+                        type="button"
+                        className="btn-brutal"
+                        style={{ padding: '4px 10px', fontSize: '0.74rem', gap: '5px' }}
+                        onClick={() => downloadPngFallback(shareToast.dataUrl)}
+                      >
+                        <Download size={12} />
+                        <span>Download PNG</span>
+                      </button>
+                      <span style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>
+                        (Use if manual file upload is preferred)
+                      </span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

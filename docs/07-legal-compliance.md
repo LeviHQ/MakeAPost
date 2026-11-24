@@ -66,7 +66,7 @@ Covers all regulatory disclosures under GDPR, CCPA, and AI platform transparency
 - **Zero-Storage Architecture:** Clear legal statement affirming that images and generated text are never stored in databases or log files.
 - **Stateless AI Processing:** Disclosures regarding Google Gemini 2.5 Flash API transmission, verifying that image bytes are processed ephemerally and not used for model training without explicit consent.
 - **Supabase Account Records:** Detailed enumeration of database columns collected (`id`, `email`, `full_name`, `avatar_url`, `theme`, `created_at`).
-- **Social OAuth Security:** Disclosures regarding X, LinkedIn, and Reddit OAuth tokens, stating they are stored encrypted (AES-256-GCM), used only upon explicit user action, and never shared or sold.
+- **Zero-Token Social Sharing:** Disclosures affirming that social sharing operates via client-side native web intents (X, LinkedIn, Reddit) and system clipboard. No third-party social media access tokens, passwords, or API keys are ever requested or stored on our servers.
 - **Data Subject Rights:** Full breakdown of rights to access, rectification, and deletion under GDPR Article 17.
 
 ---
