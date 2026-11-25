@@ -116,3 +116,18 @@ To give creators dramatic lighting and SaaS-grade aesthetics without cluttering 
 - **20 Vector-Rendered Presets (`AURA_BACKGROUND_PRESETS`):** Organized into 4 filterable categories (`Neon Dark`, `AI Studio`, `Mesh Aura`, and `Pastel & Light`), featuring presets such as *Cyber Neon*, *Quantum Grid*, *Acid Volt*, *Synthwave*, *Matrix Pulse*, *Solar Plasma*, *Obsidian Gold*, *Arctic Aurora*, *Holo Prism*, and *Studio Frost*.
 - **Infinite HD Canvas Vector Rendering (`drawAuraBackground`):** Rather than static raster images, `CanvasEditor.js` paints multi-stop diagonal bases, layered `createRadialGradient` glowing aura orbs, and crisp geometric grid/dot/beam overlays directly onto the canvas context — scaling cleanly to any export resolution.
 - **Responsive Gallery Popup:** Uses CSS Grid (`repeat(auto-fill, minmax(128px, 1fr))`) for automatic 2-column mobile / 4-column desktop layout, complete with category pills, backdrop-click / Escape dismissal, and live 1-click selection.
+
+---
+
+## 9. Free Canvas Panning (`panOffset`) & Instant Annotation Repositioning
+
+### 9.1. Free 70% Canvas Movement (Desktop & Mobile)
+- **Hand / Move Mode Toggle (`isPanMode`):** Added a tactile `Hand` icon toggle button right inside `.canvasZoomBar` (`[ Hand | − | 100% | + ]`). When active, dragging anywhere moves the canvas freely in X & Y (`translate3d(x, y, 0) scale(zoom)`).
+- **Multi-Input Desktop Panning:** Works via Spacebar + Drag, Middle-Mouse Drag, Trackpad/Mouse Wheel scrolling (without Ctrl), or dragging on empty space in `Select` mode.
+- **2-Finger Mobile Simultaneous Zoom + Pan:** Pinching with 2 fingers updates both `zoomScale` and `panOffset` around the pinch midpoint simultaneously, just like Figma/Photos. Single-finger drag on empty space in `Select` mode or `Hand` mode also pans smoothly.
+- **1-Click Center Reset:** Clicking the `100%` badge resets both `zoomScale` to `1` and `panOffset` to `{ x: 0, y: 0 }`.
+
+### 9.2. Double-Click (Desktop) & Long-Press (Mobile) to Move Annotations Anytime
+- **Shared Geometric Hit-Tester (`hitTestAnnotation` / `findTopAnnotationAt`):** Accurately detects hits across all 10 annotation types (`box`, `circle`, `blur`, `zoom`, `highlighter`, `spotlight`, `arrow` with segment distance, `badge`, and `text`).
+- **Desktop Double-Click:** Double-clicking any existing annotation—even while `Box`, `Circle`, `Blur`, `Zoom 2x`, or another drawing tool is active—selects it with a cyan dashed outline and unlocks dragging without switching tools. Holding on the second click drags it immediately in one motion.
+- **Mobile Long-Press:** Pressing and holding (`360ms`, `< 10px` movement) over any existing annotation while a drawing tool is active cancels micro-drawing, triggers subtle haptic feedback, highlights the annotation, and lets the user immediately slide their finger to reposition it.

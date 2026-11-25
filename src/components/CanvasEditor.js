@@ -1,8 +1,58 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Camera, FolderOpen, Code2, BarChart3 } from 'lucide-react';
+import { Camera, FolderOpen, Code2, BarChart3, Move } from 'lucide-react';
 import { AURA_PRESETS_MAP, drawAuraBackground } from '@/lib/backgroundPresets';
+
+function distToSegment(px, py, x1, y1, x2, y2) {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const lenSq = dx * dx + dy * dy;
+  if (lenSq === 0) return Math.hypot(px - x1, py - y1);
+  let t = ((px - x1) * dx + (py - y1) * dy) / lenSq;
+  t = Math.max(0, Math.min(1, t));
+  return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
+}
+
+function hitTestAnnotation(pt, ann) {
+  if (!ann) return false;
+  if (ann.type === 'arrow') {
+    return distToSegment(pt.x, pt.y, ann.x1, ann.y1, ann.x2, ann.y2) <= 14;
+  }
+  if (ann.type === 'badge') {
+    return Math.hypot(pt.x - ann.x, pt.y - ann.y) <= (ann.radius || 14) + 8;
+  }
+  if (ann.type === 'circle') {
+    const cx = ann.x + ann.w / 2;
+    const cy = ann.y + ann.h / 2;
+    const rx = Math.max(8, Math.abs(ann.w) / 2 + 6);
+    const ry = Math.max(8, Math.abs(ann.h) / 2 + 6);
+    const dx = pt.x - cx;
+    const dy = pt.y - cy;
+    return (dx * dx) / (rx * rx) + (dy * dy) / (ry * ry) <= 1.25;
+  }
+  if (ann.type === 'text') {
+    const estW = Math.max(60, (ann.text || '').length * 9 + 24);
+    return pt.x >= ann.x - 4 && pt.x <= ann.x + estW && pt.y >= ann.y - 4 && pt.y <= ann.y + 32;
+  }
+  const bx = Math.min(ann.x, ann.x + ann.w);
+  const by = Math.min(ann.y, ann.y + ann.h);
+  const bw = Math.abs(ann.w);
+  const bh = Math.abs(ann.h);
+  return pt.x >= bx - 6 && pt.x <= bx + bw + 6 && pt.y >= by - 6 && pt.y <= by + bh + 6;
+}
+
+function findTopAnnotationAt(pt, list) {
+  return [...list].reverse().find((ann) => hitTestAnnotation(pt, ann)) || null;
+}
+
+function clampPan(x, y, zoom = 1) {
+  const limit = Math.max(360, Math.round(450 * zoom));
+  return {
+    x: Math.max(-limit, Math.min(limit, Math.round(x))),
+    y: Math.max(-limit, Math.min(limit, Math.round(y))),
+  };
+}
 
 // Sample 1: Code Editor Snippet (Self-contained SVG data URL)
 const SAMPLE_CODE_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="460" viewBox="0 0 800 460">
@@ -107,6 +157,9 @@ export default function CanvasEditor({
   canvasRef,
   zoomScale = 1,
   onZoomChange,
+  panOffset = { x: 0, y: 0 },
+  onPanChange,
+  isPanMode = false,
 }) {
   const fileInputRef = useRef(null);
   const containerRef = useRef(null);
@@ -119,10 +172,81 @@ export default function CanvasEditor({
   const [pendingTextPos, setPendingTextPos] = useState(null);
   const [textInputVal, setTextInputVal] = useState('');
   const [isPinching, setIsPinching] = useState(false);
-  const pinchRef = useRef({ startDist: 0, startZoom: 1, isPinching: false });
+  const [isPanning, setIsPanning] = useState(false);
+  const [isSpacePressed, setIsSpacePressed] = useState(false);
+  const [hoveredSelected, setHoveredSelected] = useState(false);
+  const [moveHint, setMoveHint] = useState(null);
+
+  const pinchRef = useRef({
+    startDist: 0,
+    startZoom: 1,
+    startMidX: 0,
+    startMidY: 0,
+    startPanX: 0,
+    startPanY: 0,
+    isPinching: false,
+  });
   const pinchCooldownRef = useRef(0);
   const zoomScaleRef = useRef(zoomScale);
   zoomScaleRef.current = zoomScale;
+  const panOffsetRef = useRef(panOffset);
+  panOffsetRef.current = panOffset;
+  const isPanModeRef = useRef(isPanMode);
+  isPanModeRef.current = isPanMode;
+  const isSpacePressedRef = useRef(isSpacePressed);
+  isSpacePressedRef.current = isSpacePressed;
+  const hasImageRef = useRef(Boolean(image));
+  hasImageRef.current = Boolean(image);
+
+  const panDragRef = useRef({
+    active: false,
+    startClientX: 0,
+    startClientY: 0,
+    startPanX: 0,
+    startPanY: 0,
+  });
+  const lastClickRef = useRef({ time: 0, x: 0, y: 0 });
+  const longPressTimerRef = useRef(null);
+  const touchMetaRef = useRef({ startClientX: 0, startClientY: 0 });
+  const moveHintTimerRef = useRef(null);
+
+  const showMoveHint = useCallback((msg) => {
+    setMoveHint(msg);
+    if (moveHintTimerRef.current) clearTimeout(moveHintTimerRef.current);
+    moveHintTimerRef.current = setTimeout(() => {
+      setMoveHint(null);
+    }, 1800);
+  }, []);
+
+  // Spacebar temporary Hand/Pan activation + timer cleanup
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const tag = e.target?.tagName?.toLowerCase();
+      if (tag === 'input' || tag === 'textarea') return;
+      if (e.code === 'Space' && !e.repeat) {
+        e.preventDefault();
+        setIsSpacePressed(true);
+      }
+    };
+    const handleKeyUp = (e) => {
+      if (e.code === 'Space') {
+        setIsSpacePressed(false);
+      }
+    };
+    const handleBlur = () => {
+      setIsSpacePressed(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    window.addEventListener('blur', handleBlur);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener('blur', handleBlur);
+      if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
+      if (moveHintTimerRef.current) clearTimeout(moveHintTimerRef.current);
+    };
+  }, []);
 
   // 1. Image Ingestion Helper
   const loadFromDataUrl = useCallback(
@@ -787,8 +911,8 @@ export default function CanvasEditor({
         ctx.fillText(ann.text || '', ann.x + padX, ann.y + pillH / 2);
       }
 
-      // Highlight Selected Annotation ONLY when in 'select' mode!
-      if (activeTool === 'select' && ann.id === selectedAnnotationId) {
+      // Highlight Selected Annotation (works in Select mode or via Double-Click / Long-Press)
+      if (ann.id === selectedAnnotationId) {
         ctx.strokeStyle = '#38BDF8';
         ctx.lineWidth = 2;
         ctx.setLineDash([5, 4]);
@@ -803,7 +927,9 @@ export default function CanvasEditor({
           ctx.arc(ann.x, ann.y, (ann.radius || 14) + 6, 0, Math.PI * 2);
           ctx.stroke();
         } else if (ann.type === 'text') {
-          ctx.strokeRect(ann.x - 3, ann.y - 3, 110, 32);
+          ctx.font = 'bold 15px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+          const textW = ctx.measureText(ann.text || '').width + 26;
+          ctx.strokeRect(ann.x - 3, ann.y - 3, textW, 32);
         } else {
           ctx.strokeRect(
             Math.min(ann.x, ann.x + ann.w) - 4,
@@ -879,6 +1005,7 @@ export default function CanvasEditor({
     verticalAlign,
     annotations,
     currentShape,
+    dragOffset,
     activeTool,
     selectedAnnotationId,
   ]);
@@ -917,43 +1044,66 @@ export default function CanvasEditor({
     return { x, y };
   };
 
+  const startPanDrag = useCallback((clientX, clientY) => {
+    panDragRef.current = {
+      active: true,
+      startClientX: clientX,
+      startClientY: clientY,
+      startPanX: panOffsetRef.current.x,
+      startPanY: panOffsetRef.current.y,
+    };
+    setIsPanning(true);
+  }, []);
+
+  const commitDragState = useCallback(() => {
+    if (!dragState) return false;
+    if (dragOffset && (Math.abs(dragOffset.dx) > 1 || Math.abs(dragOffset.dy) > 1)) {
+      const finalAnnotations = annotations.map((ann) => {
+        if (ann.id !== dragState.id) return ann;
+        if (ann.type === 'arrow') {
+          return {
+            ...ann,
+            x1: dragState.origAnn.x1 + dragOffset.dx,
+            y1: dragState.origAnn.y1 + dragOffset.dy,
+            x2: dragState.origAnn.x2 + dragOffset.dx,
+            y2: dragState.origAnn.y2 + dragOffset.dy,
+          };
+        }
+        return {
+          ...ann,
+          x: dragState.origAnn.x + dragOffset.dx,
+          y: dragState.origAnn.y + dragOffset.dy,
+        };
+      });
+      onAnnotationsChange(finalAnnotations);
+    }
+    setDragState(null);
+    setDragOffset(null);
+    return true;
+  }, [dragState, dragOffset, annotations, onAnnotationsChange]);
+
   const handleMouseDown = (e) => {
     if (!image) return;
     if (Date.now() < pinchCooldownRef.current) return;
+    e.stopPropagation();
+
+    // Pan Mode, Spacebar+Drag, or Middle Mouse Drag
+    if (e.button === 1 || isSpacePressedRef.current || isPanModeRef.current) {
+      e.preventDefault();
+      startPanDrag(e.clientX, e.clientY);
+      return;
+    }
+
     const pt = getCanvasPoint(e);
+    const now = Date.now();
+    const isDoubleClick =
+      now - lastClickRef.current.time < 350 &&
+      Math.hypot(e.clientX - lastClickRef.current.x, e.clientY - lastClickRef.current.y) < 12;
+    lastClickRef.current = { time: now, x: e.clientX, y: e.clientY };
+
+    const clicked = findTopAnnotationAt(pt, annotations);
 
     if (activeTool === 'select') {
-      // Hit test existing annotations (all 10 types supported)
-      const clicked = [...annotations].reverse().find((ann) => {
-        if (ann.type === 'arrow') {
-          const minX = Math.min(ann.x1, ann.x2) - 10;
-          const maxX = Math.max(ann.x1, ann.x2) + 10;
-          const minY = Math.min(ann.y1, ann.y2) - 10;
-          const maxY = Math.max(ann.y1, ann.y2) + 10;
-          return pt.x >= minX && pt.x <= maxX && pt.y >= minY && pt.y <= maxY;
-        } else if (ann.type === 'badge') {
-          return Math.hypot(pt.x - ann.x, pt.y - ann.y) <= (ann.radius || 14) + 6;
-        } else if (ann.type === 'circle') {
-          const cx = ann.x + ann.w / 2;
-          const cy = ann.y + ann.h / 2;
-          const rx = Math.max(6, Math.abs(ann.w) / 2);
-          const ry = Math.max(6, Math.abs(ann.h) / 2);
-          const dx = pt.x - cx;
-          const dy = pt.y - cy;
-          return (dx * dx) / (rx * rx) + (dy * dy) / (ry * ry) <= 1.25;
-        } else if (ann.type === 'text') {
-          return pt.x >= ann.x && pt.x <= ann.x + 130 && pt.y >= ann.y && pt.y <= ann.y + 35;
-        } else {
-          // box, blur, zoom, highlighter, spotlight
-          const bx = Math.min(ann.x, ann.x + ann.w);
-          const by = Math.min(ann.y, ann.y + ann.h);
-          const bw = Math.abs(ann.w);
-          const bh = Math.abs(ann.h);
-          return pt.x >= bx && pt.x <= bx + bw && pt.y >= by && pt.y <= by + bh;
-        }
-      });
-
-      // Click on blank area deselects!
       onSelectAnnotation(clicked ? clicked.id : null);
       if (clicked) {
         setDragState({
@@ -961,11 +1111,30 @@ export default function CanvasEditor({
           startPt: pt,
           origAnn: { ...clicked },
         });
+      } else {
+        // Dragging blank space in Select mode smoothly pans canvas
+        startPanDrag(e.clientX, e.clientY);
       }
       return;
     }
 
-    // Any other tool deselects immediately
+    // Desktop Double-Click on ANY annotation, or dragging an already-selected annotation
+    if (clicked && (isDoubleClick || clicked.id === selectedAnnotationId)) {
+      setIsDrawing(false);
+      setCurrentShape(null);
+      if (onSelectAnnotation) onSelectAnnotation(clicked.id);
+      setDragState({
+        id: clicked.id,
+        startPt: pt,
+        origAnn: { ...clicked },
+      });
+      if (isDoubleClick) {
+        showMoveHint('Selected — drag to reposition');
+      }
+      return;
+    }
+
+    // Clicking empty space or another unselected region deselects & uses active drawing tool
     if (onSelectAnnotation) onSelectAnnotation(null);
 
     if (activeTool === 'text') {
@@ -976,7 +1145,6 @@ export default function CanvasEditor({
     }
 
     if (activeTool === 'badge') {
-      // 1-Click Placement for Numbered Step Badges (1, 2, 3...)
       const badgeCount = annotations.filter((a) => a.type === 'badge').length;
       const newBadge = {
         id: `ann_${Date.now()}`,
@@ -1018,7 +1186,23 @@ export default function CanvasEditor({
   };
 
   const handleMouseMove = (e) => {
-    // 1. Repositioning Annotation in Select Mode (Smooth real-time preview via dragOffset)
+    // 1. Canvas Panning
+    if (panDragRef.current.active) {
+      const dx = e.clientX - panDragRef.current.startClientX;
+      const dy = e.clientY - panDragRef.current.startClientY;
+      if (onPanChange) {
+        onPanChange(
+          clampPan(
+            panDragRef.current.startPanX + dx,
+            panDragRef.current.startPanY + dy,
+            zoomScaleRef.current
+          )
+        );
+      }
+      return;
+    }
+
+    // 2. Repositioning Annotation (Select mode, Double-click drag, or Long-press drag)
     if (dragState) {
       const pt = getCanvasPoint(e);
       const dx = pt.x - dragState.startPt.x;
@@ -1027,51 +1211,43 @@ export default function CanvasEditor({
       return;
     }
 
-    // 2. Active Drawing
-    if (!isDrawing || !currentShape) return;
-    const pt = getCanvasPoint(e);
+    // 3. Active Drawing
+    if (isDrawing && currentShape) {
+      const pt = getCanvasPoint(e);
+      const SHAPE_TOOLS = ['box', 'blur', 'zoom', 'circle', 'highlighter', 'spotlight'];
+      if (SHAPE_TOOLS.includes(currentShape.type)) {
+        setCurrentShape((prev) => (prev ? { ...prev, w: pt.x - prev.x, h: pt.y - prev.y } : null));
+      } else if (currentShape.type === 'arrow') {
+        setCurrentShape((prev) => (prev ? { ...prev, x2: pt.x, y2: pt.y } : null));
+      }
+      return;
+    }
 
-    const SHAPE_TOOLS = ['box', 'blur', 'zoom', 'circle', 'highlighter', 'spotlight'];
-    if (SHAPE_TOOLS.includes(currentShape.type)) {
-      setCurrentShape((prev) => (prev ? { ...prev, w: pt.x - prev.x, h: pt.y - prev.y } : null));
-    } else if (currentShape.type === 'arrow') {
-      setCurrentShape((prev) => (prev ? { ...prev, x2: pt.x, y2: pt.y } : null));
+    // 4. Hover cursor hint when over an already-selected annotation
+    if (image && selectedAnnotationId && e.clientX !== undefined) {
+      const pt = getCanvasPoint(e);
+      const hit = findTopAnnotationAt(pt, annotations);
+      const overSel = Boolean(hit && hit.id === selectedAnnotationId);
+      setHoveredSelected((prev) => (prev !== overSel ? overSel : prev));
+    } else if (hoveredSelected) {
+      setHoveredSelected(false);
     }
   };
 
-  const handleMouseUp = () => {
-    // 1. Commit Repositioned Annotation once on mouse release
-    if (dragState) {
-      if (dragOffset && (Math.abs(dragOffset.dx) > 1 || Math.abs(dragOffset.dy) > 1)) {
-        const finalAnnotations = annotations.map((ann) => {
-          if (ann.id !== dragState.id) return ann;
-          if (ann.type === 'arrow') {
-            return {
-              ...ann,
-              x1: dragState.origAnn.x1 + dragOffset.dx,
-              y1: dragState.origAnn.y1 + dragOffset.dy,
-              x2: dragState.origAnn.x2 + dragOffset.dx,
-              y2: dragState.origAnn.y2 + dragOffset.dy,
-            };
-          } else {
-            return {
-              ...ann,
-              x: dragState.origAnn.x + dragOffset.dx,
-              y: dragState.origAnn.y + dragOffset.dy,
-            };
-          }
-        });
-        onAnnotationsChange(finalAnnotations);
-      }
-      setDragState(null);
-      setDragOffset(null);
+  const handleMouseUp = useCallback(() => {
+    if (panDragRef.current.active) {
+      panDragRef.current.active = false;
+      setIsPanning(false);
+      return;
+    }
+
+    if (commitDragState()) {
       return;
     }
 
     if (!isDrawing || !currentShape) return;
     setIsDrawing(false);
 
-    // Filter out micro-clicks (< 6px)
     let isValid = false;
     const SHAPE_TOOLS = ['box', 'blur', 'zoom', 'circle', 'highlighter', 'spotlight'];
     if (SHAPE_TOOLS.includes(currentShape.type)) {
@@ -1085,7 +1261,15 @@ export default function CanvasEditor({
       onAnnotationsChange([...annotations, currentShape]);
     }
     setCurrentShape(null);
-  };
+  }, [commitDragState, isDrawing, currentShape, annotations, onAnnotationsChange]);
+
+  // Safety listener if mouse is released outside container
+  useEffect(() => {
+    if (!isPanning && !dragState && !isDrawing) return;
+    const onWinUp = () => handleMouseUp();
+    window.addEventListener('mouseup', onWinUp);
+    return () => window.removeEventListener('mouseup', onWinUp);
+  }, [isPanning, dragState, isDrawing, handleMouseUp]);
 
   const handleAddTextSubmit = (e) => {
     e.preventDefault();
@@ -1105,42 +1289,226 @@ export default function CanvasEditor({
     setTextInputVal('');
   };
 
-  // Click on background container deselects
-  const handleContainerClick = (e) => {
+  // Clicking/dragging background dotted container outside canvas deselects and pans
+  const handleContainerMouseDown = (e) => {
     if (e.target === containerRef.current) {
       if (onSelectAnnotation) onSelectAnnotation(null);
+      if (image && (e.button === 0 || e.button === 1)) {
+        startPanDrag(e.clientX, e.clientY);
+      }
     }
   };
 
-  // Touch Handlers for Canvas (Coordinates Single-Touch Drawing with Multi-Touch Pinch)
+  // Touch Handlers for Canvas (1-Finger Drawing, Long-Press Move, and Panning)
   const handleTouchStart = (e) => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+
     if (e.touches.length >= 2 || pinchRef.current.isPinching || Date.now() < pinchCooldownRef.current) {
       setIsDrawing(false);
       setCurrentShape(null);
       setDragState(null);
       setDragOffset(null);
+      panDragRef.current.active = false;
+      setIsPanning(false);
+      touchMetaRef.current = { pendingDraw: false };
       return;
     }
-    if (activeTool !== 'select') e.preventDefault();
+
+    if (!image) return;
+    const touch = e.touches[0];
+    if (!touch) return;
+
+    if (isPanModeRef.current) {
+      e.preventDefault();
+      startPanDrag(touch.clientX, touch.clientY);
+      return;
+    }
+
+    const pt = getCanvasPoint(e);
+    const hit = findTopAnnotationAt(pt, annotations);
+
+    if (activeTool === 'select') {
+      e.preventDefault();
+      onSelectAnnotation(hit ? hit.id : null);
+      if (hit) {
+        setDragState({
+          id: hit.id,
+          startPt: pt,
+          origAnn: { ...hit },
+        });
+      } else {
+        startPanDrag(touch.clientX, touch.clientY);
+      }
+      return;
+    }
+
+    // Touching an already-selected annotation drags it directly
+    if (hit && hit.id === selectedAnnotationId) {
+      e.preventDefault();
+      setDragState({
+        id: hit.id,
+        startPt: pt,
+        origAnn: { ...hit },
+      });
+      return;
+    }
+
+    // Drawing tool active: prevent scrolling and monitor for Long-Press if finger hits an existing annotation
+    e.preventDefault();
+    if (onSelectAnnotation) onSelectAnnotation(null);
+
+    if (hit) {
+      touchMetaRef.current = {
+        startClientX: touch.clientX,
+        startClientY: touch.clientY,
+        startPt: pt,
+        pendingDraw: true,
+        longPressed: false,
+      };
+      longPressTimerRef.current = setTimeout(() => {
+        longPressTimerRef.current = null;
+        touchMetaRef.current.pendingDraw = false;
+        touchMetaRef.current.longPressed = true;
+        setIsDrawing(false);
+        setCurrentShape(null);
+        if (onSelectAnnotation) onSelectAnnotation(hit.id);
+        setDragState({
+          id: hit.id,
+          startPt: pt,
+          origAnn: { ...hit },
+        });
+        if (typeof navigator !== 'undefined' && navigator.vibrate) {
+          try {
+            navigator.vibrate(25);
+          } catch {}
+        }
+        showMoveHint('Selected — drag to move');
+      }, 360);
+      return;
+    }
+
+    touchMetaRef.current = { pendingDraw: false, longPressed: false };
     handleMouseDown(e);
   };
 
   const handleTouchMove = (e) => {
     if (e.touches.length >= 2 || pinchRef.current.isPinching || Date.now() < pinchCooldownRef.current) {
+      if (longPressTimerRef.current) {
+        clearTimeout(longPressTimerRef.current);
+        longPressTimerRef.current = null;
+      }
       return;
     }
-    if (activeTool !== 'select') e.preventDefault();
+
+    const touch = e.touches[0];
+    if (!touch) return;
+
+    if (panDragRef.current.active) {
+      e.preventDefault();
+      const dx = touch.clientX - panDragRef.current.startClientX;
+      const dy = touch.clientY - panDragRef.current.startClientY;
+      if (onPanChange) {
+        onPanChange(
+          clampPan(
+            panDragRef.current.startPanX + dx,
+            panDragRef.current.startPanY + dy,
+            zoomScaleRef.current
+          )
+        );
+      }
+      return;
+    }
+
+    // If finger moved > 10px before long-press triggered, user intends to draw a new shape!
+    if (touchMetaRef.current.pendingDraw) {
+      const distMoved = Math.hypot(
+        touch.clientX - touchMetaRef.current.startClientX,
+        touch.clientY - touchMetaRef.current.startClientY
+      );
+      if (distMoved > 10) {
+        if (longPressTimerRef.current) {
+          clearTimeout(longPressTimerRef.current);
+          longPressTimerRef.current = null;
+        }
+        touchMetaRef.current.pendingDraw = false;
+        const startPt = touchMetaRef.current.startPt;
+        const curPt = getCanvasPoint(e);
+        const SHAPE_TOOLS = ['box', 'blur', 'zoom', 'circle', 'highlighter', 'spotlight'];
+        if (SHAPE_TOOLS.includes(activeTool)) {
+          setIsDrawing(true);
+          setCurrentShape({
+            id: `ann_${Date.now()}`,
+            type: activeTool,
+            x: startPt.x,
+            y: startPt.y,
+            w: curPt.x - startPt.x,
+            h: curPt.y - startPt.y,
+            color: annotationColor,
+          });
+        } else if (activeTool === 'arrow') {
+          setIsDrawing(true);
+          setCurrentShape({
+            id: `ann_${Date.now()}`,
+            type: 'arrow',
+            x1: startPt.x,
+            y1: startPt.y,
+            x2: curPt.x,
+            y2: curPt.y,
+            color: annotationColor,
+          });
+        }
+      }
+      return;
+    }
+
+    e.preventDefault();
     handleMouseMove(e);
   };
 
   const handleTouchEnd = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+
     if (pinchRef.current.isPinching) {
       return;
     }
+
+    // If quick tap on text/badge over an existing annotation before long-press fired
+    if (touchMetaRef.current.pendingDraw && !touchMetaRef.current.longPressed) {
+      const startPt = touchMetaRef.current.startPt;
+      touchMetaRef.current.pendingDraw = false;
+      if (activeTool === 'text') {
+        setPendingTextPos(startPt);
+        setTextInputVal('');
+        setTextPromptOpen(true);
+        return;
+      }
+      if (activeTool === 'badge') {
+        const badgeCount = annotations.filter((a) => a.type === 'badge').length;
+        const newBadge = {
+          id: `ann_${Date.now()}`,
+          type: 'badge',
+          x: startPt.x,
+          y: startPt.y,
+          step: badgeCount + 1,
+          radius: 14,
+          color: annotationColor || '#FFD93D',
+        };
+        onAnnotationsChange([...annotations, newBadge]);
+        return;
+      }
+    }
+
+    touchMetaRef.current = { pendingDraw: false, longPressed: false };
     handleMouseUp();
   };
 
-  // Native Non-Passive Event Listeners for Smooth 2-Finger Pinch-to-Zoom & Trackpad Wheel Zoom
+  // Native Non-Passive Event Listeners for 2-Finger Pinch-to-Zoom + 2-Finger Pan & Wheel Pan/Zoom
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -1148,12 +1516,22 @@ export default function CanvasEditor({
     const handleTouchStartNative = (e) => {
       if (e.touches.length === 2) {
         e.preventDefault();
+        if (longPressTimerRef.current) {
+          clearTimeout(longPressTimerRef.current);
+          longPressTimerRef.current = null;
+        }
         const t1 = e.touches[0];
         const t2 = e.touches[1];
         const dist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+        const midX = (t1.clientX + t2.clientX) / 2;
+        const midY = (t1.clientY + t2.clientY) / 2;
         pinchRef.current = {
           startDist: dist,
           startZoom: zoomScaleRef.current,
+          startMidX: midX,
+          startMidY: midY,
+          startPanX: panOffsetRef.current.x,
+          startPanY: panOffsetRef.current.y,
           isPinching: true,
         };
         setIsPinching(true);
@@ -1161,6 +1539,8 @@ export default function CanvasEditor({
         setCurrentShape(null);
         setDragState(null);
         setDragOffset(null);
+        panDragRef.current.active = false;
+        setIsPanning(false);
       }
     };
 
@@ -1170,10 +1550,26 @@ export default function CanvasEditor({
         const t1 = e.touches[0];
         const t2 = e.touches[1];
         const currentDist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+        const curMidX = (t1.clientX + t2.clientX) / 2;
+        const curMidY = (t1.clientY + t2.clientY) / 2;
+
+        let nextZoom = zoomScaleRef.current;
         if (pinchRef.current.startDist > 0 && onZoomChange) {
           const ratio = currentDist / pinchRef.current.startDist;
-          const nextZoom = Math.min(3.0, Math.max(0.4, pinchRef.current.startZoom * ratio));
-          onZoomChange(Number(nextZoom.toFixed(2)));
+          nextZoom = Number(Math.min(3.0, Math.max(0.4, pinchRef.current.startZoom * ratio)).toFixed(2));
+          onZoomChange(nextZoom);
+        }
+
+        if (onPanChange) {
+          const dx = curMidX - pinchRef.current.startMidX;
+          const dy = curMidY - pinchRef.current.startMidY;
+          onPanChange(
+            clampPan(
+              pinchRef.current.startPanX + dx,
+              pinchRef.current.startPanY + dy,
+              nextZoom
+            )
+          );
         }
       }
     };
@@ -1196,6 +1592,12 @@ export default function CanvasEditor({
             return Number(next.toFixed(2));
           });
         }
+      } else if (hasImageRef.current && onPanChange) {
+        // Trackpad 2-finger swipe or mouse wheel smoothly pans the canvas inside the 70% area
+        e.preventDefault();
+        onPanChange((prev) =>
+          clampPan(prev.x - e.deltaX, prev.y - e.deltaY, zoomScaleRef.current)
+        );
       }
     };
 
@@ -1210,12 +1612,14 @@ export default function CanvasEditor({
       container.removeEventListener('touchend', handleTouchEndNative);
       container.removeEventListener('wheel', handleWheelNative);
     };
-  }, [onZoomChange]);
+  }, [onZoomChange, onPanChange]);
 
   return (
     <div
       ref={containerRef}
-      onMouseDown={handleContainerClick}
+      onMouseDown={handleContainerMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
@@ -1226,10 +1630,11 @@ export default function CanvasEditor({
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        overflow: 'auto',
+        overflow: image ? 'hidden' : 'auto',
         position: 'relative',
         padding: '24px',
         userSelect: 'none',
+        cursor: isPanning ? 'grabbing' : isPanMode || isSpacePressed ? 'grab' : undefined,
       }}
       className="dot-grid-bg"
     >
@@ -1394,8 +1799,6 @@ export default function CanvasEditor({
           <canvas
             ref={canvasRef}
             onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
@@ -1403,24 +1806,60 @@ export default function CanvasEditor({
               maxWidth: '100%',
               maxHeight: 'calc(100vh - 150px)',
               objectFit: 'contain',
-              cursor:
-                activeTool === 'select'
-                  ? dragState
-                    ? 'grabbing'
-                    : 'default'
-                  : activeTool === 'text'
-                  ? 'text'
-                  : activeTool === 'badge'
-                  ? 'pointer'
-                  : 'crosshair',
+              cursor: isPanning
+                ? 'grabbing'
+                : isPanMode || isSpacePressed
+                ? 'grab'
+                : dragState
+                ? 'grabbing'
+                : hoveredSelected
+                ? 'move'
+                : activeTool === 'select'
+                ? 'grab'
+                : activeTool === 'text'
+                ? 'text'
+                : activeTool === 'badge'
+                ? 'pointer'
+                : 'crosshair',
               display: 'block',
               touchAction: 'none',
-              transform: `scale(${zoomScale})`,
+              transform: `translate3d(${panOffset.x}px, ${panOffset.y}px, 0) scale(${zoomScale})`,
               transformOrigin: 'center center',
-              transition: isPinching ? 'none' : 'transform 0.12s cubic-bezier(0.16, 1, 0.3, 1)',
+              transition:
+                isPinching || isPanning || dragState
+                  ? 'none'
+                  : 'transform 0.12s cubic-bezier(0.16, 1, 0.3, 1)',
               willChange: 'transform',
             }}
           />
+
+          {/* Floating Non-Intrusive Pill when Annotation Move Mode Activates */}
+          {moveHint ? (
+            <div
+              style={{
+                position: 'absolute',
+                top: '16px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                backgroundColor: '#09090B',
+                color: '#FFFFFF',
+                border: '2px solid #FFD93D',
+                borderRadius: '999px',
+                padding: '5px 12px',
+                fontSize: '0.74rem',
+                fontWeight: 700,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                zIndex: 50,
+                pointerEvents: 'none',
+                boxShadow: '2px 2px 0px #000000',
+              }}
+            >
+              <Move size={13} style={{ color: '#FFD93D' }} />
+              <span>{moveHint}</span>
+            </div>
+          ) : null}
         </div>
       )}
 

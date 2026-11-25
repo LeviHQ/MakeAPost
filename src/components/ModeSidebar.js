@@ -493,6 +493,11 @@ export default function ModeSidebar({
                 </div>
               </div>
 
+              {/* Micro-hint for Double-Click / Long-Press Move */}
+              <div style={{ fontSize: '0.7rem', color: 'var(--muted)', lineHeight: 1.35 }}>
+                Tip: Double-click (desktop) or long-press (mobile) any annotation to move it anytime.
+              </div>
+
               {/* Delete Selected Annotation */}
               {selectedAnnotationId && (
                 <button

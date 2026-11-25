@@ -6,7 +6,7 @@ import Logo from '@/components/Logo';
 import NavbarAuth from '@/components/NavbarAuth';
 import CanvasEditor from '@/components/CanvasEditor';
 import ModeSidebar from '@/components/ModeSidebar';
-import { RotateCcw, Copy, Download, Image as ImageIcon, Sliders, Zap, ArrowRight, Menu, X, Home, Undo2, Redo2, ZoomIn, ZoomOut } from 'lucide-react';
+import { RotateCcw, Copy, Download, Image as ImageIcon, Sliders, Zap, ArrowRight, Menu, X, Home, Undo2, Redo2, ZoomIn, ZoomOut, Hand } from 'lucide-react';
 import styles from './editor.module.css';
 
 export default function EditorPage() {
@@ -22,6 +22,8 @@ export default function EditorPage() {
   // Canvas Framing & Image State
   const [image, setImage] = useState(null);
   const [zoomScale, setZoomScale] = useState(1);
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const [isPanMode, setIsPanMode] = useState(false);
   const [aspectRatio, setAspectRatio] = useState('auto');
   const [background, setBackground] = useState('cyber');
   const [padding, setPadding] = useState(48);
@@ -115,6 +117,8 @@ export default function EditorPage() {
     setRedoStack([]);
     setSelectedAnnotationId(null);
     setZoomScale(1);
+    setPanOffset({ x: 0, y: 0 });
+    setIsPanMode(false);
     setMobileTab('canvas');
     showToast('Canvas reset. Load a new image!');
   }, [showToast]);
@@ -391,7 +395,10 @@ export default function EditorPage() {
             shadow={shadow}
             onShadowChange={setShadow}
             activeTool={activeTool}
-            onToolChange={setActiveTool}
+            onToolChange={(tool) => {
+              setActiveTool(tool);
+              setIsPanMode(false);
+            }}
             annotationColor={annotationColor}
             onAnnotationColorChange={setAnnotationColor}
             annotations={annotations}
@@ -421,6 +428,8 @@ export default function EditorPage() {
             onImageLoaded={(img) => {
               setImage(img);
               setZoomScale(1);
+              setPanOffset({ x: 0, y: 0 });
+              setIsPanMode(false);
               setMobileTab('canvas');
             }}
             aspectRatio={aspectRatio}
@@ -442,11 +451,28 @@ export default function EditorPage() {
             onSelectAnnotation={setSelectedAnnotationId}
             zoomScale={zoomScale}
             onZoomChange={setZoomScale}
+            panOffset={panOffset}
+            onPanChange={setPanOffset}
+            isPanMode={isPanMode}
           />
 
-          {/* Floating Zoom Toolbar (Bottom-Left Corner of 70% Canvas) */}
+          {/* Floating Zoom & Pan Toolbar (Bottom-Left Corner of 70% Canvas) */}
           {image ? (
             <div className={styles.canvasZoomBar}>
+              <button
+                type="button"
+                className={styles.zoomBtn}
+                onClick={() => setIsPanMode((p) => !p)}
+                style={{
+                  backgroundColor: isPanMode ? 'var(--accent-yellow)' : undefined,
+                  color: isPanMode ? '#09090B' : undefined,
+                }}
+                title="Hand / Move Canvas (Space + Drag / 2-Finger Drag)"
+                aria-label="Toggle canvas move mode"
+              >
+                <Hand size={14} />
+              </button>
+              <div className={styles.zoomDivider} />
               <button
                 type="button"
                 className={styles.zoomBtn}
@@ -461,9 +487,12 @@ export default function EditorPage() {
               <button
                 type="button"
                 className={styles.zoomPercentBadge}
-                onClick={() => setZoomScale(1)}
-                title="Click to Reset Zoom (100%)"
-                aria-label="Reset zoom to 100%"
+                onClick={() => {
+                  setZoomScale(1);
+                  setPanOffset({ x: 0, y: 0 });
+                }}
+                title="Click to Reset Zoom & Position (100%)"
+                aria-label="Reset zoom and position to 100%"
               >
                 {Math.round(zoomScale * 100)}%
               </button>
