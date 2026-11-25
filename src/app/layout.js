@@ -23,6 +23,10 @@ const jetbrainsMono = JetBrains_Mono({
 
 // Determine reliable base URL across local dev, preview deployments, and custom production domains
 const getBaseUrl = () => {
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    const url = process.env.NEXT_PUBLIC_APP_URL.trim();
+    return url.startsWith('http') ? url : `https://${url}`;
+  }
   if (process.env.NEXT_PUBLIC_SITE_URL) {
     const url = process.env.NEXT_PUBLIC_SITE_URL.trim();
     return url.startsWith('http') ? url : `https://${url}`;
@@ -33,11 +37,14 @@ const getBaseUrl = () => {
   if (process.env.VERCEL_URL) {
     return `https://${process.env.VERCEL_URL}`;
   }
-  return 'https://makeapost.app';
+  return 'https://makeapost.site';
 };
 
 export const metadata = {
   metadataBase: new URL(getBaseUrl()),
+  alternates: {
+    canonical: '/',
+  },
   title: 'MakeAPost — Turn Screenshots into Viral Social Posts',
   description:
     'Turn raw screenshots into viral social posts in seconds. Edit your image & generate tailored X, LinkedIn, and Reddit posts in one screen.',

@@ -3,10 +3,18 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Logo from '@/components/Logo';
+import ThemeToggle from '@/components/ThemeToggle';
 import { createClient } from '@/lib/supabase/client';
 import { GoogleIcon } from '@/components/NavbarAuth';
-import { Settings, ArrowRight, Menu, X } from 'lucide-react';
+import { Settings, ArrowRight, Menu, X, ShieldCheck } from 'lucide-react';
 import styles from '@/app/page.module.css';
+
+const NAV_LINKS = [
+  { href: '#problem', label: 'The Problem' },
+  { href: '#features', label: 'Features' },
+  { href: '#preview', label: 'Live Preview' },
+  { href: '#faq', label: 'FAQ' },
+];
 
 export default function LandingNavbar() {
   const [user, setUser] = useState(null);
@@ -63,91 +71,137 @@ export default function LandingNavbar() {
   return (
     <header className={styles.navbar}>
       <div className={styles.navInner}>
-        <Logo size={38} />
+        {/* Left: Brand Logo + Zero Post History Pill */}
+        <div className={styles.navBrandGroup}>
+          <Logo size={36} />
+          <div className={`badge-brutal badge-green ${styles.navZeroBadge}`}>
+            <ShieldCheck size={12} />
+            <span>ZERO POST HISTORY</span>
+          </div>
+        </div>
 
-        {/* Desktop Navigation */}
+        {/* Center: Clean Section Links (Desktop) */}
+        <nav className={styles.navLinksDesktop} aria-label="Landing sections">
+          {NAV_LINKS.map((item) => (
+            <a key={item.href} href={item.href} className={styles.navSectionLink}>
+              {item.label}
+            </a>
+          ))}
+        </nav>
+
+        {/* Right: Theme Toggle + Dynamic Auth & Studio CTA (Desktop) */}
         <div className={styles.desktopNav}>
+          <ThemeToggle />
+
           {!loading && !user && (
-            <button
-              type="button"
-              onClick={handleGoogleLogin}
-              className="btn-brutal"
-              style={{
-                padding: '7px 14px',
-                fontSize: '0.84rem',
-                gap: '6px',
-                cursor: 'pointer',
-                backgroundColor: 'var(--surface)',
-                color: 'var(--ink)',
-              }}
-              title="Sign in with Google"
-            >
-              <GoogleIcon size={15} />
-              <span style={{ fontWeight: 700 }}>Continue with Google</span>
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={handleGoogleLogin}
+                className="btn-brutal"
+                style={{
+                  padding: '7px 14px',
+                  fontSize: '0.84rem',
+                  gap: '6px',
+                  backgroundColor: 'var(--surface)',
+                  color: 'var(--ink)',
+                }}
+                title="Sign in with Google"
+              >
+                <GoogleIcon size={15} />
+                <span>Sign In</span>
+              </button>
+
+              <Link
+                href="/editor"
+                className="btn-brutal btn-primary"
+                style={{ padding: '8px 16px', fontSize: '0.88rem', gap: '6px' }}
+              >
+                <span>Launch Studio Free</span>
+                <ArrowRight size={14} />
+              </Link>
+            </>
           )}
 
           {!loading && user && (
-            <Link
-              href="/settings"
-              className="btn-brutal"
-              style={{
-                padding: '7px 14px',
-                fontSize: '0.84rem',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                textDecoration: 'none',
-                backgroundColor: 'var(--surface)',
-                color: 'var(--ink)',
-              }}
-              title="Account & Settings"
-            >
-              <Settings size={15} />
-              <span style={{ fontWeight: 700 }}>Settings</span>
-            </Link>
+            <>
+              <Link
+                href="/settings"
+                className="btn-brutal"
+                style={{
+                  padding: '7px 14px',
+                  fontSize: '0.84rem',
+                  gap: '6px',
+                  backgroundColor: 'var(--surface)',
+                  color: 'var(--ink)',
+                }}
+                title="Account & Settings"
+              >
+                <Settings size={15} />
+                <span>Settings</span>
+              </Link>
+
+              <Link
+                href="/editor"
+                className="btn-brutal btn-primary"
+                style={{ padding: '8px 16px', fontSize: '0.88rem', gap: '6px' }}
+              >
+                <span>Open Studio</span>
+                <ArrowRight size={14} />
+              </Link>
+            </>
           )}
 
-          <Link
-            href="/editor"
-            className="btn-brutal btn-primary"
-            style={{ padding: '8px 18px', fontSize: '0.9rem', gap: '6px' }}
-          >
-            <span>Go to Editor</span>
-            <ArrowRight size={14} />
-          </Link>
+          {loading && (
+            <Link
+              href="/editor"
+              className="btn-brutal btn-primary"
+              style={{ padding: '8px 16px', fontSize: '0.88rem', gap: '6px' }}
+            >
+              <span>Launch Studio Free</span>
+              <ArrowRight size={14} />
+            </Link>
+          )}
         </div>
 
-        {/* Mobile Hamburger Button */}
-        <button
-          type="button"
-          onClick={() => setMenuOpen(!menuOpen)}
-          className={`btn-brutal ${styles.hamburgerBtn}`}
-          aria-label="Toggle navigation menu"
-          aria-expanded={menuOpen}
-        >
-          {menuOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
+        {/* Mobile Controls: Theme Toggle + Hamburger */}
+        <div className={styles.mobileControls}>
+          <ThemeToggle style={{ padding: '7px 10px' }} />
+          <button
+            type="button"
+            onClick={() => setMenuOpen(!menuOpen)}
+            className={`btn-brutal ${styles.hamburgerBtn}`}
+            aria-label="Toggle navigation menu"
+            aria-expanded={menuOpen}
+          >
+            {menuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
       </div>
 
-      {/* Mobile Dropdown Menu */}
+      {/* Mobile Dropdown Overlay (Zero Layout Shift) */}
       {menuOpen && (
         <div className={styles.mobileDropdown}>
+          <div className={styles.mobileSectionLinks}>
+            {NAV_LINKS.map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                onClick={() => setMenuOpen(false)}
+                className={styles.mobileSectionLink}
+              >
+                {item.label}
+              </a>
+            ))}
+          </div>
+
           <Link
             href="/editor"
             onClick={() => setMenuOpen(false)}
             className="btn-brutal btn-primary"
-            style={{
-              padding: '10px 16px',
-              fontSize: '0.92rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              textDecoration: 'none',
-            }}
+            style={{ width: '100%', padding: '10px 16px', fontSize: '0.92rem' }}
           >
-            <span>Go to Editor</span>
+            <span>{user ? 'Open Studio' : 'Launch Studio Free'}</span>
             <ArrowRight size={15} />
           </Link>
 
@@ -159,20 +213,10 @@ export default function LandingNavbar() {
                 handleGoogleLogin();
               }}
               className="btn-brutal"
-              style={{
-                padding: '10px 16px',
-                fontSize: '0.88rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                cursor: 'pointer',
-                backgroundColor: 'var(--surface)',
-                color: 'var(--ink)',
-              }}
+              style={{ width: '100%', padding: '10px 16px', fontSize: '0.88rem' }}
             >
               <GoogleIcon size={16} />
-              <span style={{ fontWeight: 700 }}>Continue with Google</span>
+              <span>Sign In with Google</span>
             </button>
           )}
 
@@ -181,20 +225,10 @@ export default function LandingNavbar() {
               href="/settings"
               onClick={() => setMenuOpen(false)}
               className="btn-brutal"
-              style={{
-                padding: '10px 16px',
-                fontSize: '0.88rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                textDecoration: 'none',
-                backgroundColor: 'var(--surface)',
-                color: 'var(--ink)',
-              }}
+              style={{ width: '100%', padding: '10px 16px', fontSize: '0.88rem' }}
             >
               <Settings size={16} />
-              <span style={{ fontWeight: 700 }}>Account Settings</span>
+              <span>Account Settings</span>
             </Link>
           )}
         </div>

@@ -1,372 +1,375 @@
 import Link from 'next/link';
-import Logo from '@/components/Logo';
-import Footer from '@/components/Footer';
 import LandingNavbar from '@/components/LandingNavbar';
-import { XIcon } from '@/components/SocialIcons';
+import LandingLivePreview from '@/components/LandingLivePreview';
+import LandingFaq from '@/components/LandingFaq';
+import Footer from '@/components/Footer';
+import { XIcon, LinkedInIcon } from '@/components/SocialIcons';
 import {
-  Zap,
   Sparkles,
+  Rocket,
+  ArrowDown,
   ArrowRight,
+  Clock,
+  Zap,
   Palette,
-  Lock,
-  Lightbulb,
-  UploadCloud,
-  Copy,
-  Download,
+  Wand2,
+  Share2,
   ShieldCheck,
+  Layers,
+  Gift,
+  Check,
+  X as XMark,
 } from 'lucide-react';
 import styles from './page.module.css';
+
+const FEATURES = [
+  {
+    icon: Palette,
+    badge: 'IMAGE EDITOR',
+    badgeClass: 'badge-yellow',
+    title: 'Instant Canvas Framing',
+    desc: 'Custom padding, rounded corners, Neobrutalist hard shadows, and curated background presets—applied in real time.',
+  },
+  {
+    icon: Wand2,
+    badge: 'MULTIMODAL AI',
+    badgeClass: 'badge-blue',
+    title: 'Context-Aware AI Copywriter',
+    desc: 'Upload your screenshot + optional 1-line note; AI extracts the win or lesson and writes native hooks for X, LinkedIn, and Reddit simultaneously.',
+  },
+  {
+    icon: Share2,
+    badge: 'ZERO API RISK',
+    badgeClass: 'badge-green',
+    title: '1-Click Clipboard PNG + Native Intent',
+    desc: 'Automatically copies high-res PNG to clipboard and opens X, LinkedIn, or Reddit composer pre-filled—zero API ban risk, full manual edit freedom.',
+  },
+  {
+    icon: ShieldCheck,
+    badge: 'PRIVACY FIRST',
+    badgeClass: 'badge-yellow',
+    title: '100% Zero Post History Stored',
+    desc: 'Screenshots render in-browser and never touch a database—your client messages, emails, and drafts stay completely private.',
+  },
+  {
+    icon: Layers,
+    badge: 'VERSATILE',
+    badgeClass: 'badge-blue',
+    title: 'Built for Every Creator Moment',
+    desc: 'Ship logs, GitHub and analytics milestones, client testimonials, study notes, and email wins—ready to share in seconds.',
+  },
+  {
+    icon: Gift,
+    badge: 'FREE TO START',
+    badgeClass: 'badge-green',
+    title: '3-Day Free Trial (No Credit Card)',
+    desc: 'Jump straight into the studio and start creating with full canvas styling plus 5 free AI generations per day.',
+  },
+];
 
 export default function LandingPage() {
   return (
     <div className={styles.pageContainer}>
-      {/* 1. Navbar */}
+      {/* 1. Sticky Neobrutalist Top Navbar */}
       <LandingNavbar />
 
       {/* 2. Hero Section */}
       <section className={styles.heroSection}>
         <div className={`${styles.heroTag} badge-brutal badge-yellow`}>
           <Sparkles size={13} />
-          <span>30/70 SPLIT WORKSPACE: CANVAS + MULTIMODAL AI</span>
+          <span>SCREENSHOT EDITOR + AI POST STUDIO IN ONE TAB</span>
         </div>
 
         <h1 className={styles.headline}>
-          INCREASE REACH OF YOUR{' '}
-          <span className={styles.headlineHighlight}>SCREENSHOTS</span>
+          Stop Posting Raw Screenshots.{' '}
+          <span className={styles.headlineHighlight}>
+            Turn Wins Into Viral Posts
+          </span>{' '}
+          in 10 Seconds.
         </h1>
 
         <p className={styles.subheadline}>
-          Turn raw screenshots into viral social posts in seconds. Edit your
-          image &amp; generate tailored X, LinkedIn, and Reddit posts in one
-          screen.
+          Paste any screenshot—a coding milestone, client message, email win, or
+          product update—style it in a crisp Neobrutalist frame, generate
+          platform-tuned copy for X, LinkedIn &amp; Reddit, and share in 1
+          click. Zero tab-switching. Zero post history stored.
         </p>
 
         <div className={styles.heroCtaGroup}>
+          <div className={styles.heroCtaButtons}>
+            <Link
+              href="/editor"
+              className={`btn-brutal btn-primary ${styles.heroBtn}`}
+            >
+              <Rocket size={17} />
+              <span>Try MakeAPost Free — No Card Needed</span>
+            </Link>
+
+            <a
+              href="#before-after"
+              className={`btn-brutal ${styles.heroSecondaryBtn}`}
+            >
+              <span>See Before &amp; After</span>
+              <ArrowDown size={15} />
+            </a>
+          </div>
+
+          <div className={styles.microCopy}>
+            <span>Ctrl+V Paste Ready</span>
+            <span className={styles.dotSep}>•</span>
+            <span>No Card Required</span>
+            <span className={styles.dotSep}>•</span>
+            <span>X, LinkedIn &amp; Reddit</span>
+          </div>
+        </div>
+
+        {/* Hero Visual Split Card (#before-after) */}
+        <div id="before-after" className={styles.beforeAfterWrapper}>
+          <div className={styles.beforeAfterGrid}>
+            {/* Left: Before (Raw Cluttered Screenshot) */}
+            <div className={styles.beforeCard}>
+              <div className={styles.beforeAfterHeader}>
+                <span className="badge-brutal" style={{ fontSize: '0.7rem', backgroundColor: 'var(--card-bg-subtle)' }}>
+                  <XMark size={12} />
+                  <span>BEFORE: RAW CLUTTERED SCREENSHOT</span>
+                </span>
+                <span className="tag-mono" style={{ fontSize: '0.7rem' }}>
+                  Low engagement
+                </span>
+              </div>
+
+              <div className={styles.rawMockBox}>
+                <div className={styles.rawScreenshot}>
+                  <div className={styles.rawTopStrip}>
+                    <span>localhost:3000/dashboard - Chrome - Untitled</span>
+                  </div>
+                  <div className={styles.rawContent}>
+                    <div style={{ fontWeight: 700, fontSize: '0.8rem', opacity: 0.7 }}>
+                      Uncropped, dull screenshot with browser tabs &amp; bookmarks visible
+                    </div>
+                    <div className={styles.rawMetrics}>
+                      <span>MRR: $1,420</span>
+                      <span>Users: 312</span>
+                      <span>API_KEY=sk_test_991a...</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className={styles.messyPostBox}>
+                  <span style={{ fontSize: '0.72rem', fontFamily: 'var(--font-mono)', opacity: 0.65 }}>
+                    Blank composer... staring at cursor for 15 mins...
+                  </span>
+                  <div style={{ fontSize: '0.8rem', opacity: 0.75, marginTop: '4px' }}>
+                    &ldquo;hey guys built this today check it out lol&rdquo;
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: After (MakeAPost Studio Output) */}
+            <div className={styles.afterCard}>
+              <div className={styles.beforeAfterHeader}>
+                <span className="badge-brutal badge-yellow" style={{ fontSize: '0.7rem' }}>
+                  <Check size={12} />
+                  <span>AFTER: MAKEAPOST STUDIO OUTPUT</span>
+                </span>
+                <span className="badge-brutal badge-green" style={{ fontSize: '0.68rem' }}>
+                  10 Seconds
+                </span>
+              </div>
+
+              <div className={styles.polishedMockStage}>
+                <div className={styles.polishedFrame}>
+                  <div className={styles.polishedWindowBar}>
+                    <div className={styles.innerMiniDots}>
+                      <span className={styles.miniDot} style={{ backgroundColor: '#EF4444' }} />
+                      <span className={styles.miniDot} style={{ backgroundColor: '#F59E0B' }} />
+                      <span className={styles.miniDot} style={{ backgroundColor: '#10B981' }} />
+                    </div>
+                    <span style={{ fontSize: '0.68rem', color: '#94A3B8', fontFamily: 'var(--font-mono)' }}>
+                      growth-milestone.png
+                    </span>
+                  </div>
+                  <div className={styles.polishedMetrics}>
+                    <div>
+                      <div style={{ fontSize: '0.65rem', color: '#94A3B8' }}>MONTHLY RECURRING</div>
+                      <div style={{ fontSize: '1.15rem', fontWeight: 900, color: '#FFD93D' }}>$1,420 MRR</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '0.65rem', color: '#94A3B8' }}>ACTIVE CREATORS</div>
+                      <div style={{ fontSize: '1.15rem', fontWeight: 900, color: '#4ADE80' }}>312 Users</div>
+                    </div>
+                    <div className={styles.blurredTokenChip}>
+                      <span>Blurred Secret</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className={styles.readyCopyBox}>
+                  <div className={styles.readyCopyTop}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 800, fontSize: '0.74rem' }}>
+                      <XIcon size={12} />
+                      <LinkedInIcon size={12} />
+                      <span>Ready-to-Paste Hook + Hashtags</span>
+                    </span>
+                    <span className="badge-brutal badge-blue" style={{ fontSize: '0.62rem', padding: '1px 6px' }}>
+                      PNG Copied
+                    </span>
+                  </div>
+                  <p className={styles.readyCopyText}>
+                    Crossed $1,420 MRR with 312 active creators—without spending $1 on ads. Focused on 1 pain point, shipped daily, and listened to every user reply. #buildinpublic #indiehackers
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. "Why MakeAPost?" — Old Workflow vs. MakeAPost Workflow (#problem) */}
+      <section id="problem" className={styles.sectionBlock}>
+        <div className={styles.sectionHeadingGroup}>
+          <div className="badge-brutal badge-blue">WHY MAKEAPOST?</div>
+          <h2 className={styles.sectionTitle}>Ditch the 4-Tab Headache</h2>
+          <p className={styles.sectionSubtitle}>
+            Stop bouncing between design tools, AI chat tabs, and social composers just to share one update.
+          </p>
+        </div>
+
+        <div className={styles.comparisonGrid}>
+          {/* Old 4-Tab Headache */}
+          <div className={styles.compareCardOld}>
+            <div className={styles.compareCardHeader}>
+              <div className="badge-brutal" style={{ backgroundColor: '#FEE2E2', color: '#991B1B', borderColor: '#09090B' }}>
+                <Clock size={13} />
+                <span>THE OLD 4-TAB HEADACHE</span>
+              </div>
+              <span className="tag-mono">~15 mins / post</span>
+            </div>
+
+            <ol className={styles.workflowList}>
+              <li>Take raw screenshot on your desktop or phone.</li>
+              <li>Open Canva or Figma to crop, add padding, and frame it.</li>
+              <li>Download PNG and hunt for it in your Downloads folder.</li>
+              <li>Open ChatGPT/Claude, explain context, and rewrite robotic drafts.</li>
+              <li>Manually open X, LinkedIn, and Reddit and upload everything one by one.</li>
+            </ol>
+          </div>
+
+          {/* MakeAPost 1-Tab Flow */}
+          <div className={styles.compareCardNew}>
+            <div className={styles.compareCardHeader}>
+              <div className="badge-brutal badge-yellow">
+                <Zap size={13} />
+                <span>THE MAKEAPOST 1-TAB FLOW</span>
+              </div>
+              <span className="badge-brutal badge-green" style={{ fontSize: '0.68rem' }}>
+                ~10 seconds
+              </span>
+            </div>
+
+            <ol className={styles.workflowList}>
+              <li>
+                <strong>Ctrl+V</strong> your screenshot directly onto the MakeAPost studio canvas.
+              </li>
+              <li>
+                <strong>1-click frame &amp; polish</strong> with gradients, shadows, blur &amp; annotations.
+              </li>
+              <li>
+                <strong>AI reads the screenshot</strong> and writes tailored X, LinkedIn &amp; Reddit posts.
+              </li>
+              <li>
+                Click <strong>&ldquo;Post&rdquo;</strong> — auto-copies HD PNG to clipboard &amp; opens the native composer pre-filled.
+              </li>
+            </ol>
+
+            <div style={{ marginTop: 'auto', paddingTop: '8px' }}>
+              <Link href="/editor" className="btn-brutal btn-primary" style={{ width: '100%' }}>
+                <span>Switch to the 1-Tab Flow</span>
+                <ArrowRight size={15} />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 4. All-in-One Feature Grid (#features) */}
+      <section id="features" className={styles.sectionBlock}>
+        <div className={styles.sectionHeadingGroup}>
+          <div className="badge-brutal badge-yellow">ALL-IN-ONE STUDIO</div>
+          <h2 className={styles.sectionTitle}>
+            Image Editor + AI Copywriter + Zero-Risk Sharing
+          </h2>
+          <p className={styles.sectionSubtitle}>
+            Everything a builder, freelancer, or creator needs to ship visual updates consistently.
+          </p>
+        </div>
+
+        <div className={styles.featuresGrid}>
+          {FEATURES.map((feat) => {
+            const Icon = feat.icon;
+            return (
+              <div key={feat.title} className={styles.featureCard}>
+                <div className={styles.featureCardTop}>
+                  <div className={styles.featureIconBox}>
+                    <Icon size={20} />
+                  </div>
+                  <span className={`badge-brutal ${feat.badgeClass}`} style={{ fontSize: '0.65rem', padding: '2px 8px' }}>
+                    {feat.badge}
+                  </span>
+                </div>
+                <h3 className={styles.featureTitle}>{feat.title}</h3>
+                <p className={styles.featureDesc}>{feat.desc}</p>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* 5. Interactive Live Output Preview (#preview) */}
+      <section id="preview" className={styles.sectionBlock}>
+        <div className={styles.sectionHeadingGroup}>
+          <div className="badge-brutal badge-green">LIVE OUTPUT PREVIEW</div>
+          <h2 className={styles.sectionTitle}>See What One Screenshot Produces</h2>
+          <p className={styles.sectionSubtitle}>
+            Switch between real creator use cases and platform tabs to preview framed graphics alongside native copy.
+          </p>
+        </div>
+
+        <LandingLivePreview />
+      </section>
+
+      {/* 6. Crisp FAQ Section (#faq) */}
+      <section id="faq" className={styles.sectionBlock}>
+        <div className={styles.sectionHeadingGroup}>
+          <div className="badge-brutal badge-yellow">FAQ</div>
+          <h2 className={styles.sectionTitle}>Questions Answered</h2>
+        </div>
+
+        <LandingFaq />
+      </section>
+
+      {/* Final Conversion Strip */}
+      <section className={styles.finalCtaSection}>
+        <div className={styles.finalCtaBox}>
+          <h2 className={styles.finalCtaTitle}>
+            Ready to Turn Your Next Screenshot Into a Post?
+          </h2>
+          <p className={styles.finalCtaDesc}>
+            No credit card. Zero post history stored. Open the studio and paste your first screenshot in seconds.
+          </p>
           <Link
             href="/editor"
             className={`btn-brutal btn-primary ${styles.heroBtn}`}
           >
-            <span>Go to Editor</span>
+            <Rocket size={17} />
+            <span>Launch Studio Free</span>
             <ArrowRight size={16} />
           </Link>
-
-          <div className={styles.microCopy}>
-            <span>100% Free to Use</span>
-            <span className={styles.dotSep}>•</span>
-            <span>No card required</span>
-            <span className={styles.dotSep}>•</span>
-            <span>Free unlimited image editor &amp; AI posts</span>
-          </div>
         </div>
       </section>
 
-      {/* 3. Interactive-Feel 30/70 Split Preview Showcase */}
-      <section className={styles.previewSection}>
-        <div className={styles.previewWindow}>
-          {/* Mock Browser/App Header */}
-          <div className={styles.windowBar}>
-            <div className={styles.windowControls}>
-              <span className={`${styles.dot} ${styles.dotRed}`} />
-              <span className={`${styles.dot} ${styles.dotYellow}`} />
-              <span className={`${styles.dot} ${styles.dotGreen}`} />
-            </div>
-            <div className={styles.windowTitle}>
-              make-a-post-studio-preview.app — [30% Dynamic Sidebar / 70% Visual Canvas]
-            </div>
-            <div className="badge-brutal badge-green" style={{ fontSize: '0.68rem', padding: '2px 8px' }}>
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'currentColor' }} />
-              <span>LIVE 30/70 SPLIT</span>
-            </div>
-          </div>
-
-          {/* 30% Control Sidebar / 70% Main Canvas Split */}
-          <div className={styles.previewGrid}>
-            {/* Left 30% Sidebar: Dynamic Control Panel */}
-            <div className={styles.sidebar30}>
-              <div className={styles.sidebarHeader}>
-                <span className={styles.sidebarTitle}>
-                  30% Dynamic Sidebar
-                </span>
-                <span className="badge-brutal badge-yellow" style={{ fontSize: '0.65rem', padding: '2px 6px' }}>
-                  Sticky Pill
-                </span>
-              </div>
-
-              {/* Sticky Mode Switcher Pill */}
-              <div className={styles.modeSwitcherPill}>
-                <div className={`${styles.modeTab} ${styles.modeTabActive}`}>
-                  <Palette size={13} />
-                  <span>Editor</span>
-                </div>
-                <div className={styles.modeTab}>
-                  <Sparkles size={13} />
-                  <span>AI Mode</span>
-                </div>
-              </div>
-
-              {/* Active Mode Controls (Editor Mode Active State) */}
-              <div className={styles.controlGroup}>
-                <div className={styles.controlLabel}>
-                  <span>Aspect Ratio</span>
-                  <span className="tag-mono">16:9</span>
-                </div>
-                <div className={styles.aspectPills}>
-                  <div className={`${styles.aspectBtn} ${styles.aspectBtnActive}`}>16:9</div>
-                  <div className={styles.aspectBtn}>4:3</div>
-                  <div className={styles.aspectBtn}>1:1</div>
-                  <div className={styles.aspectBtn}>9:16</div>
-                </div>
-
-                <div className={styles.controlLabel}>
-                  <span>Background Preset</span>
-                  <span className="tag-mono">Sunset</span>
-                </div>
-                <div className={styles.gradientGrid}>
-                  <span
-                    className={`${styles.gradientSwatch} ${styles.gradientSwatchActive}`}
-                    style={{ background: 'linear-gradient(135deg, #4F46E5, #DB2777)' }}
-                  />
-                  <span
-                    className={styles.gradientSwatch}
-                    style={{ background: 'linear-gradient(135deg, #F59E0B, #EF4444)' }}
-                  />
-                  <span
-                    className={styles.gradientSwatch}
-                    style={{ background: 'linear-gradient(135deg, #10B981, #06B6D4)' }}
-                  />
-                  <span
-                    className={styles.gradientSwatch}
-                    style={{ background: '#09090B' }}
-                  />
-                </div>
-
-                <div className={styles.controlLabel}>
-                  <span>Security &amp; Privacy</span>
-                </div>
-                <div className={styles.toggleBtn}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Lock size={13} />
-                    <span>Blur Credentials</span>
-                  </span>
-                  <span style={{ fontWeight: 800 }}>ACTIVE</span>
-                </div>
-              </div>
-
-              {/* Initial Selection Hint Strip */}
-              <div
-                style={{
-                  padding: '12px',
-                  backgroundColor: 'var(--card-bg-subtle)',
-                  border: '1.5px dashed var(--border-color)',
-                  borderRadius: 'var(--radius-sm)',
-                  fontSize: '0.75rem',
-                  fontFamily: 'var(--font-mono)',
-                  color: 'var(--muted)',
-                  lineHeight: 1.4,
-                  display: 'flex',
-                  gap: '8px',
-                  alignItems: 'flex-start',
-                }}
-              >
-                <Lightbulb size={16} style={{ flexShrink: 0, marginTop: '2px', color: 'var(--accent-yellow)' }} />
-                <div>
-                  <strong>Fresh State:</strong> Shows 2 large selection cards (Image Editor vs AI Mode). Active state provides 1-click pill toggling anytime.
-                </div>
-              </div>
-            </div>
-
-            {/* Right 70% Canvas: Main Visual Dropzone & Live Render */}
-            <div className={styles.canvas70}>
-              <div className={styles.canvasHeader}>
-                <span className={styles.canvasTitle}>
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    style={{ flexShrink: 0 }}
-                  >
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                    <circle cx="8.5" cy="8.5" r="1.5" />
-                    <polyline points="21 15 16 10 5 21" />
-                  </svg>
-                  <span>70% Main Visual Canvas &amp; Dropzone</span>
-                </span>
-                <div style={{ display: 'flex', gap: '6px' }}>
-                  <span className="badge-brutal badge-blue" style={{ fontSize: '0.68rem' }}>
-                    Ctrl+V Anywhere
-                  </span>
-                  <span className="badge-brutal badge-yellow" style={{ fontSize: '0.68rem' }}>
-                    Always Visible
-                  </span>
-                </div>
-              </div>
-
-              {/* Canvas Frame */}
-              <div className={styles.mainCanvasStage}>
-                <div className={styles.dropzoneOverlay}>
-                  <span
-                    className="badge-brutal"
-                    style={{
-                      fontSize: '0.65rem',
-                      backgroundColor: 'var(--surface)',
-                      color: 'var(--ink)',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '5px',
-                    }}
-                  >
-                    <UploadCloud size={12} />
-                    <span>Drop / Paste Screenshot [Ctrl+V]</span>
-                  </span>
-                </div>
-
-                {/* Inner Mockup Card */}
-                <div className={styles.canvasInnerCard}>
-                  <div className={styles.innerCardHeader}>
-                    <div className={styles.innerMiniDots}>
-                      <span className={styles.miniDot} />
-                      <span className={styles.miniDot} />
-                      <span className={styles.miniDot} />
-                    </div>
-                    <span style={{ fontSize: '0.72rem', color: '#94A3B8', fontFamily: 'var(--font-mono)' }}>
-                      make-a-post-studio.js
-                    </span>
-                  </div>
-
-                  <div className={styles.mockCodeLine}>
-                    <span className={styles.codeComment}>// 70% Canvas stays visible while AI generates copy</span>
-                  </div>
-                  <div className={styles.mockCodeLine}>
-                    <span className={styles.codeKey}>const</span> post ={' '}
-                    <span className={styles.codeKey}>await</span> studio.generatePosts({'{'}
-                  </div>
-                  <div className={styles.mockCodeLine} style={{ paddingLeft: '16px' }}>
-                    layout: <span className={styles.codeString}>&apos;30-sidebar-70-canvas&apos;</span>,
-                  </div>
-                  <div className={styles.mockCodeLine} style={{ paddingLeft: '16px' }}>
-                    apiSecret: <span className={styles.blurredArea}>sk_live_994821034</span>{' '}
-                    <span style={{ fontSize: '0.65rem', color: '#FFD93D' }}>[Blurred Token]</span>
-                  </div>
-                  <div className={styles.mockCodeLine}>{'}'});</div>
-                </div>
-
-                {/* Integrated AI Post Result Snippet Floater */}
-                <div className={styles.floatingAiSnippet}>
-                  <div className={styles.aiSnippetHeader}>
-                    <span style={{ color: 'var(--ink)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                      <XIcon size={12} />
-                      <span>X (Twitter) • Generated Thread Starter</span>
-                    </span>
-                    <span className="badge-brutal badge-yellow" style={{ fontSize: '0.65rem', padding: '1px 6px' }}>
-                      <Zap size={11} />
-                      <span>234 chars</span>
-                    </span>
-                  </div>
-                  <div className={styles.aiSnippetBody}>
-                    Stop uploading plain, unstyled screenshots. We split the studio into a 70% canvas and 30% dynamic control sidebar. Edit, blur, and generate viral copy in one screen! #buildinpublic #saas
-                  </div>
-                </div>
-              </div>
-
-              {/* Canvas Bottom Action Bar */}
-              <div className={styles.canvasToolsBar}>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <span style={{ fontWeight: 700 }}>Canvas:</span>
-                  <span className="tag-mono">1920 × 1080 (HD)</span>
-                  <span className="badge-brutal badge-green" style={{ fontSize: '0.68rem' }}>Ready</span>
-                </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button
-                    type="button"
-                    className="btn-brutal"
-                    style={{ padding: '4px 12px', fontSize: '0.78rem' }}
-                  >
-                    <span>Copy Image</span>
-                    <Copy size={13} />
-                  </button>
-                  <button
-                    type="button"
-                    className="btn-brutal btn-primary"
-                    style={{ padding: '4px 14px', fontSize: '0.78rem' }}
-                  >
-                    <span>Export PNG</span>
-                    <Download size={13} />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. 3-Step How It Works Strip */}
-      <section className={styles.howItWorksSection}>
-        <div className={styles.sectionHeadingGroup}>
-          <div className={`${styles.sectionBadge} badge-brutal badge-yellow`}>
-            SIMPLE WORKFLOW
-          </div>
-          <h2 className={styles.sectionTitle}>HOW IT WORKS</h2>
-        </div>
-
-        <div className={styles.stepsGrid}>
-          {/* Card 1 */}
-          <div className={styles.stepCard}>
-            <div className={styles.stepBadge}>01</div>
-            <h3 className={styles.stepTitle}>Paste on 70% Canvas (Ctrl+V)</h3>
-            <p className={styles.stepDesc}>
-              Copy any screenshot or UI snippet and paste it straight onto the
-              canvas. Always visible with zero upload lag and no account required.
-            </p>
-          </div>
-
-          {/* Card 2 */}
-          <div className={styles.stepCard}>
-            <div className={styles.stepBadge}>02</div>
-            <h3 className={styles.stepTitle}>Beautify &amp; Blur in 30% Sidebar</h3>
-            <p className={styles.stepDesc}>
-              Configure gradient backgrounds, aspect ratios, and blur sensitive
-              tokens client-side with instant real-time canvas updates.
-            </p>
-          </div>
-
-          {/* Card 3 */}
-          <div className={styles.stepCard}>
-            <div className={styles.stepBadge}>03</div>
-            <h3 className={styles.stepTitle}>Switch to AI Mode &amp; Post</h3>
-            <p className={styles.stepDesc}>
-              Toggle to AI Mode using the sticky pill. Multimodal Gemini AI reads
-              your visual canvas and generates viral posts for X, LinkedIn, and
-              Reddit.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* 5. Privacy Guarantee Strip */}
-      <section className={styles.privacyBanner}>
-        <div className={styles.privacyBox}>
-          <div className={styles.privacyIcon}>
-            <ShieldCheck size={28} />
-          </div>
-          <div>
-            <div className={styles.privacyTextTitle}>
-              Zero History Stored • 100% Privacy-First Architecture
-            </div>
-            <div className={styles.privacyTextBody}>
-              Your screenshots are never uploaded to any database or stored on
-              our servers. All canvas editing happens purely on your device, and AI
-              post generation is completely stateless.
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 6. Global Multi-Column Neobrutalist Footer */}
+      {/* 7. Reusable Footer */}
       <Footer />
     </div>
   );

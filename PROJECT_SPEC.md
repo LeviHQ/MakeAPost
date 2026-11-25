@@ -183,3 +183,5 @@ The 30% control sidebar features two distinct UI states:
 [x] Phase 7: Auto-Learned Project Memory (300-Char Crisp Context, Latest-First in `/settings`, Single-Call Zero-Extra-Token Architecture) (supabase/user_projects.sql, projectMemory.js, /api/generate/route.js, /api/projects/route.js, settings/page.js, /privacy, docs/08-auto-project-memory.md)
 
 [x] Phase 8: Restored Canvas Watermark & Creator Brand Handle (Default Badge, Custom Handle/URL Promotion, Clean Export/None, PostgreSQL default_watermark Column, Live Badge Preview in /settings & ModeSidebar, docs/04-auth-credits.md, supabase/watermark.sql)
+
+[x] Phase 9: Conversion-Ready Landing Page (`https://makeapost.site`) — Sticky Navbar with Auth/Theme/Anchor Links, Pain-Point Hero + Before/After Split, Old vs. 1-Tab Workflow Comparison, 6-Card Feature Grid, Interactive Use-Case × Platform Live Preview (`LandingLivePreview.js`), 4-Question FAQ Accordion (`LandingFaq.js`), & Canonical Metadata Sync (src/app/page.js, src/app/page.module.css, src/app/layout.js, LandingNavbar.js, docs/01-landing-page.md)
