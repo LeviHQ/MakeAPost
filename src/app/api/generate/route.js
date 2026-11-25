@@ -76,7 +76,13 @@ function extractAndParseJson(rawText) {
 export async function POST(req) {
   try {
     const body = await req.json();
-    const { imageBase64, prompt = '', tone = 'Build in Public' } = body;
+    const { imageBase64, prompt = '', tone = 'Build in Public', platforms } = body;
+
+    const VALID_PLATFORMS = ['x', 'linkedin', 'reddit'];
+    const targetPlatforms = Array.isArray(platforms)
+      ? Array.from(new Set(platforms.filter((p) => VALID_PLATFORMS.includes(p))))
+      : ['x'];
+    if (targetPlatforms.length === 0) targetPlatforms.push('x');
 
     // 1. Validation: Image payload
     if (!imageBase64 || typeof imageBase64 !== 'string') {
@@ -173,55 +179,65 @@ export async function POST(req) {
         'Dead-simple, crystal-clear ELI5 explanation. Break down the code, algorithm, or system architecture shown in the image in plain English so even junior devs or non-technical readers understand the magic instantly.',
     };
 
+    const PLATFORM_META = {
+      x: {
+        key: 'x_post',
+        guideline: `"x_post":\n   - STRICTLY UNDER 280 CHARACTERS.\n   - High-curiosity opening hook, punchy short sentences.\n   - Speaks directly to developers, founders, or creators.\n   - Minimal to zero hashtags (at most one #buildinpublic if relevant, never spam).`,
+        schemaDesc: 'Punchy X/Twitter post strictly under 280 characters without cringe hashtags.',
+        example: '  "x_post": "..."',
+      },
+      linkedin: {
+        key: 'linkedin_post',
+        guideline: `"linkedin_post":\n   - Clean, generous line-spacing (1-2 sentences per line break for smooth mobile readability).\n   - Scroll-stopping first sentence.\n   - Authentic breakdown of the problem, number, or lesson shown in the image.\n   - Concludes with a brief, engaging question to invite comments.`,
+        schemaDesc: 'Line-spaced, engaging LinkedIn post with a strong hook and clear takeaway.',
+        example: '  "linkedin_post": "..."',
+      },
+      reddit: {
+        key: 'reddit_post',
+        guideline: `"reddit_post":\n   - Authentic, humble, anti-marketing tone.\n   - Formatted in Markdown with an intriguing title and structured body for tech subreddits (r/webdev, r/SaaS, r/SideProject, r/startups).\n   - Focuses on architecture, learnings, challenges, or asking feedback from fellow builders.`,
+        schemaDesc: 'Authentic community-friendly Reddit post in markdown format.',
+        example: '  "reddit_post": "..."',
+      },
+    };
+
+    const selectedGuidelines = targetPlatforms
+      .map((p, idx) => `${idx + 1}. ${PLATFORM_META[p].guideline}`)
+      .join('\n\n');
+
+    const selectedSchemaExamples = targetPlatforms
+      .map((p) => PLATFORM_META[p].example)
+      .join(',\n');
+
     const systemInstruction = `You are MakeAPost's viral social strategist and technical copywriter for builders, SaaS founders, and creators.
-Your task is to analyze the provided screenshot (reading all visible code, UI components, metrics, charts, and user-drawn highlight annotations) and generate 3 tailored social media posts in a single shot.
+Your task is to analyze the provided screenshot (reading all visible code, UI components, metrics, charts, and user-drawn highlight annotations) and generate ${targetPlatforms.length === 1 ? '1 tailored social media post' : `${targetPlatforms.length} tailored social media posts`} in a single shot.
 
 Selected Tone: "${tone}"
 Tone Directive: ${TONE_INSTRUCTIONS[tone] || TONE_INSTRUCTIONS['Build in Public']}
 ${prompt ? `Additional User Context: "${prompt}"` : ''}
 
 Strict Platform Guidelines:
-1. "x_post":
-   - STRICTLY UNDER 280 CHARACTERS.
-   - High-curiosity opening hook, punchy short sentences.
-   - Speaks directly to developers, founders, or creators.
-   - Minimal to zero hashtags (at most one #buildinpublic if relevant, never spam).
-
-2. "linkedin_post":
-   - Clean, generous line-spacing (1-2 sentences per line break for smooth mobile readability).
-   - Scroll-stopping first sentence.
-   - Authentic breakdown of the problem, number, or lesson shown in the image.
-   - Concludes with a brief, engaging question to invite comments.
-
-3. "reddit_post":
-   - Authentic, humble, anti-marketing tone.
-   - Formatted in Markdown with an intriguing title and structured body for tech subreddits (r/webdev, r/SaaS, r/SideProject, r/startups).
-   - Focuses on architecture, learnings, challenges, or asking feedback from fellow builders.
+${selectedGuidelines}
 
 Return strictly a valid JSON object matching this schema:
 {
-  "x_post": "...",
-  "linkedin_post": "...",
-  "reddit_post": "..."
+${selectedSchemaExamples}
 }`;
+
+    const schemaProperties = {};
+    const schemaRequired = [];
+    for (const p of targetPlatforms) {
+      const meta = PLATFORM_META[p];
+      schemaProperties[meta.key] = {
+        type: 'string',
+        description: meta.schemaDesc,
+      };
+      schemaRequired.push(meta.key);
+    }
 
     const responseSchema = {
       type: 'object',
-      properties: {
-        x_post: {
-          type: 'string',
-          description: 'Punchy X/Twitter post strictly under 280 characters without cringe hashtags.',
-        },
-        linkedin_post: {
-          type: 'string',
-          description: 'Line-spaced, engaging LinkedIn post with a strong hook and clear takeaway.',
-        },
-        reddit_post: {
-          type: 'string',
-          description: 'Authentic community-friendly Reddit post in markdown format.',
-        },
-      },
-      required: ['x_post', 'linkedin_post', 'reddit_post'],
+      properties: schemaProperties,
+      required: schemaRequired,
     };
 
     const candidateModels = Array.from(new Set([
@@ -229,6 +245,8 @@ Return strictly a valid JSON object matching this schema:
       'gemini-flash-lite-latest',
       'gemini-3.5-flash',
     ].filter(Boolean)));
+
+    const maxTokens = targetPlatforms.length === 1 && targetPlatforms[0] === 'x' ? 600 : 2048;
 
     let result = null;
     let lastError = null;
@@ -242,7 +260,7 @@ Return strictly a valid JSON object matching this schema:
             responseMimeType: 'application/json',
             responseSchema,
             temperature: 0.7,
-            maxOutputTokens: 2048,
+            maxOutputTokens: maxTokens,
           },
         });
 
@@ -281,7 +299,14 @@ Return strictly a valid JSON object matching this schema:
     const responseText = result.response.text();
     const posts = extractAndParseJson(responseText);
 
-    if (!posts || (!posts.x_post && !posts.linkedin_post && !posts.reddit_post)) {
+    const hasValidContent =
+      posts &&
+      targetPlatforms.some((p) => {
+        const key = PLATFORM_META[p].key;
+        return typeof posts[key] === 'string' && posts[key].trim().length > 0;
+      });
+
+    if (!hasValidContent) {
       console.error('Failed to parse or extract Gemini JSON output:', responseText);
       return NextResponse.json(
         { error: 'AI generated an invalid format. Please try again.' },
@@ -289,13 +314,15 @@ Return strictly a valid JSON object matching this schema:
       );
     }
 
+    const responsePosts = {};
+    for (const p of targetPlatforms) {
+      const key = PLATFORM_META[p].key;
+      responsePosts[key] = posts[key] || '';
+    }
+
     return NextResponse.json({
       success: true,
-      posts: {
-        x_post: posts.x_post || '',
-        linkedin_post: posts.linkedin_post || '',
-        reddit_post: posts.reddit_post || '',
-      },
+      posts: responsePosts,
     });
   } catch (error) {
     console.error('Error in /api/generate:', error);

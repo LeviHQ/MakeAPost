@@ -52,6 +52,8 @@ export default function AiStudio({
   const [checkingAuth, setCheckingAuth] = useState(true);
 
   // In-Memory Generated Posts State (Zero Database Storage)
+  const [selectedPlatforms, setSelectedPlatforms] = useState(['x']);
+  const [generatingPlatform, setGeneratingPlatform] = useState(null);
   const [posts, setPosts] = useState(null);
   const [editedPosts, setEditedPosts] = useState({ x: '', linkedin: '', reddit: '' });
   const [activePlatform, setActivePlatform] = useState('x');
@@ -82,12 +84,24 @@ export default function AiStudio({
     if (!image) {
       setPosts(null);
       setEditedPosts({ x: '', linkedin: '', reddit: '' });
+      setSelectedPlatforms(['x']);
+      setGeneratingPlatform(null);
       setPrompt('');
       setThumbnailUrl(null);
       setErrorMessage(null);
       setGuideModalPlatform(null);
     }
   }, [image]);
+
+  const handleTogglePlatform = (platformId) => {
+    setSelectedPlatforms((prev) => {
+      if (prev.includes(platformId)) {
+        if (prev.length === 1) return prev;
+        return prev.filter((p) => p !== platformId);
+      }
+      return [...prev, platformId];
+    });
+  };
 
   const handlePlatformChange = (p) => {
     setActivePlatform(p);
@@ -175,8 +189,8 @@ export default function AiStudio({
     }
   };
 
-  // Handle Generation
-  const handleGenerate = async () => {
+  // Shared Generation Helper (Main Selected Platforms OR Single-Tab On-Demand)
+  const generateForPlatforms = async (targetPlatforms, singlePlatformId = null) => {
     if (!user) {
       setErrorMessage('Please sign in with Google to generate social posts.');
       return;
@@ -187,15 +201,17 @@ export default function AiStudio({
       return;
     }
 
-    setIsLoading(true);
+    if (singlePlatformId) {
+      setGeneratingPlatform(singlePlatformId);
+    } else {
+      setIsLoading(true);
+    }
     setErrorMessage(null);
 
     try {
-      // 1. Client-side proportional compression (max 768px, 0.65 JPEG)
       const compressed = await compressImageForAI(canvasRef.current);
       setThumbnailUrl(compressed.dataUrl);
 
-      // 2. Call backend /api/generate
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -203,6 +219,7 @@ export default function AiStudio({
           imageBase64: compressed.base64,
           prompt: prompt.trim(),
           tone,
+          platforms: targetPlatforms,
         }),
       });
 
@@ -217,19 +234,38 @@ export default function AiStudio({
         throw new Error(data.error || 'Failed to generate social posts from screenshot.');
       }
 
-      setPosts(data.posts);
-      setEditedPosts({
-        x: data.posts.x_post || '',
-        linkedin: data.posts.linkedin_post || '',
-        reddit: data.posts.reddit_post || '',
-      });
+      if (singlePlatformId) {
+        setPosts((prev) => ({ ...(prev || {}), ...data.posts }));
+        setEditedPosts((prev) => ({
+          ...prev,
+          ...(data.posts.x_post !== undefined ? { x: data.posts.x_post } : {}),
+          ...(data.posts.linkedin_post !== undefined ? { linkedin: data.posts.linkedin_post } : {}),
+          ...(data.posts.reddit_post !== undefined ? { reddit: data.posts.reddit_post } : {}),
+        }));
+      } else {
+        setPosts(data.posts);
+        setEditedPosts({
+          x: data.posts.x_post || '',
+          linkedin: data.posts.linkedin_post || '',
+          reddit: data.posts.reddit_post || '',
+        });
+        if (!targetPlatforms.includes(activePlatform)) {
+          setActivePlatform(targetPlatforms[0]);
+        }
+      }
     } catch (err) {
       console.error('Generation error:', err);
       setErrorMessage(err.message || 'Network error while generating posts.');
     } finally {
-      setIsLoading(false);
+      if (singlePlatformId) {
+        setGeneratingPlatform(null);
+      } else {
+        setIsLoading(false);
+      }
     }
   };
+
+  const handleGenerate = () => generateForPlatforms(selectedPlatforms);
 
   // Handle Copy Post
   const handleCopy = (text) => {
@@ -407,11 +443,61 @@ export default function AiStudio({
         })()}
       </div>
 
-      {/* 5. Context Prompt Textarea */}
+      {/* 4.5. Section 2: Target Platforms Selector (Default: X only for fastest response) */}
+      <div className="card-brutal" style={{ padding: '14px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '0.82rem', textTransform: 'uppercase' }}>
+            2. Target Platforms
+          </span>
+          <span className="tag-mono" style={{ fontSize: '0.68rem' }}>
+            {selectedPlatforms.length === 1 ? 'Fastest (1 selected)' : `${selectedPlatforms.length} selected`}
+          </span>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+          {[
+            { id: 'x', label: 'X', Icon: XIcon, size: 13 },
+            { id: 'linkedin', label: 'LinkedIn', Icon: LinkedInIcon, size: 14 },
+            { id: 'reddit', label: 'Reddit', Icon: RedditIcon, size: 15 },
+          ].map(({ id, label, Icon, size }) => {
+            const isSelected = selectedPlatforms.includes(id);
+            return (
+              <button
+                key={id}
+                type="button"
+                className="btn-brutal"
+                onClick={() => handleTogglePlatform(id)}
+                style={{
+                  padding: '8px 6px',
+                  fontSize: '0.76rem',
+                  fontWeight: 800,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  backgroundColor: isSelected ? 'var(--accent-yellow)' : 'var(--card-bg-subtle)',
+                  color: isSelected ? '#09090B' : 'var(--ink)',
+                  boxShadow: isSelected ? '2px 2px 0px var(--shadow-color)' : 'none',
+                  border: isSelected ? '2px solid var(--border-color)' : '1.5px solid var(--border-color)',
+                }}
+              >
+                <Icon size={size} />
+                <span>{label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div style={{ fontSize: '0.7rem', color: 'var(--muted)', lineHeight: 1.35 }}>
+          Only selected platforms generate (faster &amp; saves AI tokens). You can generate others anytime below.
+        </div>
+      </div>
+
+      {/* 5. Section 3: Context Prompt Textarea */}
       <div className="card-brutal" style={{ padding: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '0.82rem', textTransform: 'uppercase' }}>
-            2. Extra Context (Optional)
+            3. Extra Context (Optional)
           </span>
           <span className="tag-mono" style={{ fontSize: '0.68rem' }}>AI reads canvas too</span>
         </div>
@@ -485,7 +571,15 @@ export default function AiStudio({
           ) : (
             <>
               <Sparkles size={16} />
-              <span>Generate Posts (X, LinkedIn, Reddit)</span>
+              <span>
+                {selectedPlatforms.length === 3
+                  ? 'Generate Posts (All 3)'
+                  : selectedPlatforms.length === 1
+                  ? `Generate ${selectedPlatforms[0] === 'x' ? 'X' : selectedPlatforms[0] === 'linkedin' ? 'LinkedIn' : 'Reddit'} Post`
+                  : `Generate Posts (${selectedPlatforms
+                      .map((p) => (p === 'x' ? 'X' : p === 'linkedin' ? 'LinkedIn' : 'Reddit'))
+                      .join(', ')})`}
+              </span>
             </>
           )}
         </button>
@@ -531,59 +625,47 @@ export default function AiStudio({
               borderRadius: 'var(--radius-sm)',
             }}
           >
-            <button
-              type="button"
-              className="btn-brutal"
-              style={{
-                padding: '6px',
-                fontSize: '0.78rem',
-                backgroundColor: activePlatform === 'x' ? 'var(--accent-yellow)' : 'transparent',
-                color: activePlatform === 'x' ? '#09090B' : 'var(--ink)',
-                border: activePlatform === 'x' ? '1.5px solid var(--border-color)' : '1.5px solid transparent',
-                boxShadow: activePlatform === 'x' ? '1.5px 1.5px 0px var(--shadow-color)' : 'none',
-                gap: '5px',
-              }}
-              onClick={() => handlePlatformChange('x')}
-            >
-              <XIcon size={13} />
-              <span>X</span>
-            </button>
-
-            <button
-              type="button"
-              className="btn-brutal"
-              style={{
-                padding: '6px',
-                fontSize: '0.78rem',
-                backgroundColor: activePlatform === 'linkedin' ? 'var(--accent-yellow)' : 'transparent',
-                color: activePlatform === 'linkedin' ? '#09090B' : 'var(--ink)',
-                border: activePlatform === 'linkedin' ? '1.5px solid var(--border-color)' : '1.5px solid transparent',
-                boxShadow: activePlatform === 'linkedin' ? '1.5px 1.5px 0px var(--shadow-color)' : 'none',
-                gap: '5px',
-              }}
-              onClick={() => handlePlatformChange('linkedin')}
-            >
-              <LinkedInIcon size={13} />
-              <span>LinkedIn</span>
-            </button>
-
-            <button
-              type="button"
-              className="btn-brutal"
-              style={{
-                padding: '6px',
-                fontSize: '0.78rem',
-                backgroundColor: activePlatform === 'reddit' ? 'var(--accent-yellow)' : 'transparent',
-                color: activePlatform === 'reddit' ? '#09090B' : 'var(--ink)',
-                border: activePlatform === 'reddit' ? '1.5px solid var(--border-color)' : '1.5px solid transparent',
-                boxShadow: activePlatform === 'reddit' ? '1.5px 1.5px 0px var(--shadow-color)' : 'none',
-                gap: '5px',
-              }}
-              onClick={() => handlePlatformChange('reddit')}
-            >
-              <RedditIcon size={13} />
-              <span>Reddit</span>
-            </button>
+            {[
+              { id: 'x', label: 'X', Icon: XIcon, size: 13 },
+              { id: 'linkedin', label: 'LinkedIn', Icon: LinkedInIcon, size: 13 },
+              { id: 'reddit', label: 'Reddit', Icon: RedditIcon, size: 13 },
+            ].map(({ id, label, Icon, size }) => {
+              const isTabActive = activePlatform === id;
+              const isReady = Boolean(editedPosts[id]?.trim());
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  className="btn-brutal"
+                  style={{
+                    padding: '6px',
+                    fontSize: '0.78rem',
+                    backgroundColor: isTabActive ? 'var(--accent-yellow)' : 'transparent',
+                    color: isTabActive ? '#09090B' : 'var(--ink)',
+                    border: isTabActive ? '1.5px solid var(--border-color)' : '1.5px solid transparent',
+                    boxShadow: isTabActive ? '1.5px 1.5px 0px var(--shadow-color)' : 'none',
+                    gap: '5px',
+                    position: 'relative',
+                  }}
+                  onClick={() => handlePlatformChange(id)}
+                >
+                  <Icon size={size} />
+                  <span>{label}</span>
+                  {isReady && (
+                    <span
+                      style={{
+                        width: '6px',
+                        height: '6px',
+                        borderRadius: '50%',
+                        backgroundColor: '#16A34A',
+                        flexShrink: 0,
+                      }}
+                      title="Post ready"
+                    />
+                  )}
+                </button>
+              );
+            })}
           </div>
 
           {/* Realistic Post Feed Card */}
@@ -640,7 +722,7 @@ export default function AiStudio({
               </div>
 
               {/* Character Limit Indicator */}
-              {activePlatform === 'x' && (
+              {activePlatform === 'x' && Boolean(currentPostText.trim()) && (
                 <span
                   className="badge-brutal"
                   style={{
@@ -657,149 +739,209 @@ export default function AiStudio({
               )}
             </div>
 
-            {/* Editable Content Textarea */}
-            <textarea
-              rows={6}
-              value={currentPostText}
-              onChange={(e) => {
-                const val = e.target.value;
-                setEditedPosts((prev) => ({ ...prev, [activePlatform]: val }));
-              }}
-              className="input-brutal"
-              style={{
-                width: '100%',
-                fontSize: '0.85rem',
-                lineHeight: 1.55,
-                padding: '10px',
-                fontFamily: activePlatform === 'reddit' ? 'var(--font-mono)' : 'var(--font-body)',
-                minHeight: '130px',
-                resize: 'vertical',
-              }}
-            />
-
-            {/* Attached Thumbnail Indicator */}
-            {thumbnailUrl && (
+            {!currentPostText.trim() ? (
+              /* On-Demand Single-Platform Generate Prompt when user switches to an ungenerated tab */
               <div
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '8px 10px',
-                  backgroundColor: 'var(--card-bg-subtle)',
+                  padding: '20px 14px',
                   borderRadius: 'var(--radius-xs)',
-                  border: '1px dashed var(--border-color)',
-                  fontSize: '0.72rem',
-                  fontFamily: 'var(--font-mono)',
-                  color: 'var(--muted)',
-                }}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={thumbnailUrl}
-                  alt="Screenshot preview thumbnail"
-                  style={{ width: '32px', height: '24px', objectFit: 'cover', borderRadius: '3px', border: '1px solid var(--border-color)' }}
-                />
-                <span>Canvas screenshot ready to attach</span>
-              </div>
-            )}
-
-            {/* Action Buttons: 1-Click Native Intent + Clipboard & Copy Text (Full Width Stack) */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
-              {/* 1. Primary 1-Click Native Composer Intent Button (Full Width) */}
-              {activePlatform === 'x' && (
-                <button
-                  type="button"
-                  className="btn-brutal btn-primary"
-                  style={{
-                    width: '100%',
-                    padding: '11px 14px',
-                    fontSize: '0.85rem',
-                    fontWeight: 800,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                  }}
-                  disabled={isSharing}
-                  onClick={() => handleInitiatePost('x')}
-                  title="Open X posting guide and composer"
-                >
-                  <XIcon size={14} />
-                  <span>Post on X</span>
-                  <ExternalLink size={13} style={{ opacity: 0.7 }} />
-                </button>
-              )}
-
-              {activePlatform === 'linkedin' && (
-                <button
-                  type="button"
-                  className="btn-brutal btn-primary"
-                  style={{
-                    width: '100%',
-                    padding: '11px 14px',
-                    fontSize: '0.85rem',
-                    fontWeight: 800,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                  }}
-                  disabled={isSharing}
-                  onClick={() => handleInitiatePost('linkedin')}
-                  title="Open LinkedIn posting guide and composer"
-                >
-                  <LinkedInIcon size={15} />
-                  <span>Post on LinkedIn</span>
-                  <ExternalLink size={13} style={{ opacity: 0.7 }} />
-                </button>
-              )}
-
-              {activePlatform === 'reddit' && (
-                <button
-                  type="button"
-                  className="btn-brutal btn-primary"
-                  style={{
-                    width: '100%',
-                    padding: '11px 14px',
-                    fontSize: '0.85rem',
-                    fontWeight: 800,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                  }}
-                  disabled={isSharing}
-                  onClick={() => handleInitiatePost('reddit')}
-                  title="Open Reddit posting guide and submission composer"
-                >
-                  <RedditIcon size={16} />
-                  <span>Post on Reddit</span>
-                  <ExternalLink size={13} style={{ opacity: 0.7 }} />
-                </button>
-              )}
-
-              {/* 2. Secondary Full-Width Copy Text Button */}
-              <button
-                type="button"
-                className="btn-brutal"
-                style={{
-                  width: '100%',
-                  padding: '10px 16px',
-                  fontSize: '0.84rem',
-                  fontWeight: 700,
-                  display: 'inline-flex',
+                  backgroundColor: 'var(--card-bg-subtle)',
+                  border: '1.5px dashed var(--border-color)',
+                  display: 'flex',
+                  flexDirection: 'column',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px',
-                  backgroundColor: 'var(--surface)',
+                  textAlign: 'center',
+                  gap: '10px',
                 }}
-                onClick={() => handleCopy(currentPostText)}
-                title="Copy generated post text to clipboard"
               >
-                {copied ? <Check size={14} style={{ color: '#16A34A' }} /> : <Copy size={14} />}
-                <span>{copied ? 'Copied to Clipboard!' : 'Copy Text'}</span>
-              </button>
-            </div>
+                <div style={{ fontSize: '0.86rem', fontWeight: 800, color: 'var(--ink)' }}>
+                  No {activePlatform === 'x' ? 'X' : activePlatform === 'linkedin' ? 'LinkedIn' : 'Reddit'} post generated yet
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--muted)', lineHeight: 1.45, maxWidth: '280px' }}>
+                  Generate a tailored {activePlatform === 'x' ? 'X' : activePlatform === 'linkedin' ? 'LinkedIn' : 'Reddit'} post for this screenshot without regenerating your other posts.
+                </div>
+                <button
+                  type="button"
+                  className="btn-brutal btn-primary"
+                  disabled={isLoading || Boolean(generatingPlatform) || !image}
+                  onClick={() => generateForPlatforms([activePlatform], activePlatform)}
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    fontSize: '0.84rem',
+                    fontWeight: 800,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    marginTop: '4px',
+                    opacity: isLoading || Boolean(generatingPlatform) || !image ? 0.65 : 1,
+                  }}
+                >
+                  {generatingPlatform === activePlatform ? (
+                    <>
+                      <Loader2
+                        size={16}
+                        className="animate-spin"
+                        style={{ display: 'inline-block', animation: 'spin 0.75s linear infinite' }}
+                      />
+                      <span>Generating {activePlatform === 'x' ? 'X' : activePlatform === 'linkedin' ? 'LinkedIn' : 'Reddit'} Post...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={15} />
+                      <span>Generate {activePlatform === 'x' ? 'X' : activePlatform === 'linkedin' ? 'LinkedIn' : 'Reddit'} Post</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            ) : (
+              <>
+                {/* Editable Content Textarea */}
+                <textarea
+                  rows={6}
+                  value={currentPostText}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setEditedPosts((prev) => ({ ...prev, [activePlatform]: val }));
+                  }}
+                  className="input-brutal"
+                  style={{
+                    width: '100%',
+                    fontSize: '0.85rem',
+                    lineHeight: 1.55,
+                    padding: '10px',
+                    fontFamily: activePlatform === 'reddit' ? 'var(--font-mono)' : 'var(--font-body)',
+                    minHeight: '130px',
+                    resize: 'vertical',
+                  }}
+                />
+
+                {/* Attached Thumbnail Indicator */}
+                {thumbnailUrl && (
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '8px 10px',
+                      backgroundColor: 'var(--card-bg-subtle)',
+                      borderRadius: 'var(--radius-xs)',
+                      border: '1px dashed var(--border-color)',
+                      fontSize: '0.72rem',
+                      fontFamily: 'var(--font-mono)',
+                      color: 'var(--muted)',
+                    }}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={thumbnailUrl}
+                      alt="Screenshot preview thumbnail"
+                      style={{ width: '32px', height: '24px', objectFit: 'cover', borderRadius: '3px', border: '1px solid var(--border-color)' }}
+                    />
+                    <span>Canvas screenshot ready to attach</span>
+                  </div>
+                )}
+
+                {/* Action Buttons: 1-Click Native Intent + Clipboard & Copy Text (Full Width Stack) */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                  {/* 1. Primary 1-Click Native Composer Intent Button (Full Width) */}
+                  {activePlatform === 'x' && (
+                    <button
+                      type="button"
+                      className="btn-brutal btn-primary"
+                      style={{
+                        width: '100%',
+                        padding: '11px 14px',
+                        fontSize: '0.85rem',
+                        fontWeight: 800,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                      }}
+                      disabled={isSharing}
+                      onClick={() => handleInitiatePost('x')}
+                      title="Open X posting guide and composer"
+                    >
+                      <XIcon size={14} />
+                      <span>Post on X</span>
+                      <ExternalLink size={13} style={{ opacity: 0.7 }} />
+                    </button>
+                  )}
+
+                  {activePlatform === 'linkedin' && (
+                    <button
+                      type="button"
+                      className="btn-brutal btn-primary"
+                      style={{
+                        width: '100%',
+                        padding: '11px 14px',
+                        fontSize: '0.85rem',
+                        fontWeight: 800,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                      }}
+                      disabled={isSharing}
+                      onClick={() => handleInitiatePost('linkedin')}
+                      title="Open LinkedIn posting guide and composer"
+                    >
+                      <LinkedInIcon size={15} />
+                      <span>Post on LinkedIn</span>
+                      <ExternalLink size={13} style={{ opacity: 0.7 }} />
+                    </button>
+                  )}
+
+                  {activePlatform === 'reddit' && (
+                    <button
+                      type="button"
+                      className="btn-brutal btn-primary"
+                      style={{
+                        width: '100%',
+                        padding: '11px 14px',
+                        fontSize: '0.85rem',
+                        fontWeight: 800,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                      }}
+                      disabled={isSharing}
+                      onClick={() => handleInitiatePost('reddit')}
+                      title="Open Reddit posting guide and submission composer"
+                    >
+                      <RedditIcon size={16} />
+                      <span>Post on Reddit</span>
+                      <ExternalLink size={13} style={{ opacity: 0.7 }} />
+                    </button>
+                  )}
+
+                  {/* 2. Secondary Full-Width Copy Text Button */}
+                  <button
+                    type="button"
+                    className="btn-brutal"
+                    style={{
+                      width: '100%',
+                      padding: '10px 16px',
+                      fontSize: '0.84rem',
+                      fontWeight: 700,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      backgroundColor: 'var(--surface)',
+                    }}
+                    onClick={() => handleCopy(currentPostText)}
+                    title="Copy generated post text to clipboard"
+                  >
+                    {copied ? <Check size={14} style={{ color: '#16A34A' }} /> : <Copy size={14} />}
+                    <span>{copied ? 'Copied to Clipboard!' : 'Copy Text'}</span>
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

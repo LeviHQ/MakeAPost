@@ -92,15 +92,17 @@ Gemini is instructed through system directives to:
 
 Mounted within the 30% Left Sidebar of `/editor` when **"✨ AI Mode"** is active:
 
-1. **State & Tone Selection:**
-   - 6 Neobrutalist tone selector chips in a balanced 2-column grid (`Build in Public`, `Ship & Launch`, `Tech Breakdown`, `Viral Hook`, `Founder Story`, `How It Works`) with real-time dynamic micro-descriptions.
-   - Optional extra context textarea to guide specific topics or campaigns.
+1. **1. Select Tone & 2. Target Platforms:**
+   - **1. Select Tone:** 6 Neobrutalist tone selector chips in a balanced 2-column grid (`Build in Public`, `Ship & Launch`, `Tech Breakdown`, `Viral Hook`, `Founder Story`, `How It Works`) with real-time dynamic micro-descriptions.
+   - **2. Target Platforms:** 3 multi-select platform toggle buttons with official brand icons (`X`, `LinkedIn`, `Reddit`). Defaults to `['x']` every time for maximum speed and zero wasted tokens; `/api/generate` dynamically scopes its prompt and `responseSchema` strictly to the requested platform(s).
+   - **3. Extra Context (Optional):** Optional textarea to guide specific topics or campaigns.
 2. **Empty Canvas Guard:**
    - If no image is currently on the 70% canvas, displays a Neobrutalist banner guiding the user to paste (`Ctrl+V`) or load an image first.
 3. **Tactile Generation Button:**
-   - `#FFD93D` Neobrutalist button with an active spinning loading indicator and disabled state while running.
-4. **Segmented Platform Tabs:**
-   - Interactive pill switcher `[ 𝕏 X | 💼 LinkedIn | 👾 Reddit ]` with live character counter badge for X.
+   - `#FFD93D` Neobrutalist button dynamically reflecting the selected platform(s) (e.g., `Generate X Post`) with an active spinning loading indicator while running.
+4. **Segmented Platform Tabs & On-Demand Generation:**
+   - Interactive pill switcher `[ X | LinkedIn | Reddit ]` with green ready-dot indicators for platforms that have generated content, plus live character counter badge for X.
+   - Switching to an ungenerated platform tab renders an inline **"Generate [Platform] Post"** on-demand card instead of a blank box, allowing users to generate that single platform later without regenerating or overwriting existing posts.
 5. **Realistic Social Feed Card:**
    - Platform-styled author header (handle, avatar badge, timestamp).
    - Editable textarea allowing real-time edits to the generated copy with live character tracking.
