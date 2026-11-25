@@ -9,6 +9,7 @@ create table if not exists public.users (
   full_name text,
   avatar_url text,
   theme text default 'light' check (theme in ('light', 'dark')),
+  projects jsonb not null default '[]'::jsonb,
   created_at timestamptz default now()
 );
 

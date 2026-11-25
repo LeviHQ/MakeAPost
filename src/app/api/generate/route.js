@@ -2,6 +2,13 @@ import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import sharp from 'sharp';
 import { createClient as createServerClient } from '@/lib/supabase/server';
+/* [FUTURE FEATURE - COMMENTED OUT FOR BUDGET]: Auto-Learned Project Memory
+import {
+  buildCompactProjectContext,
+  sanitizeProjectsList,
+  upsertProjectMemory,
+} from '@/lib/projectMemory';
+*/
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -93,9 +100,11 @@ export async function POST(req) {
     }
 
     // 2. Authentication Verification via Supabase SSR
+    let supabase = null;
     let user = null;
+    // let savedProjects = [];
     try {
-      const supabase = await createServerClient();
+      supabase = await createServerClient();
       const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
       if (!authError && authUser) {
         user = authUser;
@@ -113,6 +122,21 @@ export async function POST(req) {
         { status: 401 }
       );
     }
+
+    /* [FUTURE FEATURE - COMMENTED OUT FOR BUDGET]: Fetch Project Memory
+    try {
+      const { data: userRow, error: projErr } = await supabase
+        .from('users')
+        .select('projects')
+        .eq('id', user.id)
+        .single();
+      if (!projErr && userRow?.projects) {
+        savedProjects = sanitizeProjectsList(userRow.projects);
+      }
+    } catch (projFetchErr) {
+      console.warn('Project memory fetch skipped:', projFetchErr?.message || projFetchErr);
+    }
+    */
 
     // 3. Validation & Sanitization: Gemini API Key
     const rawApiKey = process.env.GEMINI_API_KEY;
@@ -208,6 +232,8 @@ export async function POST(req) {
       .map((p) => PLATFORM_META[p].example)
       .join(',\n');
 
+    // [FUTURE FEATURE - COMMENTED OUT FOR BUDGET]: const projectContextBlock = buildCompactProjectContext(savedProjects, prompt);
+
     const systemInstruction = `You are MakeAPost's viral social strategist and technical copywriter for builders, SaaS founders, and creators.
 Your task is to analyze the provided screenshot (reading all visible code, UI components, metrics, charts, and user-drawn highlight annotations) and generate ${targetPlatforms.length === 1 ? '1 tailored social media post' : `${targetPlatforms.length} tailored social media posts`} in a single shot.
 
@@ -223,6 +249,14 @@ Return strictly a valid JSON object matching this schema:
 ${selectedSchemaExamples}
 }`;
 
+    /* [FUTURE FEATURE - COMMENTED OUT FOR BUDGET]: Project Memory Prompt & Schema
+    Project Memory Extraction ("projectMemory"):
+    - First, identify the ACTUAL product, startup, or project shown in the screenshot (header, title bar, logo, domain, code) or mentioned in Additional User Context.
+    - If this screenshot/context is about a NEW or DIFFERENT project than the Known User Projects, ALWAYS return that NEW project's exact name in "projectMemory.name" with a crisp <=300 char summary — NEVER force-merge a different project into an older Known User Project.
+    - Only reuse an existing Known User Project name (and combine existing facts + new milestone in <=300 chars) when the screenshot/context is genuinely about that same project.
+    - If it is a generic one-off post with no identifiable project, return "projectMemory": null.
+    */
+
     const schemaProperties = {};
     const schemaRequired = [];
     for (const p of targetPlatforms) {
@@ -233,6 +267,18 @@ ${selectedSchemaExamples}
       };
       schemaRequired.push(meta.key);
     }
+    /* [FUTURE FEATURE - COMMENTED OUT FOR BUDGET]: projectMemory schema field
+    schemaProperties.projectMemory = {
+      type: 'object',
+      nullable: true,
+      description: 'Auto-learned project memory if a specific product/project is detected, otherwise null.',
+      properties: {
+        name: { type: 'string', description: 'Clean short project name' },
+        summary: { type: 'string', description: 'Crisp <=300 char summary combining prior facts and new milestone' },
+      },
+      required: ['name', 'summary'],
+    };
+    */
 
     const responseSchema = {
       type: 'object',
@@ -320,9 +366,25 @@ ${selectedSchemaExamples}
       responsePosts[key] = posts[key] || '';
     }
 
+    /* [FUTURE FEATURE - COMMENTED OUT FOR BUDGET]: Auto-Upsert Project Memory
+    let updatedProjects = savedProjects;
+    if (posts.projectMemory && posts.projectMemory.name && posts.projectMemory.summary) {
+      updatedProjects = upsertProjectMemory(savedProjects, posts.projectMemory);
+      try {
+        await supabase
+          .from('users')
+          .update({ projects: updatedProjects })
+          .eq('id', user.id);
+      } catch (saveProjErr) {
+        console.warn('Failed to persist project memory:', saveProjErr?.message || saveProjErr);
+      }
+    }
+    */
+
     return NextResponse.json({
       success: true,
       posts: responsePosts,
+      // projects: updatedProjects,
     });
   } catch (error) {
     console.error('Error in /api/generate:', error);

@@ -7,6 +7,7 @@ import Logo from '@/components/Logo';
 import Footer from '@/components/Footer';
 import { XIcon, LinkedInIcon, RedditIcon } from '@/components/SocialIcons';
 import { createClient } from '@/lib/supabase/client';
+// [FUTURE FEATURE - COMMENTED OUT FOR BUDGET]: import { sanitizeProjectsList, MAX_SUMMARY_CHARS } from '@/lib/projectMemory';
 import {
   User,
   Sparkles,
@@ -21,6 +22,9 @@ import {
   Zap,
   Lock,
   Smartphone,
+  // FolderKanban,
+  // Pencil,
+  // Trash2,
 } from 'lucide-react';
 import styles from './settings.module.css';
 
@@ -38,6 +42,13 @@ export default function SettingsPage() {
     return 'light';
   });
   const [toastMessage, setToastMessage] = useState(null);
+  /* [FUTURE FEATURE - COMMENTED OUT FOR BUDGET]: Project Memory State
+  const [projects, setProjects] = useState([]);
+  const [editingSlug, setEditingSlug] = useState(null);
+  const [editName, setEditName] = useState('');
+  const [editSummary, setEditSummary] = useState('');
+  const [projectSaving, setProjectSaving] = useState(false);
+  */
 
   const showToast = (msg) => {
     setToastMessage(msg);
@@ -72,6 +83,11 @@ export default function SettingsPage() {
 
         if (profileData && isMounted) {
           setProfile(profileData);
+          /* [FUTURE FEATURE - COMMENTED OUT FOR BUDGET]:
+          if (Array.isArray(profileData.projects)) {
+            setProjects(sanitizeProjectsList(profileData.projects));
+          }
+          */
           const activeTheme = profileData.theme === 'dark' ? 'dark' : 'light';
           setTheme(activeTheme);
           document.documentElement.setAttribute('data-theme', activeTheme);
@@ -137,6 +153,70 @@ export default function SettingsPage() {
       console.error('Sign out error:', err);
     }
   };
+
+  /* [FUTURE FEATURE - COMMENTED OUT FOR BUDGET]: Project Memory Handlers
+  // Start Inline Project Edit
+  const handleStartEditProject = (proj) => {
+    setEditingSlug(proj.slug);
+    setEditName(proj.name);
+    setEditSummary(proj.summary);
+  };
+
+  // Save Edited Project Summary
+  const handleSaveProject = async (slug) => {
+    const trimmed = editSummary.trim();
+    if (!trimmed) {
+      showToast('Project summary cannot be empty.');
+      return;
+    }
+    setProjectSaving(true);
+    try {
+      const res = await fetch('/api/projects', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          slug,
+          name: editName.trim(),
+          summary: trimmed.slice(0, MAX_SUMMARY_CHARS),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to update project');
+      }
+      setProjects(sanitizeProjectsList(data.projects));
+      setEditingSlug(null);
+      showToast('Project context updated!');
+    } catch (err) {
+      console.error('Save project error:', err);
+      showToast(`Error: ${err.message || 'Could not update project'}`);
+    } finally {
+      setProjectSaving(false);
+    }
+  };
+
+  // Delete Saved Project
+  const handleDeleteProject = async (slug, name) => {
+    setProjectSaving(true);
+    try {
+      const res = await fetch(`/api/projects?slug=${encodeURIComponent(slug)}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to delete project');
+      }
+      setProjects(sanitizeProjectsList(data.projects));
+      if (editingSlug === slug) setEditingSlug(null);
+      showToast(`Removed "${name}" from memory`);
+    } catch (err) {
+      console.error('Delete project error:', err);
+      showToast(`Error: ${err.message || 'Could not delete project'}`);
+    } finally {
+      setProjectSaving(false);
+    }
+  };
+  */
 
   if (loading) {
     return (
@@ -474,6 +554,176 @@ export default function SettingsPage() {
             </span>
           </div>
         </section>
+
+        {/* [FUTURE FEATURE - COMMENTED OUT FOR BUDGET]: Card 5: Auto-Learned Project Context (Max 5, Latest-First, 300-char crisp summary) */}
+        {/*
+        <section className={styles.cardSection}>
+          <div className={styles.cardHeader}>
+            <div className={styles.cardTitle}>
+              <FolderKanban size={18} />
+              <span>Auto-Learned Project Context</span>
+            </div>
+            <div className="badge-brutal badge-blue" style={{ fontSize: '0.72rem', padding: '2px 8px' }}>
+              {projects.length} / 5 PROJECTS
+            </div>
+          </div>
+
+          <p style={{ fontSize: '0.84rem', color: 'var(--muted)', margin: 0, lineHeight: 1.5 }}>
+            MakeAPost automatically remembers up to 300 characters per project as you generate posts—zero post history is ever stored.
+          </p>
+
+          {projects.length === 0 ? (
+            <div
+              style={{
+                padding: '16px',
+                borderRadius: 'var(--radius-xs)',
+                border: '1.5px dashed var(--border-color)',
+                backgroundColor: 'var(--card-bg-subtle)',
+                fontSize: '0.8rem',
+                color: 'var(--muted)',
+                textAlign: 'center',
+                lineHeight: 1.5,
+              }}
+            >
+              No projects learned yet. Generate an AI post about your product in the Studio and MakeAPost will automatically remember its context here.
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {projects.map((proj, idx) => {
+                const isEditing = editingSlug === proj.slug;
+                const formattedDate = proj.updatedAt
+                  ? new Date(proj.updatedAt).toLocaleDateString(undefined, {
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })
+                  : '';
+
+                return (
+                  <div
+                    key={proj.slug}
+                    style={{
+                      padding: '12px 14px',
+                      border: 'var(--border)',
+                      borderRadius: 'var(--radius-xs)',
+                      backgroundColor: 'var(--bg-secondary)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '8px',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                        <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '0.92rem', color: 'var(--ink)' }}>
+                          {proj.name}
+                        </span>
+                        {idx === 0 && (
+                          <span className="badge-brutal badge-yellow" style={{ fontSize: '0.65rem', padding: '1px 7px' }}>
+                            LATEST
+                          </span>
+                        )}
+                        {formattedDate && (
+                          <span style={{ fontSize: '0.7rem', color: 'var(--muted)', fontFamily: 'var(--font-mono)' }}>
+                            Updated {formattedDate}
+                          </span>
+                        )}
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span className="tag-mono" style={{ fontSize: '0.68rem' }}>
+                          {isEditing ? editSummary.length : proj.summary.length} / {MAX_SUMMARY_CHARS}
+                        </span>
+                        {!isEditing && (
+                          <>
+                            <button
+                              type="button"
+                              className="btn-brutal"
+                              onClick={() => handleStartEditProject(proj)}
+                              disabled={projectSaving}
+                              style={{ padding: '4px 9px', fontSize: '0.74rem', gap: '4px', backgroundColor: 'var(--surface)' }}
+                              title="Edit project context"
+                            >
+                              <Pencil size={12} />
+                              <span>Edit</span>
+                            </button>
+                            <button
+                              type="button"
+                              className="btn-brutal"
+                              onClick={() => handleDeleteProject(proj.slug, proj.name)}
+                              disabled={projectSaving}
+                              style={{
+                                padding: '4px 9px',
+                                fontSize: '0.74rem',
+                                gap: '4px',
+                                backgroundColor: '#FEE2E2',
+                                color: '#DC2626',
+                                borderColor: '#DC2626',
+                              }}
+                              title="Delete project from memory"
+                            >
+                              <Trash2 size={12} />
+                              <span>Delete</span>
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    {isEditing ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <input
+                          type="text"
+                          value={editName}
+                          maxLength={60}
+                          onChange={(e) => setEditName(e.target.value)}
+                          placeholder="Project name"
+                          className="input-brutal"
+                          style={{ fontSize: '0.82rem', padding: '6px 10px', fontWeight: 700 }}
+                        />
+                        <textarea
+                          rows={3}
+                          value={editSummary}
+                          maxLength={MAX_SUMMARY_CHARS}
+                          onChange={(e) => setEditSummary(e.target.value.slice(0, MAX_SUMMARY_CHARS))}
+                          placeholder="Crisp summary up to 300 characters..."
+                          className="input-brutal"
+                          style={{ fontSize: '0.82rem', padding: '8px 10px', lineHeight: 1.45, resize: 'vertical' }}
+                        />
+                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                          <button
+                            type="button"
+                            className="btn-brutal"
+                            onClick={() => setEditingSlug(null)}
+                            disabled={projectSaving}
+                            style={{ padding: '5px 12px', fontSize: '0.76rem', backgroundColor: 'var(--surface)' }}
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-brutal btn-primary"
+                            onClick={() => handleSaveProject(proj.slug)}
+                            disabled={projectSaving}
+                            style={{ padding: '5px 14px', fontSize: '0.76rem', gap: '5px' }}
+                          >
+                            <Check size={13} />
+                            <span>{projectSaving ? 'Saving...' : 'Save'}</span>
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <p style={{ fontSize: '0.82rem', color: 'var(--ink)', margin: 0, lineHeight: 1.5 }}>
+                        {proj.summary}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+        */}
       </main>
 
       {/* Global Footer */}

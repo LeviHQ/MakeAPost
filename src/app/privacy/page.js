@@ -157,6 +157,14 @@ export default function PrivacyPage() {
                   <strong>Studio Preferences:</strong> Your selected UI theme preference (<code>light</code> or <code>dark</code> mode).
                 </span>
               </li>
+              {/* [FUTURE FEATURE - COMMENTED OUT FOR BUDGET]: Auto-Learned Project Context disclosure
+              <li className={styles.listItem}>
+                <span className={styles.listBullet} />
+                <span>
+                  <strong>Auto-Learned Project Context (Max 5 Snippets):</strong> Up to 5 auto-summarized project context snippets (strictly capped at 300 characters each) stored in your account settings for personalized AI continuity. You can view, edit, or delete any project snippet anytime in Account &amp; Settings—zero post drafts or screenshot history are ever stored.
+                </span>
+              </li>
+              */}
             </ul>
             <p className={styles.sectionText}>
               All user records are secured behind PostgreSQL Row Level Security (RLS) policies, ensuring users can only read and update their own profiles.

@@ -103,12 +103,14 @@ The 30% control sidebar features two distinct UI states:
 │   │   ├── settings/
 │   │   │   ├── page.js             # Account profile & cross-device theme preference with responsive hamburger navbar
 │   │   │   └── settings.module.css # Neobrutalist settings page styles
-│   │   ├── auth/
-│   │   │   └── callback/
-│   │   │       └── route.js        # Supabase OAuth session exchange callback
+│   │   │   └── auth/
+│   │   │       └── callback/
+│   │   │           └── route.js    # Supabase OAuth session exchange callback
 │   │   └── api/
-│   │       └── generate/
-│   │           └── route.js        # Serverless Gemini Vision API + Supabase auth verification
+│   │       ├── generate/
+│   │       │   └── route.js        # Serverless Gemini Vision API + single-call project memory + Supabase auth
+│   │       └── projects/
+│   │           └── route.js        # Authenticated GET/PATCH/DELETE API for user's 5 auto-learned project memories
 │   ├── components/
 │   │   ├── Logo.js                 # Reusable MakeAPost SVG Logo + Brand Wordmark
 │   │   ├── Footer.js               # Multi-column Neobrutalist footer with compliance & legal links
@@ -123,6 +125,8 @@ The 30% control sidebar features two distinct UI states:
 │   │   ├── CanvasEditor.js         # 70% Main Visual Canvas & Dropzone (HTML5 Canvas, Ctrl+V, annotations, blur, PNG export)
 │   │   └── AiStudio.js             # AI Post Generation & 1-Click Native Intent Sharing inside 30% sidebar
 │   └── lib/
+│       ├── projectMemory.js        # 300-char auto-learned project memory normalization, slugging, sorting & compact context builder
+│       ├── backgroundPresets.js    # 20 vector-rendered Neon, Aura Mesh & AI-style studio backgrounds
 │       ├── shareIntent.js          # Client-side clipboard image copy & native social composer intent builder (X, LinkedIn, Reddit)
 │       ├── imageCompress.js        # Client-side 768px JPEG compression utility
 │       └── supabase/
@@ -130,7 +134,8 @@ The 30% control sidebar features two distinct UI states:
 │           ├── server.js           # Server SSR client with cookies (@supabase/ssr)
 │           └── admin.js            # Service-role admin client (@supabase/supabase-js)
 ├── supabase/
-│   └── schema.sql                  # PostgreSQL public.users schema, RLS policies & on_auth_user_created trigger
+│   ├── schema.sql                  # PostgreSQL public.users schema, RLS policies & on_auth_user_created trigger
+│   └── user_projects.sql           # Migration adding projects JSONB column (up to 5 auto-learned 300-char project memories)
 ├── public/
 │   ├── sw.js                       # Lightweight PWA Service Worker caching app shell
 │   ├── og-image.png                # Pre-rendered 1200x630 static fallback OpenGraph card
@@ -143,7 +148,8 @@ The 30% control sidebar features two distinct UI states:
 │   ├── 05-theme-pwa-seo.md
 │   ├── 06-design-icons-and-dark-contrast.md
 │   ├── 06-native-share-intent.md
-│   └── 07-legal-compliance.md
+│   ├── 07-legal-compliance.md
+│   └── 08-auto-project-memory.md
 └── PROJECT_SPEC.md                 # Master spec (must be updated on every change)
 ```
 
@@ -173,3 +179,5 @@ The 30% control sidebar features two distinct UI states:
 [x] Phase 5: Supabase Google Auth & `/settings` Synced Preferences (NavbarAuth.js, schema.sql, settings/page.js, /api/generate auth gate, docs/04-auth-credits.md; trial/credit caps completely decoupled for future billing release)
 
 [x] Phase 6: Zero-Cost 1-Click Native Composer Intent Flow (X, LinkedIn, Reddit), Clipboard PNG Copy, and Full Legal & Compliance Suite (shareIntent.js, AiStudio.js, settings/page.js, Footer.js, /privacy, /terms, /refund, /contact, docs/06-native-share-intent.md, docs/07-legal-compliance.md)
+
+[x] Phase 7: Auto-Learned Project Memory (300-Char Crisp Context, Latest-First in `/settings`, Single-Call Zero-Extra-Token Architecture) (supabase/user_projects.sql, projectMemory.js, /api/generate/route.js, /api/projects/route.js, settings/page.js, /privacy, docs/08-auto-project-memory.md)
