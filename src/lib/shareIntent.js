@@ -241,6 +241,13 @@ export async function copyImageAndOpenComposer(canvas, platform, text) {
       }
 
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        // Copy post text to mobile clipboard before launching OS Share Sheet so apps
+        // like LinkedIn (which drop shared text when receiving an image) can simply Paste it.
+        if (cleanText && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+          try {
+            await navigator.clipboard.writeText(cleanText);
+          } catch {}
+        }
         await navigator.share({
           title: 'MakeAPost',
           text: cleanText,

@@ -20,6 +20,7 @@ import {
   X,
   Zap,
   Lock,
+  Smartphone,
 } from 'lucide-react';
 import styles from './settings.module.css';
 
@@ -303,7 +304,7 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* Card 3: Privacy-First 1-Click Social Sharing */}
+        {/* Card 3: Privacy-First 1-Click Social Sharing & Platform Guide */}
         <section className={styles.cardSection}>
           <div className={styles.cardHeader}>
             <div className={styles.cardTitle}>
@@ -315,64 +316,115 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <p style={{ fontSize: '0.86rem', color: 'var(--muted)', margin: 0, lineHeight: 1.5 }}>
-            MakeAPost connects to your favorite social networks using <strong>client-side native web intent URLs</strong> and your device&apos;s system clipboard.
-            We never request, store, or access your social media passwords, API keys, or OAuth tokens.
+          <p style={{ fontSize: '0.86rem', color: 'var(--muted)', margin: 0, lineHeight: 1.55 }}>
+            MakeAPost never asks for or stores your social passwords, API keys, or OAuth tokens. Instead, it uses{' '}
+            <strong>client-side web intents</strong>, your clipboard, and balanced 1600px PNG graphics so every post stays 100% under your control:
           </p>
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '4px' }}>
+          {/* Platform-by-Platform Guide Grid */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
+              gap: '10px',
+              marginTop: '4px',
+            }}
+          >
+            {/* X (Twitter) Guide */}
             <div
               style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '8px 12px',
+                padding: '12px',
                 border: 'var(--border)',
                 borderRadius: 'var(--radius-xs)',
                 backgroundColor: 'var(--bg-secondary)',
-                fontSize: '0.82rem',
-                fontWeight: 700,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '6px',
               }}
             >
-              <XIcon size={14} />
-              <span>X (Twitter) Intent</span>
-              <Check size={13} style={{ color: '#16A34A' }} />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', fontSize: '0.84rem', fontWeight: 800 }}>
+                  <XIcon size={14} />
+                  <span>X (Twitter)</span>
+                </div>
+                <span className="tag-mono" style={{ fontSize: '0.66rem' }}>TEXT + CTRL+V</span>
+              </div>
+              <p style={{ fontSize: '0.77rem', color: 'var(--muted)', margin: 0, lineHeight: 1.45 }}>
+                Opens X with your post text pre-filled and copies the screenshot to your clipboard. Press{' '}
+                <strong>Ctrl + V</strong> in the composer to attach the image.
+              </p>
             </div>
 
+            {/* LinkedIn Guide */}
             <div
               style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '8px 12px',
+                padding: '12px',
                 border: 'var(--border)',
                 borderRadius: 'var(--radius-xs)',
                 backgroundColor: 'var(--bg-secondary)',
-                fontSize: '0.82rem',
-                fontWeight: 700,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '6px',
               }}
             >
-              <LinkedInIcon size={14} />
-              <span>LinkedIn Intent</span>
-              <Check size={13} style={{ color: '#16A34A' }} />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', fontSize: '0.84rem', fontWeight: 800 }}>
+                  <LinkedInIcon size={14} />
+                  <span>LinkedIn</span>
+                </div>
+                <span className="tag-mono" style={{ fontSize: '0.66rem' }}>TEXT + MEDIA</span>
+              </div>
+              <p style={{ fontSize: '0.77rem', color: 'var(--muted)', margin: 0, lineHeight: 1.45 }}>
+                Opens LinkedIn with pre-filled text and auto-downloads the graphic (LinkedIn web disables image paste). Click the{' '}
+                <strong>Media / Photo icon</strong> to attach it.
+              </p>
             </div>
 
+            {/* Reddit Guide */}
             <div
               style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '8px 12px',
+                padding: '12px',
                 border: 'var(--border)',
                 borderRadius: 'var(--radius-xs)',
                 backgroundColor: 'var(--bg-secondary)',
-                fontSize: '0.82rem',
-                fontWeight: 700,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '6px',
               }}
             >
-              <RedditIcon size={14} />
-              <span>Reddit Intent</span>
-              <Check size={13} style={{ color: '#16A34A' }} />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', fontSize: '0.84rem', fontWeight: 800 }}>
+                  <RedditIcon size={15} />
+                  <span>Reddit</span>
+                </div>
+                <span className="tag-mono" style={{ fontSize: '0.66rem' }}>TEXT + CTRL+V</span>
+              </div>
+              <p style={{ fontSize: '0.77rem', color: 'var(--muted)', margin: 0, lineHeight: 1.45 }}>
+                Opens Reddit with your title &amp; markdown body pre-filled and copies the image. Press{' '}
+                <strong>Ctrl + V</strong> inside the body, choose a subreddit, and post.
+              </p>
+            </div>
+          </div>
+
+          {/* Mobile Native Share Note */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '10px',
+              padding: '10px 12px',
+              borderRadius: 'var(--radius-xs)',
+              border: '1.5px dashed var(--border-color)',
+              backgroundColor: 'var(--card-bg-subtle)',
+              fontSize: '0.78rem',
+              lineHeight: 1.45,
+              color: 'var(--ink)',
+            }}
+          >
+            <Smartphone size={16} style={{ flexShrink: 0, marginTop: '2px', color: 'var(--accent-yellow)' }} />
+            <div>
+              <strong>Mobile (Android &amp; iOS):</strong> Tapping Post launches your phone&apos;s native Share Sheet,
+              sending <strong>both the screenshot file and post text</strong> to X or Reddit, and automatically copies the text to your clipboard so if the LinkedIn app only imports the image, you can simply tap <strong>Paste</strong>.
             </div>
           </div>
         </section>

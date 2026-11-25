@@ -1124,7 +1124,7 @@ export default function AiStudio({
                         Select {guideModalPlatform === 'x' ? 'X' : guideModalPlatform === 'linkedin' ? 'LinkedIn' : 'Reddit'}
                       </div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--muted)', lineHeight: 1.4 }}>
-                        Pick the app from the share options to open it directly with media and text ready to publish.
+                        Pick the app from your share options. Your post text is also copied to clipboard — if LinkedIn only attaches the image, just tap <strong>Paste</strong> in the caption box!
                       </div>
                     </div>
                   </div>
