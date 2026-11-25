@@ -148,6 +148,7 @@ export default function CanvasEditor({
   ambientGlow = false,
   canvasBorder = 'none',
   verticalAlign = 'center',
+  watermark = 'made with makeapost.app',
   activeTool = 'select',
   annotationColor = '#EF4444',
   annotations = [],
@@ -947,46 +948,49 @@ export default function CanvasEditor({
     // Restore tilt context
     ctx.restore();
 
-    // Default Hardcoded Brand Watermark ('made with makeapost.app')
-    ctx.save();
-    const markText = 'made with makeapost.app';
-    ctx.font = 'bold 12px -apple-system, BlinkMacSystemFont, "Segoe UI", monospace';
-    const markMetrics = ctx.measureText(markText);
-    const pillW = markMetrics.width + 20;
-    const pillH = 26;
-    const pillX = canvasW - pillW - 16;
-    const pillY = canvasH - pillH - 14;
+    // Watermark Badge (Default, Custom Brand Handle, or Hidden)
+    const activeWatermark = typeof watermark === 'string' ? watermark.trim() : 'made with makeapost.app';
+    if (activeWatermark && activeWatermark !== 'none' && activeWatermark !== 'hide') {
+      ctx.save();
+      const markText = activeWatermark;
+      ctx.font = 'bold 12px -apple-system, BlinkMacSystemFont, "Segoe UI", monospace';
+      const markMetrics = ctx.measureText(markText);
+      const pillW = markMetrics.width + 20;
+      const pillH = 26;
+      const pillX = canvasW - pillW - 16;
+      const pillY = canvasH - pillH - 14;
 
-    // Hard Shadow
-    ctx.fillStyle = '#09090B';
-    ctx.beginPath();
-    if (ctx.roundRect) {
-      ctx.roundRect(pillX + 2, pillY + 2, pillW, pillH, 6);
-    } else {
-      ctx.rect(pillX + 2, pillY + 2, pillW, pillH);
+      // Hard Shadow
+      ctx.fillStyle = '#09090B';
+      ctx.beginPath();
+      if (ctx.roundRect) {
+        ctx.roundRect(pillX + 2, pillY + 2, pillW, pillH, 6);
+      } else {
+        ctx.rect(pillX + 2, pillY + 2, pillW, pillH);
+      }
+      ctx.fill();
+
+      // Surface
+      ctx.fillStyle = '#09090B';
+      ctx.beginPath();
+      if (ctx.roundRect) {
+        ctx.roundRect(pillX, pillY, pillW, pillH, 6);
+      } else {
+        ctx.rect(pillX, pillY, pillW, pillH);
+      }
+      ctx.fill();
+
+      // Border
+      ctx.strokeStyle = '#FFD93D';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Text
+      ctx.fillStyle = '#FFFFFF';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(markText, pillX + 10, pillY + pillH / 2);
+      ctx.restore();
     }
-    ctx.fill();
-
-    // Surface
-    ctx.fillStyle = '#09090B';
-    ctx.beginPath();
-    if (ctx.roundRect) {
-      ctx.roundRect(pillX, pillY, pillW, pillH, 6);
-    } else {
-      ctx.rect(pillX, pillY, pillW, pillH);
-    }
-    ctx.fill();
-
-    // Border
-    ctx.strokeStyle = '#FFD93D';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    // Text
-    ctx.fillStyle = '#FFFFFF';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(markText, pillX + 10, pillY + pillH / 2);
-    ctx.restore();
 
     ctx.restore();
   }, [
@@ -1003,6 +1007,7 @@ export default function CanvasEditor({
     ambientGlow,
     canvasBorder,
     verticalAlign,
+    watermark,
     annotations,
     currentShape,
     dragOffset,

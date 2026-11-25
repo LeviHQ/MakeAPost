@@ -22,6 +22,7 @@ create table if not exists public.users (
   full_name text,
   avatar_url text,
   theme text default 'light' check (theme in ('light', 'dark')),
+  default_watermark text default 'made with makeapost.app',
   created_at timestamptz default now()
 );
 ```
@@ -101,6 +102,12 @@ A dedicated Neobrutalist dashboard organized into 2 high-contrast cards:
 2. **Profile Card:** Google avatar, display name, email address, user ID snippet, and `"Sign Out"` button.
 3. **Cross-Device Studio Preferences Card:**
    - **Theme Preference:** Neobrutalist Light/Dark selector buttons that persist immediately to Supabase, browser DOM, and localStorage, syncing seamlessly across all logged-in devices.
+4. **Watermark & Creator Branding Card:**
+   - **Default Badge:** Standard `"made with makeapost.app"` bottom-right pill badge.
+   - **Custom Brand Handle:** User-defined handle or URL (e.g. `@adarshmishra` or `myproduct.dev`, max 40 chars) to turn exported graphics into personal promotion.
+   - **Clean Export (None):** Hides watermark badge completely for clean screenshots.
+   - **Live Preview:** Interactive simulation badge pill showing how it renders on the canvas.
+   - **Upcoming Billing Mapping:** Decoupled and fully free during Beta; designed to map to Free (Default), Pro (Clean Export), and Advanced (Custom Brand) in future billing releases.
 
 ---
 

@@ -22,6 +22,9 @@ import {
   Zap,
   Lock,
   Smartphone,
+  Tag,
+  Save,
+  EyeOff,
   // FolderKanban,
   // Pencil,
   // Trash2,
@@ -42,6 +45,9 @@ export default function SettingsPage() {
     return 'light';
   });
   const [toastMessage, setToastMessage] = useState(null);
+  const [watermarkMode, setWatermarkMode] = useState('default'); // 'default' | 'custom' | 'none'
+  const [customWatermarkText, setCustomWatermarkText] = useState('');
+  const [savingWatermark, setSavingWatermark] = useState(false);
   /* [FUTURE FEATURE - COMMENTED OUT FOR BUDGET]: Project Memory State
   const [projects, setProjects] = useState([]);
   const [editingSlug, setEditingSlug] = useState(null);
@@ -94,6 +100,24 @@ export default function SettingsPage() {
           try {
             localStorage.setItem('makeapost-theme', activeTheme);
           } catch {}
+
+          // Load Watermark Preference
+          const savedMark = profileData.default_watermark;
+          if (savedMark === 'none' || savedMark === 'hide') {
+            setWatermarkMode('none');
+            setCustomWatermarkText('');
+          } else if (!savedMark || savedMark === 'made with makeapost.app') {
+            setWatermarkMode('default');
+            setCustomWatermarkText('');
+          } else {
+            setWatermarkMode('custom');
+            setCustomWatermarkText(savedMark);
+          }
+          if (savedMark !== undefined && savedMark !== null) {
+            try {
+              localStorage.setItem('makeapost-default-watermark', savedMark);
+            } catch {}
+          }
         }
       } catch (err) {
         console.error('Failed to load settings:', err);
@@ -136,6 +160,46 @@ export default function SettingsPage() {
     } catch (err) {
       console.error('Failed to sync theme to Supabase exception:', err?.message || err);
       showToast('Error saving theme to account. Please retry.');
+    }
+  };
+
+  // Handle Watermark Preference Save
+  const handleSaveWatermark = async (e) => {
+    e?.preventDefault();
+    setSavingWatermark(true);
+    try {
+      let finalMark = 'made with makeapost.app';
+      if (watermarkMode === 'none') {
+        finalMark = 'none';
+      } else if (watermarkMode === 'custom') {
+        finalMark = customWatermarkText.trim() || 'made with makeapost.app';
+      }
+
+      if (user) {
+        const supabase = createClient();
+        const { error } = await supabase
+          .from('users')
+          .update({ default_watermark: finalMark })
+          .eq('id', user.id);
+
+        if (error) {
+          const errorMsg = error?.message || error?.details || 'Database permission error';
+          console.error('Failed to sync watermark to Supabase:', errorMsg, error);
+          showToast(`Error: ${errorMsg}`);
+          return;
+        }
+      }
+
+      try {
+        localStorage.setItem('makeapost-default-watermark', finalMark);
+      } catch {}
+
+      showToast('Watermark branding preference saved!');
+    } catch (err) {
+      console.error('Failed to save watermark:', err);
+      showToast(`Error: ${err?.message || 'Failed to save watermark'}`);
+    } finally {
+      setSavingWatermark(false);
     }
   };
 
@@ -552,6 +616,218 @@ export default function SettingsPage() {
             <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontFamily: 'var(--font-mono)' }}>
               Saved to your PostgreSQL account profile and automatically synced across all your devices.
             </span>
+          </div>
+        </section>
+
+        {/* Card 5: Watermark & Brand Handle */}
+        <section className={styles.cardSection}>
+          <div className={styles.cardHeader}>
+            <div className={styles.cardTitle}>
+              <Tag size={18} />
+              <span>Canvas Watermark &amp; Branding</span>
+            </div>
+            <div className="badge-brutal badge-yellow" style={{ fontSize: '0.72rem', padding: '2px 8px' }}>
+              ALL TIERS UNLOCKED
+            </div>
+          </div>
+
+          <p style={{ fontSize: '0.86rem', color: 'var(--muted)', margin: 0, lineHeight: 1.5 }}>
+            Configure how your graphics are branded when exported from MakeAPost. You can use our default badge, promote your own social handle or website, or export completely unbranded graphics.
+          </p>
+
+          {/* 3-Way Mode Selection */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' }}>
+            {/* Option 1: Default Watermark */}
+            <div
+              className="card-brutal"
+              style={{
+                padding: '14px',
+                cursor: 'pointer',
+                backgroundColor: watermarkMode === 'default' ? 'var(--accent-yellow)' : 'var(--bg-secondary)',
+                color: watermarkMode === 'default' ? '#09090B' : 'var(--ink)',
+                border: 'var(--border)',
+                boxShadow: watermarkMode === 'default' ? '3px 3px 0px var(--shadow-color)' : '1.5px 1.5px 0px var(--shadow-color)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '6px',
+                transition: 'all 0.15s ease',
+              }}
+              onClick={() => setWatermarkMode('default')}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '0.88rem' }}>
+                  Default Badge
+                </span>
+                {watermarkMode === 'default' && <Check size={16} />}
+              </div>
+              <span style={{ fontSize: '0.74rem', opacity: 0.85, lineHeight: 1.4 }}>
+                Displays official &quot;made with makeapost.app&quot; badge pill.
+              </span>
+            </div>
+
+            {/* Option 2: Custom Brand Handle */}
+            <div
+              className="card-brutal"
+              style={{
+                padding: '14px',
+                cursor: 'pointer',
+                backgroundColor: watermarkMode === 'custom' ? 'var(--accent-yellow)' : 'var(--bg-secondary)',
+                color: watermarkMode === 'custom' ? '#09090B' : 'var(--ink)',
+                border: 'var(--border)',
+                boxShadow: watermarkMode === 'custom' ? '3px 3px 0px var(--shadow-color)' : '1.5px 1.5px 0px var(--shadow-color)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '6px',
+                transition: 'all 0.15s ease',
+              }}
+              onClick={() => setWatermarkMode('custom')}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '0.88rem' }}>
+                  Custom Brand Handle
+                </span>
+                {watermarkMode === 'custom' && <Check size={16} />}
+              </div>
+              <span style={{ fontSize: '0.74rem', opacity: 0.85, lineHeight: 1.4 }}>
+                Promote your personal handle (e.g. @founder) or domain.
+              </span>
+            </div>
+
+            {/* Option 3: Clean Export (None) */}
+            <div
+              className="card-brutal"
+              style={{
+                padding: '14px',
+                cursor: 'pointer',
+                backgroundColor: watermarkMode === 'none' ? 'var(--accent-yellow)' : 'var(--bg-secondary)',
+                color: watermarkMode === 'none' ? '#09090B' : 'var(--ink)',
+                border: 'var(--border)',
+                boxShadow: watermarkMode === 'none' ? '3px 3px 0px var(--shadow-color)' : '1.5px 1.5px 0px var(--shadow-color)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '6px',
+                transition: 'all 0.15s ease',
+              }}
+              onClick={() => setWatermarkMode('none')}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '0.88rem' }}>
+                  Hide Watermark (Clean)
+                </span>
+                {watermarkMode === 'none' && <Check size={16} />}
+              </div>
+              <span style={{ fontSize: '0.74rem', opacity: 0.85, lineHeight: 1.4 }}>
+                Export clean, unbranded graphics with zero watermark pills.
+              </span>
+            </div>
+          </div>
+
+          {/* Custom Handle Input (Visible when Custom is selected) */}
+          {watermarkMode === 'custom' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '4px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <label style={{ fontFamily: 'var(--font-heading)', fontSize: '0.84rem', fontWeight: 800 }}>
+                  Enter Your Custom Brand / Handle
+                </label>
+                <span className="tag-mono" style={{ fontSize: '0.68rem' }}>
+                  {customWatermarkText.length} / 40
+                </span>
+              </div>
+              <input
+                type="text"
+                className="input-brutal"
+                placeholder="e.g. @adarshmishra or startup.dev"
+                value={customWatermarkText}
+                onChange={(e) => setCustomWatermarkText(e.target.value.slice(0, 40))}
+                style={{ width: '100%', fontSize: '0.88rem', padding: '10px 14px' }}
+                maxLength={40}
+              />
+              <span style={{ fontSize: '0.72rem', color: 'var(--muted)', fontFamily: 'var(--font-mono)' }}>
+                Tip: Enter your Twitter/X handle, GitHub username, or project URL to turn every viral post into personal promotion.
+              </span>
+            </div>
+          )}
+
+          {/* Live Preview Box */}
+          <div
+            style={{
+              padding: '14px 16px',
+              borderRadius: 'var(--radius-xs)',
+              border: '1.5px dashed var(--border-color)',
+              backgroundColor: 'var(--card-bg-subtle)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '12px',
+            }}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+              <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '0.8rem', color: 'var(--ink)' }}>
+                Live Canvas Badge Preview:
+              </span>
+              <span style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>
+                This is how the bottom-right watermark will render on your exported images.
+              </span>
+            </div>
+
+            {/* Badge Render Simulation */}
+            {watermarkMode === 'none' ? (
+              <div
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: '6px',
+                  border: '1.5px dashed var(--border-color)',
+                  color: 'var(--muted)',
+                  fontSize: '0.76rem',
+                  fontFamily: 'var(--font-mono)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                <EyeOff size={14} />
+                <span>Zero Watermark (Clean Export)</span>
+              </div>
+            ) : (
+              <div
+                style={{
+                  backgroundColor: '#09090B',
+                  border: '1.5px solid #FFD93D',
+                  boxShadow: '2px 2px 0px #09090B',
+                  borderRadius: '6px',
+                  padding: '5px 12px',
+                  color: '#FFFFFF',
+                  fontFamily: 'monospace',
+                  fontWeight: 700,
+                  fontSize: '0.76rem',
+                  letterSpacing: '0.02em',
+                }}
+              >
+                {watermarkMode === 'custom'
+                  ? (customWatermarkText.trim() || '@yourhandle')
+                  : 'made with makeapost.app'}
+              </div>
+            )}
+          </div>
+
+          {/* Action Row: Save Button & Future Billing Note */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginTop: '6px' }}>
+            <button
+              type="button"
+              disabled={savingWatermark}
+              onClick={handleSaveWatermark}
+              className="btn-brutal btn-primary"
+              style={{ padding: '10px 20px', fontSize: '0.88rem', gap: '6px' }}
+            >
+              <Save size={15} />
+              <span>{savingWatermark ? 'Saving...' : 'Save Watermark Preference'}</span>
+            </button>
+
+            <div style={{ fontSize: '0.74rem', color: 'var(--muted)', lineHeight: 1.45, maxWidth: '420px' }}>
+              <strong>Upcoming Billing Notice:</strong> Currently 100% free for Beta creators. When billing is enabled:
+              Free Tier (Default Badge) • Pro Tier (Clean Export) • Advanced Tier (Custom Brand Handle).
+            </div>
           </div>
         </section>
 

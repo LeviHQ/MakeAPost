@@ -6,6 +6,7 @@ import Logo from '@/components/Logo';
 import NavbarAuth from '@/components/NavbarAuth';
 import CanvasEditor from '@/components/CanvasEditor';
 import ModeSidebar from '@/components/ModeSidebar';
+import { createClient } from '@/lib/supabase/client';
 import { RotateCcw, Copy, Download, Image as ImageIcon, Sliders, Zap, ArrowRight, Menu, X, Home, Undo2, Redo2, ZoomIn, ZoomOut, Hand } from 'lucide-react';
 import styles from './editor.module.css';
 
@@ -37,6 +38,12 @@ export default function EditorPage() {
   const [ambientGlow, setAmbientGlow] = useState(false);
   const [canvasBorder, setCanvasBorder] = useState('none');
   const [verticalAlign, setVerticalAlign] = useState('center');
+  const [watermark, setWatermark] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('makeapost-default-watermark') || 'made with makeapost.app';
+    }
+    return 'made with makeapost.app';
+  });
 
   // Annotation Tooling State
   const [activeTool, setActiveTool] = useState('select');
@@ -50,6 +57,37 @@ export default function EditorPage() {
 
   // Toast / Feedback State
   const [toastMessage, setToastMessage] = useState(null);
+
+  // Sync Watermark Preference from Supabase User Profile
+  useEffect(() => {
+    let isMounted = true;
+    async function loadWatermarkPreference() {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user && isMounted) {
+          const { data: profile } = await supabase
+            .from('users')
+            .select('default_watermark')
+            .eq('id', user.id)
+            .single();
+
+          if (profile?.default_watermark !== undefined && profile?.default_watermark !== null && isMounted) {
+            setWatermark(profile.default_watermark);
+            try {
+              localStorage.setItem('makeapost-default-watermark', profile.default_watermark);
+            } catch {}
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load user watermark preference:', err);
+      }
+    }
+    loadWatermarkPreference();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const showToast = useCallback((msg) => {
     setToastMessage(msg);
@@ -417,6 +455,8 @@ export default function EditorPage() {
             onCanvasBorderChange={setCanvasBorder}
             verticalAlign={verticalAlign}
             onVerticalAlignChange={setVerticalAlign}
+            watermark={watermark}
+            onWatermarkChange={setWatermark}
           />
         </div>
 
@@ -443,6 +483,7 @@ export default function EditorPage() {
             ambientGlow={ambientGlow}
             canvasBorder={canvasBorder}
             verticalAlign={verticalAlign}
+            watermark={watermark}
             activeTool={activeTool}
             annotationColor={annotationColor}
             annotations={annotations}

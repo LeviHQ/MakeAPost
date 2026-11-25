@@ -22,11 +22,17 @@ export default function UserThemeSync() {
           // Logged-in user: database is source of truth
           const { data: profile } = await supabase
             .from('users')
-            .select('theme')
+            .select('theme, default_watermark')
             .eq('id', user.id)
             .single();
 
           if (!isMounted) return;
+
+          if (profile?.default_watermark !== undefined && profile?.default_watermark !== null) {
+            try {
+              localStorage.setItem('makeapost-default-watermark', profile.default_watermark);
+            } catch {}
+          }
 
           if (profile?.theme) {
             const userTheme = profile.theme === 'dark' ? 'dark' : 'light';
@@ -52,12 +58,18 @@ export default function UserThemeSync() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!isMounted) return;
       if (session?.user) {
-        // User signed in: load and apply their account theme from database
+        // User signed in: load and apply their account theme & watermark from database
         const { data: profile } = await supabase
           .from('users')
-          .select('theme')
+          .select('theme, default_watermark')
           .eq('id', session.user.id)
           .single();
+
+        if (profile?.default_watermark !== undefined && profile?.default_watermark !== null && isMounted) {
+          try {
+            localStorage.setItem('makeapost-default-watermark', profile.default_watermark);
+          } catch {}
+        }
 
         if (profile?.theme && isMounted) {
           const userTheme = profile.theme === 'dark' ? 'dark' : 'light';
@@ -67,10 +79,11 @@ export default function UserThemeSync() {
           } catch {}
         }
       } else if (event === 'SIGNED_OUT') {
-        // Reset to default light mode on sign out
+        // Reset to default light mode and default watermark on sign out
         document.documentElement.setAttribute('data-theme', 'light');
         try {
           localStorage.setItem('makeapost-theme', 'light');
+          localStorage.setItem('makeapost-default-watermark', 'made with makeapost.app');
         } catch {}
       }
     });

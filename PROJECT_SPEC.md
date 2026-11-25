@@ -181,3 +181,5 @@ The 30% control sidebar features two distinct UI states:
 [x] Phase 6: Zero-Cost 1-Click Native Composer Intent Flow (X, LinkedIn, Reddit), Clipboard PNG Copy, and Full Legal & Compliance Suite (shareIntent.js, AiStudio.js, settings/page.js, Footer.js, /privacy, /terms, /refund, /contact, docs/06-native-share-intent.md, docs/07-legal-compliance.md)
 
 [x] Phase 7: Auto-Learned Project Memory (300-Char Crisp Context, Latest-First in `/settings`, Single-Call Zero-Extra-Token Architecture) (supabase/user_projects.sql, projectMemory.js, /api/generate/route.js, /api/projects/route.js, settings/page.js, /privacy, docs/08-auto-project-memory.md)
+
+[x] Phase 8: Restored Canvas Watermark & Creator Brand Handle (Default Badge, Custom Handle/URL Promotion, Clean Export/None, PostgreSQL default_watermark Column, Live Badge Preview in /settings & ModeSidebar, docs/04-auth-credits.md, supabase/watermark.sql)

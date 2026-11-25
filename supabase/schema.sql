@@ -9,6 +9,7 @@ create table if not exists public.users (
   full_name text,
   avatar_url text,
   theme text default 'light' check (theme in ('light', 'dark')),
+  default_watermark text default 'made with makeapost.app',
   projects jsonb not null default '[]'::jsonb,
   created_at timestamptz default now()
 );
@@ -45,8 +46,7 @@ alter table public.users
   drop column if exists plan,
   drop column if exists trial_ends_at,
   drop column if exists daily_credits_used,
-  drop column if exists last_credit_reset,
-  drop column if exists default_watermark;
+  drop column if exists last_credit_reset;
 
 -- 5. Trigger: Automatically insert a row in public.users on auth signup (e.g. Google OAuth)
 create or replace function public.handle_new_user()
@@ -58,6 +58,7 @@ begin
     full_name,
     avatar_url,
     theme,
+    default_watermark,
     created_at
   )
   values (
@@ -66,6 +67,7 @@ begin
     coalesce(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name', ''),
     coalesce(new.raw_user_meta_data->>'avatar_url', new.raw_user_meta_data->>'picture', ''),
     'light',
+    'made with makeapost.app',
     now()
   )
   on conflict (id) do nothing;

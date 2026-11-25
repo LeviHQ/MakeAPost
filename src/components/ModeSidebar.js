@@ -63,6 +63,8 @@ export default function ModeSidebar({
   onCanvasBorderChange,
   verticalAlign,
   onVerticalAlignChange,
+  watermark = 'made with makeapost.app',
+  onWatermarkChange,
 }) {
   const [showBgModal, setShowBgModal] = useState(false);
   const [bgCategory, setBgCategory] = useState('All');
@@ -797,6 +799,78 @@ export default function ModeSidebar({
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {/* Canvas Watermark / Personal Branding */}
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.78rem', marginBottom: '6px' }}>
+                  <span style={{ fontWeight: 700 }}>Watermark &amp; Branding</span>
+                  <span className="tag-mono" style={{ fontSize: '0.66rem' }}>
+                    {watermark === 'none' ? 'Hidden' : watermark === 'made with makeapost.app' ? 'Default' : 'Custom'}
+                  </span>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px', marginBottom: watermark !== 'none' && watermark !== 'made with makeapost.app' ? '6px' : '0' }}>
+                  <button
+                    type="button"
+                    className="btn-brutal"
+                    style={{
+                      padding: '4px 0',
+                      fontSize: '0.72rem',
+                      backgroundColor: watermark === 'made with makeapost.app' ? 'var(--accent-yellow)' : 'var(--card-bg-subtle)',
+                      color: watermark === 'made with makeapost.app' ? '#09090B' : 'var(--ink)',
+                      boxShadow: watermark === 'made with makeapost.app' ? '1.5px 1.5px 0px var(--shadow-color)' : 'none',
+                      border: '1.5px solid var(--border-color)',
+                    }}
+                    onClick={() => onWatermarkChange?.('made with makeapost.app')}
+                  >
+                    Default
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-brutal"
+                    style={{
+                      padding: '4px 0',
+                      fontSize: '0.72rem',
+                      backgroundColor: (watermark && watermark !== 'made with makeapost.app' && watermark !== 'none') ? 'var(--accent-yellow)' : 'var(--card-bg-subtle)',
+                      color: (watermark && watermark !== 'made with makeapost.app' && watermark !== 'none') ? '#09090B' : 'var(--ink)',
+                      boxShadow: (watermark && watermark !== 'made with makeapost.app' && watermark !== 'none') ? '1.5px 1.5px 0px var(--shadow-color)' : 'none',
+                      border: '1.5px solid var(--border-color)',
+                    }}
+                    onClick={() => {
+                      if (!watermark || watermark === 'made with makeapost.app' || watermark === 'none') {
+                        onWatermarkChange?.('@yourhandle');
+                      }
+                    }}
+                  >
+                    Custom
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-brutal"
+                    style={{
+                      padding: '4px 0',
+                      fontSize: '0.72rem',
+                      backgroundColor: watermark === 'none' ? 'var(--accent-yellow)' : 'var(--card-bg-subtle)',
+                      color: watermark === 'none' ? '#09090B' : 'var(--ink)',
+                      boxShadow: watermark === 'none' ? '1.5px 1.5px 0px var(--shadow-color)' : 'none',
+                      border: '1.5px solid var(--border-color)',
+                    }}
+                    onClick={() => onWatermarkChange?.('none')}
+                  >
+                    None
+                  </button>
+                </div>
+                {watermark !== 'none' && watermark !== 'made with makeapost.app' && (
+                  <input
+                    type="text"
+                    placeholder="e.g. @yourname or yourbrand.dev"
+                    value={watermark || ''}
+                    onChange={(e) => onWatermarkChange?.(e.target.value.slice(0, 40))}
+                    className="input-brutal"
+                    style={{ fontSize: '0.78rem', padding: '5px 8px', width: '100%' }}
+                    maxLength={40}
+                  />
+                )}
               </div>
             </div>
           </div>
