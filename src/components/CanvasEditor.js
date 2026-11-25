@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Camera, FolderOpen, Code2, BarChart3 } from 'lucide-react';
+import { AURA_PRESETS_MAP, drawAuraBackground } from '@/lib/backgroundPresets';
 
 // Sample 1: Code Editor Snippet (Self-contained SVG data URL)
 const SAMPLE_CODE_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="460" viewBox="0 0 800 460">
@@ -276,6 +277,8 @@ export default function CanvasEditor({
     } else if (background.startsWith('#')) {
       ctx.fillStyle = background;
       ctx.fillRect(0, 0, canvasW, canvasH);
+    } else if (AURA_PRESETS_MAP[background]) {
+      drawAuraBackground(ctx, canvasW, canvasH, AURA_PRESETS_MAP[background]);
     } else {
       const preset = GRADIENT_PRESETS[background] || GRADIENT_PRESETS.cyber;
       const grad = ctx.createLinearGradient(0, 0, canvasW, canvasH);

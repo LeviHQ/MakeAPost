@@ -1,6 +1,8 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { GRADIENT_PRESETS, SOLID_PRESETS } from './CanvasEditor';
+import { AURA_BACKGROUND_PRESETS, AURA_PRESETS_MAP, getAuraCssStyle } from '@/lib/backgroundPresets';
 import AiStudio from './AiStudio';
 import {
   Palette,
@@ -17,6 +19,8 @@ import {
   ListOrdered,
   Trash2,
   ArrowRight,
+  X,
+  Check,
 } from 'lucide-react';
 
 export default function ModeSidebar({
@@ -60,6 +64,22 @@ export default function ModeSidebar({
   verticalAlign,
   onVerticalAlignChange,
 }) {
+  const [showBgModal, setShowBgModal] = useState(false);
+  const [bgCategory, setBgCategory] = useState('All');
+
+  useEffect(() => {
+    if (!showBgModal) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setShowBgModal(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showBgModal]);
+
+  const filteredAuraPresets = bgCategory === 'All'
+    ? AURA_BACKGROUND_PRESETS
+    : AURA_BACKGROUND_PRESETS.filter((p) => p.category === bgCategory);
+
   return (
     <aside
       style={{
@@ -504,7 +524,7 @@ export default function ModeSidebar({
                   4. Backgrounds
                 </span>
                 <span className="tag-mono" style={{ textTransform: 'capitalize' }}>
-                  {GRADIENT_PRESETS[background]?.name || background}
+                  {GRADIENT_PRESETS[background]?.name || AURA_PRESETS_MAP[background]?.name || background}
                 </span>
               </div>
 
@@ -583,6 +603,33 @@ export default function ModeSidebar({
                   />
                 </div>
               </div>
+
+              {/* Show More Button -> Opens 20+ Neon, Modern Aura & AI Style Backgrounds Modal */}
+              <button
+                type="button"
+                className="btn-brutal"
+                onClick={() => setShowBgModal(true)}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  fontSize: '0.78rem',
+                  fontWeight: 800,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  backgroundColor: AURA_PRESETS_MAP[background] ? 'var(--accent-yellow)' : 'var(--card-bg-subtle)',
+                  color: AURA_PRESETS_MAP[background] ? '#09090B' : 'var(--ink)',
+                  border: '2px solid var(--border-color)',
+                  boxShadow: '2px 2px 0px var(--shadow-color)',
+                }}
+                title="Browse 20 Neon, Aura Mesh & AI-generated studio backgrounds"
+              >
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <Sparkles size={14} />
+                  <span>Show More (20 Neon &amp; Aura)</span>
+                </span>
+                <ArrowRight size={14} />
+              </button>
             </div>
 
             {/* 5. Core & Pro Configurations (Underrated Studio Settings) */}
@@ -749,6 +796,292 @@ export default function ModeSidebar({
             </div>
           </div>
         </div>
+
+      {/* Responsive Neon, Aura & AI Creative Backgrounds Popup Modal */}
+      {showBgModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="bg-studio-modal-title"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(3px)',
+            zIndex: 10000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '14px',
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowBgModal(false);
+          }}
+        >
+          <div
+            className="card-brutal"
+            style={{
+              maxWidth: '640px',
+              width: '100%',
+              maxHeight: '88vh',
+              backgroundColor: 'var(--surface)',
+              border: '3px solid var(--ink)',
+              borderRadius: 'var(--radius-sm)',
+              boxShadow: 'var(--shadow-card-hover, 6px 6px 0 var(--ink))',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+            }}
+          >
+            {/* Sticky Modal Header */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '16px 20px',
+                borderBottom: '2px solid var(--border-color)',
+                backgroundColor: 'var(--surface)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div
+                  style={{
+                    width: '34px',
+                    height: '34px',
+                    borderRadius: 'var(--radius-xs)',
+                    backgroundColor: 'var(--accent-yellow)',
+                    border: '2px solid var(--ink)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#09090B',
+                    flexShrink: 0,
+                  }}
+                >
+                  <Sparkles size={17} />
+                </div>
+                <div>
+                  <h3
+                    id="bg-studio-modal-title"
+                    style={{ margin: 0, fontSize: '1.02rem', fontWeight: 800, color: 'var(--ink)' }}
+                  >
+                    Neon, Aura &amp; AI Backgrounds
+                  </h3>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--muted)', fontFamily: 'var(--font-mono)' }}>
+                    20 studio-grade multi-layered mesh &amp; cyber presets
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowBgModal(false)}
+                style={{
+                  background: 'none',
+                  border: '2px solid var(--border-color)',
+                  borderRadius: 'var(--radius-xs)',
+                  cursor: 'pointer',
+                  padding: '5px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'var(--ink)',
+                }}
+                title="Close background gallery"
+                aria-label="Close"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Category Filter Pills */}
+            <div
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '6px',
+                padding: '12px 20px',
+                backgroundColor: 'var(--card-bg-subtle)',
+                borderBottom: '2px solid var(--border-color)',
+              }}
+            >
+              {['All', 'Neon Dark', 'AI Studio', 'Mesh Aura', 'Pastel & Light'].map((cat) => {
+                const isActive = bgCategory === cat;
+                return (
+                  <button
+                    key={cat}
+                    type="button"
+                    className="btn-brutal"
+                    onClick={() => setBgCategory(cat)}
+                    style={{
+                      padding: '4px 10px',
+                      fontSize: '0.74rem',
+                      fontWeight: 700,
+                      backgroundColor: isActive ? 'var(--accent-yellow)' : 'var(--surface)',
+                      color: isActive ? '#09090B' : 'var(--ink)',
+                      border: '1.5px solid var(--border-color)',
+                      boxShadow: isActive ? '1.5px 1.5px 0 var(--shadow-color)' : 'none',
+                    }}
+                  >
+                    {cat === 'All' ? `All (${AURA_BACKGROUND_PRESETS.length})` : cat}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Scrollable Responsive Swatch Grid */}
+            <div
+              style={{
+                padding: '16px 20px',
+                overflowY: 'auto',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(128px, 1fr))',
+                gap: '12px',
+              }}
+            >
+              {filteredAuraPresets.map((preset) => {
+                const isSelected = background === preset.id;
+                const cssStyle = getAuraCssStyle(preset);
+
+                return (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => {
+                      onBackgroundChange(preset.id);
+                      setShowBgModal(false);
+                    }}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      textAlign: 'left',
+                      padding: '6px',
+                      borderRadius: 'var(--radius-xs)',
+                      backgroundColor: isSelected ? 'var(--accent-yellow)' : 'var(--card-bg-subtle)',
+                      border: isSelected ? '2.5px solid var(--ink)' : '2px solid var(--border-color)',
+                      boxShadow: isSelected ? '3px 3px 0px var(--shadow-color)' : '1.5px 1.5px 0px var(--shadow-color)',
+                      cursor: 'pointer',
+                      transition: 'transform 0.12s ease',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '100%',
+                        height: '72px',
+                        borderRadius: '4px',
+                        border: '1.5px solid rgba(0, 0, 0, 0.25)',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        ...cssStyle,
+                      }}
+                    >
+                      {/* Pattern overlay for grid / dots presets */}
+                      {preset.pattern === 'grid' && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            backgroundImage: `linear-gradient(${preset.patternColor} 1px, transparent 1px), linear-gradient(90deg, ${preset.patternColor} 1px, transparent 1px)`,
+                            backgroundSize: '12px 12px',
+                          }}
+                        />
+                      )}
+                      {preset.pattern === 'dots' && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            backgroundImage: `radial-gradient(${preset.patternColor} 1.2px, transparent 1.2px)`,
+                            backgroundSize: '10px 10px',
+                          }}
+                        />
+                      )}
+                      {preset.pattern === 'beams' && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            backgroundImage: `linear-gradient(135deg, transparent 40%, ${preset.patternColor} 50%, transparent 60%)`,
+                          }}
+                        />
+                      )}
+                      {isSelected && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            top: '5px',
+                            right: '5px',
+                            width: '20px',
+                            height: '20px',
+                            borderRadius: '50%',
+                            backgroundColor: 'var(--accent-yellow)',
+                            border: '2px solid #09090B',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#09090B',
+                          }}
+                        >
+                          <Check size={12} strokeWidth={3} />
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ marginTop: '6px', padding: '0 2px', width: '100%' }}>
+                      <div
+                        style={{
+                          fontSize: '0.76rem',
+                          fontWeight: 800,
+                          color: isSelected ? '#09090B' : 'var(--ink)',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                      >
+                        {preset.name}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: '0.64rem',
+                          fontWeight: 600,
+                          color: isSelected ? '#27272A' : 'var(--muted)',
+                        }}
+                      >
+                        {preset.category}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Modal Footer */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 20px',
+                borderTop: '2px solid var(--border-color)',
+                backgroundColor: 'var(--card-bg-subtle)',
+                gap: '10px',
+              }}
+            >
+              <span style={{ fontSize: '0.72rem', color: 'var(--muted)', fontFamily: 'var(--font-mono)' }}>
+                Infinite HD vector canvas rendering
+              </span>
+              <button
+                type="button"
+                className="btn-brutal"
+                style={{ padding: '6px 14px', fontSize: '0.78rem', fontWeight: 700, backgroundColor: 'var(--surface)' }}
+                onClick={() => setShowBgModal(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </aside>
   );
 }

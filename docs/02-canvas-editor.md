@@ -105,3 +105,14 @@ To allow users to inspect and annotate high-density screenshots and UI details w
   - `ZoomIn (+)`: Increments zoom by 15% (clamped to 300%).
 - **Pixel-Accurate Coordinate Transformation:** Because `getCanvasPoint(e)` computes coordinates based on dynamic `canvas.getBoundingClientRect()`, annotation drawing and hit-testing remain 100% pixel-perfect regardless of whether the canvas is zoomed to 50%, 100%, or 250%.
 - **Zero Export Distortion:** Canvas downloads and clipboard copies export from the 2x Retina backing store directly, ensuring HD export is never affected by CSS viewport zoom level.
+
+---
+
+## 8. 20 Neon, Aura Mesh & AI-Style Studio Backgrounds (`src/lib/backgroundPresets.js`)
+
+To give creators dramatic lighting and SaaS-grade aesthetics without cluttering the 30% sidebar:
+
+- **Uncluttered Sidebar Trigger:** Underneath the 16 curated gradients and 8 solids in `4. Backgrounds` (`ModeSidebar.js`), a tactile **"Show More (20 Neon & Aura)"** button opens a responsive gallery modal. It illuminates in `#FFD93D` whenever an Aura preset is active.
+- **20 Vector-Rendered Presets (`AURA_BACKGROUND_PRESETS`):** Organized into 4 filterable categories (`Neon Dark`, `AI Studio`, `Mesh Aura`, and `Pastel & Light`), featuring presets such as *Cyber Neon*, *Quantum Grid*, *Acid Volt*, *Synthwave*, *Matrix Pulse*, *Solar Plasma*, *Obsidian Gold*, *Arctic Aurora*, *Holo Prism*, and *Studio Frost*.
+- **Infinite HD Canvas Vector Rendering (`drawAuraBackground`):** Rather than static raster images, `CanvasEditor.js` paints multi-stop diagonal bases, layered `createRadialGradient` glowing aura orbs, and crisp geometric grid/dot/beam overlays directly onto the canvas context — scaling cleanly to any export resolution.
+- **Responsive Gallery Popup:** Uses CSS Grid (`repeat(auto-fill, minmax(128px, 1fr))`) for automatic 2-column mobile / 4-column desktop layout, complete with category pills, backdrop-click / Escape dismissal, and live 1-click selection.
