@@ -2,6 +2,12 @@ import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import sharp from 'sharp';
 import { createClient as createServerClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
+import {
+  getEffectivePlanId,
+  getPlanConfig,
+  normalizeDailyCredits,
+} from '@/lib/billing';
 /* [FUTURE FEATURE - COMMENTED OUT FOR BUDGET]: Auto-Learned Project Memory
 import {
   buildCompactProjectContext,
@@ -121,6 +127,44 @@ export async function POST(req) {
         },
         { status: 401 }
       );
+    }
+
+    // 2.5 Per-Platform Daily AI Credit Verification (with midnight reset)
+    const admin = createAdminClient();
+    const { data: userRow, error: userFetchErr } = await admin
+      .from('users')
+      .select(
+        'plan, plan_status, image_credits_used, ai_credits_used, last_credit_reset, current_period_end'
+      )
+      .eq('id', user.id)
+      .single();
+
+    if (userFetchErr || !userRow) {
+      return NextResponse.json(
+        { error: 'Unable to verify account credits. Please try signing in again.' },
+        { status: 403 }
+      );
+    }
+
+    const planId = getEffectivePlanId(userRow);
+    const planConfig = getPlanConfig(planId);
+    const normalized = normalizeDailyCredits(userRow);
+
+    for (const p of targetPlatforms) {
+      const usedCount = normalized.aiCreditsUsed[p] || 0;
+      if (usedCount >= planConfig.dailyAiPerPlatform) {
+        return NextResponse.json(
+          {
+            error: `Daily ${p.toUpperCase()} AI post limit (${planConfig.dailyAiPerPlatform}/day) reached on your ${planConfig.name} plan.`,
+            code: 'AI_LIMIT_REACHED',
+            platform: p,
+            planId,
+            used: usedCount,
+            limit: planConfig.dailyAiPerPlatform,
+          },
+          { status: 429 }
+        );
+      }
     }
 
     /* [FUTURE FEATURE - COMMENTED OUT FOR BUDGET]: Fetch Project Memory
@@ -366,24 +410,35 @@ ${selectedSchemaExamples}
       responsePosts[key] = posts[key] || '';
     }
 
-    /* [FUTURE FEATURE - COMMENTED OUT FOR BUDGET]: Auto-Upsert Project Memory
-    let updatedProjects = savedProjects;
-    if (posts.projectMemory && posts.projectMemory.name && posts.projectMemory.summary) {
-      updatedProjects = upsertProjectMemory(savedProjects, posts.projectMemory);
-      try {
-        await supabase
-          .from('users')
-          .update({ projects: updatedProjects })
-          .eq('id', user.id);
-      } catch (saveProjErr) {
-        console.warn('Failed to persist project memory:', saveProjErr?.message || saveProjErr);
+    // Atomically increment per-platform AI credits on successful generation
+    const nextAiCredits = { ...normalized.aiCreditsUsed };
+    for (const p of targetPlatforms) {
+      if (responsePosts[PLATFORM_META[p].key]) {
+        nextAiCredits[p] = (nextAiCredits[p] || 0) + 1;
       }
     }
-    */
+
+    const creditUpdatePayload = {
+      ai_credits_used: nextAiCredits,
+      last_credit_reset: normalized.today,
+    };
+    if (normalized.needsReset) {
+      creditUpdatePayload.image_credits_used = 0;
+    }
+
+    await admin
+      .from('users')
+      .update(creditUpdatePayload)
+      .eq('id', user.id);
 
     return NextResponse.json({
       success: true,
       posts: responsePosts,
+      credits: {
+        planId,
+        aiCreditsUsed: nextAiCredits,
+        aiLimitPerPlatform: planConfig.dailyAiPerPlatform,
+      },
       // projects: updatedProjects,
     });
   } catch (error) {

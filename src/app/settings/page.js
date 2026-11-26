@@ -5,8 +5,10 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Logo from '@/components/Logo';
 import Footer from '@/components/Footer';
+import UpgradeModal from '@/components/UpgradeModal';
 import { XIcon, LinkedInIcon, RedditIcon } from '@/components/SocialIcons';
 import { createClient } from '@/lib/supabase/client';
+import { DEFAULT_WATERMARK_TEXT, enforceWatermarkForPlan, PLANS } from '@/lib/billing';
 // [FUTURE FEATURE - COMMENTED OUT FOR BUDGET]: import { sanitizeProjectsList, MAX_SUMMARY_CHARS } from '@/lib/projectMemory';
 import {
   User,
@@ -25,6 +27,9 @@ import {
   Tag,
   Save,
   EyeOff,
+  CreditCard,
+  Image as ImageIcon,
+  ArrowRight,
   // FolderKanban,
   // Pencil,
   // Trash2,
@@ -48,6 +53,23 @@ export default function SettingsPage() {
   const [watermarkMode, setWatermarkMode] = useState('default'); // 'default' | 'custom' | 'none'
   const [customWatermarkText, setCustomWatermarkText] = useState('');
   const [savingWatermark, setSavingWatermark] = useState(false);
+  const [usage, setUsage] = useState({
+    planId: 'free',
+    planName: 'Free',
+    planStatus: 'active',
+    currentPeriodEnd: null,
+    hasBillingCustomer: false,
+    imageCreditsUsed: 0,
+    imageLimit: PLANS.free.dailyImages,
+    aiCreditsUsed: { x: 0, linkedin: 0, reddit: 0 },
+    aiLimitPerPlatform: PLANS.free.dailyAiPerPlatform,
+  });
+  const [portalLoading, setPortalLoading] = useState(false);
+  const [upgradeModal, setUpgradeModal] = useState({
+    open: false,
+    title: '',
+    desc: '',
+  });
   /* [FUTURE FEATURE - COMMENTED OUT FOR BUDGET]: Project Memory State
   const [projects, setProjects] = useState([]);
   const [editingSlug, setEditingSlug] = useState(null);
@@ -113,10 +135,30 @@ export default function SettingsPage() {
             setWatermarkMode('custom');
             setCustomWatermarkText(savedMark);
           }
-          if (savedMark !== undefined && savedMark !== null) {
-            try {
-              localStorage.setItem('makeapost-default-watermark', savedMark);
-            } catch {}
+          // Load live billing & usage status from server
+          try {
+            const usageRes = await fetch('/api/credits/status');
+            if (usageRes.ok) {
+              const usageData = await usageRes.json();
+              if (usageData?.authenticated && isMounted) {
+                setUsage({
+                  planId: usageData.planId || 'free',
+                  planName: usageData.planName || 'Free',
+                  planStatus: usageData.planStatus || 'active',
+                  currentPeriodEnd: usageData.currentPeriodEnd || null,
+                  hasBillingCustomer: Boolean(usageData.hasBillingCustomer),
+                  imageCreditsUsed: usageData.imageCreditsUsed || 0,
+                  imageLimit: usageData.imageLimit || PLANS.free.dailyImages,
+                  aiCreditsUsed: usageData.aiCreditsUsed || { x: 0, linkedin: 0, reddit: 0 },
+                  aiLimitPerPlatform: usageData.aiLimitPerPlatform || PLANS.free.dailyAiPerPlatform,
+                });
+              }
+            }
+          } catch {}
+
+          // Show success toast if redirected back from Dodo checkout
+          if (typeof window !== 'undefined' && window.location.search.includes('billing=success')) {
+            showToast('Subscription updated! Your new plan limits are active.');
           }
         }
       } catch (err) {
@@ -168,12 +210,14 @@ export default function SettingsPage() {
     e?.preventDefault();
     setSavingWatermark(true);
     try {
-      let finalMark = 'made with makeapost.app';
+      let rawMark = DEFAULT_WATERMARK_TEXT;
       if (watermarkMode === 'none') {
-        finalMark = 'none';
+        rawMark = 'none';
       } else if (watermarkMode === 'custom') {
-        finalMark = customWatermarkText.trim() || 'made with makeapost.app';
+        rawMark = customWatermarkText.trim() || DEFAULT_WATERMARK_TEXT;
       }
+
+      const finalMark = enforceWatermarkForPlan(rawMark, usage.planId);
 
       if (user) {
         const supabase = createClient();
@@ -200,6 +244,23 @@ export default function SettingsPage() {
       showToast(`Error: ${err?.message || 'Failed to save watermark'}`);
     } finally {
       setSavingWatermark(false);
+    }
+  };
+
+  // Open Dodo Customer Billing Portal
+  const handleOpenBillingPortal = async () => {
+    setPortalLoading(true);
+    try {
+      const res = await fetch('/api/billing/portal', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok || !data?.portalUrl) {
+        throw new Error(data?.error || 'Could not open billing portal.');
+      }
+      window.location.href = data.portalUrl;
+    } catch (err) {
+      showToast(err?.message || 'Unable to open Dodo billing portal.');
+    } finally {
+      setPortalLoading(false);
     }
   };
 
@@ -424,27 +485,162 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* Card 2: Plan & Credit Status */}
+        {/* Card 2: Plan, Billing & Daily Usage Limits */}
         <section className={styles.cardSection}>
           <div className={styles.cardHeader}>
             <div className={styles.cardTitle}>
               <Zap size={18} />
-              <span>Plan &amp; Access Status</span>
+              <span>Plan &amp; Daily Usage</span>
             </div>
-            <div className="badge-brutal badge-yellow" style={{ fontSize: '0.72rem', padding: '2px 8px' }}>
-              100% FREE BETA
+            <div
+              className={`badge-brutal ${
+                usage.planId === 'advanced'
+                  ? 'badge-yellow'
+                  : usage.planId === 'pro'
+                  ? 'badge-blue'
+                  : 'badge-green'
+              }`}
+              style={{ fontSize: '0.72rem', padding: '2px 10px' }}
+            >
+              {usage.planName.toUpperCase()} PLAN
             </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.94rem', fontWeight: 800 }}>
-              <span style={{ color: '#16A34A' }}>●</span>
-              <span>Unlimited Free Access • 5 AI Credits / Day</span>
+          {/* Plan Summary & Subscription Status */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+            <div style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--ink)' }}>
+              {usage.planId === 'free'
+                ? 'Free Tier • 5 Image Edits & 2 AI Posts / Platform Daily'
+                : usage.planId === 'pro'
+                ? 'Pro Plan ($7/mo) • 30 Image Edits & 15 AI Posts / Platform Daily'
+                : 'Advanced Plan ($15/mo) • 50 Image Edits & 20 AI Posts / Platform Daily'}
             </div>
-            <p style={{ fontSize: '0.84rem', color: 'var(--muted)', margin: 0, lineHeight: 1.5 }}>
-              Enjoy unrestricted canvas styling, 2x high-resolution PNG exports, and multimodal Gemini AI post generation.
-              No credit card required.
-            </p>
+            {usage.currentPeriodEnd && (
+              <span className="tag-mono" style={{ fontSize: '0.72rem' }}>
+                {usage.planStatus === 'cancelled' ? 'Ends on ' : 'Renews '}
+                {new Date(usage.currentPeriodEnd).toLocaleDateString()}
+              </span>
+            )}
+          </div>
+
+          {/* 1. Image Editing Credits Meter */}
+          <div
+            style={{
+              padding: '12px 14px',
+              border: 'var(--border)',
+              borderRadius: 'var(--radius-xs)',
+              backgroundColor: 'var(--bg-secondary)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.84rem', fontWeight: 800 }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <ImageIcon size={15} />
+                <span>Daily Image Editing Credits</span>
+              </span>
+              <span className="tag-mono" style={{ fontSize: '0.78rem' }}>
+                {usage.imageCreditsUsed} / {usage.imageLimit} used today
+              </span>
+            </div>
+            <div style={{ width: '100%', height: '10px', backgroundColor: 'var(--card-bg-subtle)', border: '1.5px solid var(--border-color)', borderRadius: '999px', overflow: 'hidden' }}>
+              <div
+                style={{
+                  width: `${Math.min(100, (usage.imageCreditsUsed / Math.max(1, usage.imageLimit)) * 100)}%`,
+                  height: '100%',
+                  backgroundColor: usage.imageCreditsUsed >= usage.imageLimit ? '#EF4444' : 'var(--accent-yellow)',
+                  transition: 'width 0.25s ease',
+                }}
+              />
+            </div>
+          </div>
+
+          {/* 2. Per-Platform AI Post Credits Grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px' }}>
+            {[
+              { id: 'x', label: 'X (Twitter)', Icon: XIcon },
+              { id: 'linkedin', label: 'LinkedIn', Icon: LinkedInIcon },
+              { id: 'reddit', label: 'Reddit', Icon: RedditIcon },
+            ].map(({ id, label, Icon }) => {
+              const used = usage.aiCreditsUsed?.[id] || 0;
+              const limit = usage.aiLimitPerPlatform || 2;
+              const pct = Math.min(100, (used / Math.max(1, limit)) * 100);
+              return (
+                <div
+                  key={id}
+                  style={{
+                    padding: '12px',
+                    border: 'var(--border)',
+                    borderRadius: 'var(--radius-xs)',
+                    backgroundColor: 'var(--bg-secondary)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '7px',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 800 }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      <Icon size={13} />
+                      <span>{label}</span>
+                    </span>
+                    <span className="tag-mono" style={{ fontSize: '0.72rem' }}>
+                      {used} / {limit}
+                    </span>
+                  </div>
+                  <div style={{ width: '100%', height: '8px', backgroundColor: 'var(--card-bg-subtle)', border: '1.5px solid var(--border-color)', borderRadius: '999px', overflow: 'hidden' }}>
+                    <div
+                      style={{
+                        width: `${pct}%`,
+                        height: '100%',
+                        backgroundColor: used >= limit ? '#EF4444' : 'var(--accent-blue)',
+                        transition: 'width 0.25s ease',
+                      }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Billing Actions Row */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', paddingTop: '4px' }}>
+            <span style={{ fontSize: '0.74rem', color: 'var(--muted)', fontFamily: 'var(--font-mono)' }}>
+              Daily credits reset automatically at 00:00 UTC.
+            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              {usage.planId !== 'advanced' && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setUpgradeModal({
+                      open: true,
+                      title: 'Upgrade Your MakeAPost Plan',
+                      desc: 'Get up to 50 daily image edits, 20 AI posts per platform/day, Clean Exports, and Custom Brand Handles.',
+                    })
+                  }
+                  className="btn-brutal btn-primary"
+                  style={{ padding: '8px 16px', fontSize: '0.84rem', gap: '6px' }}
+                >
+                  <Sparkles size={14} />
+                  <span>{usage.planId === 'pro' ? 'Upgrade to Advanced ($15/mo)' : 'Upgrade Plan'}</span>
+                  <ArrowRight size={14} />
+                </button>
+              )}
+
+              {usage.hasBillingCustomer && (
+                <button
+                  type="button"
+                  disabled={portalLoading}
+                  onClick={handleOpenBillingPortal}
+                  className="btn-brutal"
+                  style={{ padding: '8px 14px', fontSize: '0.82rem', gap: '6px', backgroundColor: 'var(--surface)' }}
+                >
+                  <CreditCard size={14} />
+                  <span>{portalLoading ? 'Opening Portal...' : 'Manage / Cancel Subscription'}</span>
+                </button>
+              )}
+            </div>
           </div>
         </section>
 
@@ -627,7 +823,11 @@ export default function SettingsPage() {
               <span>Canvas Watermark &amp; Branding</span>
             </div>
             <div className="badge-brutal badge-yellow" style={{ fontSize: '0.72rem', padding: '2px 8px' }}>
-              ALL TIERS UNLOCKED
+              {usage.planId === 'advanced'
+                ? 'ADVANCED UNLOCKED'
+                : usage.planId === 'pro'
+                ? 'PRO TIER'
+                : 'FREE TIER'}
             </div>
           </div>
 
@@ -665,7 +865,7 @@ export default function SettingsPage() {
               </span>
             </div>
 
-            {/* Option 2: Custom Brand Handle */}
+            {/* Option 2: Custom Brand Handle (Advanced Only) */}
             <div
               className="card-brutal"
               style={{
@@ -679,21 +879,39 @@ export default function SettingsPage() {
                 flexDirection: 'column',
                 gap: '6px',
                 transition: 'all 0.15s ease',
+                opacity: usage.planId === 'advanced' ? 1 : 0.78,
               }}
-              onClick={() => setWatermarkMode('custom')}
+              onClick={() => {
+                if (usage.planId !== 'advanced') {
+                  setUpgradeModal({
+                    open: true,
+                    title: 'Custom Brand Handle Requires Advanced',
+                    desc: 'Promote your personal handle (@you) or startup domain on every exported image with the Advanced Plan ($15/mo).',
+                  });
+                  return;
+                }
+                setWatermarkMode('custom');
+              }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
                 <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '0.88rem' }}>
                   Custom Brand Handle
                 </span>
-                {watermarkMode === 'custom' && <Check size={16} />}
+                {usage.planId !== 'advanced' ? (
+                  <span className="badge-brutal badge-yellow" style={{ fontSize: '0.6rem', padding: '1px 6px' }}>
+                    <Lock size={10} />
+                    <span>ADVANCED</span>
+                  </span>
+                ) : (
+                  watermarkMode === 'custom' && <Check size={16} />
+                )}
               </div>
               <span style={{ fontSize: '0.74rem', opacity: 0.85, lineHeight: 1.4 }}>
                 Promote your personal handle (e.g. @founder) or domain.
               </span>
             </div>
 
-            {/* Option 3: Clean Export (None) */}
+            {/* Option 3: Clean Export (Pro & Advanced) */}
             <div
               className="card-brutal"
               style={{
@@ -707,14 +925,32 @@ export default function SettingsPage() {
                 flexDirection: 'column',
                 gap: '6px',
                 transition: 'all 0.15s ease',
+                opacity: usage.planId === 'free' ? 0.78 : 1,
               }}
-              onClick={() => setWatermarkMode('none')}
+              onClick={() => {
+                if (usage.planId === 'free') {
+                  setUpgradeModal({
+                    open: true,
+                    title: 'Hide Watermark Requires Pro or Advanced',
+                    desc: 'Remove the MakeAPost watermark for clean, unbranded exports by upgrading to Pro ($7/mo) or Advanced ($15/mo).',
+                  });
+                  return;
+                }
+                setWatermarkMode('none');
+              }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
                 <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '0.88rem' }}>
                   Hide Watermark (Clean)
                 </span>
-                {watermarkMode === 'none' && <Check size={16} />}
+                {usage.planId === 'free' ? (
+                  <span className="badge-brutal badge-blue" style={{ fontSize: '0.6rem', padding: '1px 6px' }}>
+                    <Lock size={10} />
+                    <span>PRO+</span>
+                  </span>
+                ) : (
+                  watermarkMode === 'none' && <Check size={16} />
+                )}
               </div>
               <span style={{ fontSize: '0.74rem', opacity: 0.85, lineHeight: 1.4 }}>
                 Export clean, unbranded graphics with zero watermark pills.
@@ -1004,6 +1240,15 @@ export default function SettingsPage() {
 
       {/* Global Footer */}
       <Footer />
+
+      {/* Upgrade Plan Modal */}
+      <UpgradeModal
+        isOpen={upgradeModal.open}
+        onClose={() => setUpgradeModal({ open: false, title: '', desc: '' })}
+        reasonTitle={upgradeModal.title}
+        reasonDesc={upgradeModal.desc}
+        currentPlanId={usage.planId}
+      />
 
       {/* Floating Feedback Toast */}
       {toastMessage && (

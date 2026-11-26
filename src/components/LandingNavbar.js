@@ -11,7 +11,8 @@ import styles from '@/app/page.module.css';
 const NAV_LINKS = [
   { href: '#problem', label: 'The Problem' },
   { href: '#features', label: 'Studio & AI' },
-  { href: '#privacy-architecture', label: 'Privacy Architecture' },
+  { href: '#pricing', label: 'Pricing' },
+  { href: '#privacy-architecture', label: 'Privacy' },
   { href: '#faq', label: 'FAQ' },
 ];
 

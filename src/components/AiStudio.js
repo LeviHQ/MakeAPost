@@ -41,6 +41,11 @@ export default function AiStudio({
   canvasRef,
   image,
   onSwitchToEditor,
+  onPostsUpdated,
+  onCreditsUpdated,
+  onLimitReached,
+  onImageExported,
+  usage,
 }) {
   const [prompt, setPrompt] = useState('');
   const [tone, setTone] = useState('Build in Public');
@@ -130,6 +135,7 @@ export default function AiStudio({
       const canvas = canvasRef.current;
       const postText = (editedPosts[platform] || currentPostText || '').trim();
       await copyImageAndOpenComposer(canvas, platform, postText);
+      onImageExported?.();
       setGuideModalPlatform(null);
     } catch (err) {
       console.error('Error posting to platform:', err);
@@ -230,29 +236,42 @@ export default function AiStudio({
         throw new Error('Please sign in with Google to generate social posts.');
       }
 
+      if (response.status === 429 && data.code === 'AI_LIMIT_REACHED') {
+        onLimitReached?.(data);
+        throw new Error(data.error || 'Daily AI post limit reached for this platform.');
+      }
+
       if (!response.ok || !data.success) {
         throw new Error(data.error || 'Failed to generate social posts from screenshot.');
       }
 
+      if (data.credits) {
+        onCreditsUpdated?.(data.credits);
+      }
+
+      let nextEditedPosts = editedPosts;
       if (singlePlatformId) {
         setPosts((prev) => ({ ...(prev || {}), ...data.posts }));
-        setEditedPosts((prev) => ({
-          ...prev,
+        nextEditedPosts = {
+          ...editedPosts,
           ...(data.posts.x_post !== undefined ? { x: data.posts.x_post } : {}),
           ...(data.posts.linkedin_post !== undefined ? { linkedin: data.posts.linkedin_post } : {}),
           ...(data.posts.reddit_post !== undefined ? { reddit: data.posts.reddit_post } : {}),
-        }));
+        };
+        setEditedPosts(nextEditedPosts);
       } else {
         setPosts(data.posts);
-        setEditedPosts({
+        nextEditedPosts = {
           x: data.posts.x_post || '',
           linkedin: data.posts.linkedin_post || '',
           reddit: data.posts.reddit_post || '',
-        });
+        };
+        setEditedPosts(nextEditedPosts);
         if (!targetPlatforms.includes(activePlatform)) {
           setActivePlatform(targetPlatforms[0]);
         }
       }
+      onPostsUpdated?.(nextEditedPosts);
     } catch (err) {
       console.error('Generation error:', err);
       setErrorMessage(err.message || 'Network error while generating posts.');

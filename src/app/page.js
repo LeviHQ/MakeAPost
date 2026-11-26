@@ -330,7 +330,80 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 5. Dedicated "Privacy-First Architecture" Trust Section (#privacy-architecture) */}
+      {/* 5. Transparent Monthly Pricing (#pricing) */}
+      <section id="pricing" className={styles.sectionBlock}>
+        <div className={styles.sectionHeadingGroup}>
+          <div className="badge-brutal badge-yellow">SIMPLE MONTHLY PRICING</div>
+          <h2 className={styles.sectionTitle}>Start Free. Upgrade When You Scale.</h2>
+          <p className={styles.sectionSubtitle}>
+            No hidden fees. Google Sign-In keeps daily limits fair for everyone—upgrade or cancel in 1 click anytime.
+          </p>
+        </div>
+
+        <div className={styles.pricingGrid}>
+          {/* Free Plan */}
+          <div className={styles.pricingCard}>
+            <div className={styles.compareCardHeader}>
+              <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: '1.15rem' }}>Free</span>
+              <span className="badge-brutal badge-green" style={{ fontSize: '0.68rem' }}>START FREE</span>
+            </div>
+            <div className={styles.pricingPrice}>
+              $0<span className={styles.pricingPeriod}>/month</span>
+            </div>
+            <ul className={styles.privacyList}>
+              <li><Check size={16} className={styles.privacyIconYes} /><span><strong>5</strong> Image Edits / day</span></li>
+              <li><Check size={16} className={styles.privacyIconYes} /><span><strong>2</strong> AI Posts per platform / day (X, LinkedIn, Reddit)</span></li>
+              <li><Check size={16} className={styles.privacyIconYes} /><span>Default <code>made with makeapost.site</code> badge</span></li>
+            </ul>
+            <Link href="/editor" className="btn-brutal" style={{ marginTop: 'auto', width: '100%' }}>
+              <span>Start Free with Google</span>
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+
+          {/* Pro Plan */}
+          <div className={styles.pricingCard}>
+            <div className={styles.compareCardHeader}>
+              <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: '1.15rem' }}>Pro</span>
+              <span className="badge-brutal badge-blue" style={{ fontSize: '0.68rem' }}>POPULAR</span>
+            </div>
+            <div className={styles.pricingPrice}>
+              $7<span className={styles.pricingPeriod}>/month</span>
+            </div>
+            <ul className={styles.privacyList}>
+              <li><Check size={16} className={styles.privacyIconYes} /><span><strong>30</strong> Image Edits / day</span></li>
+              <li><Check size={16} className={styles.privacyIconYes} /><span><strong>15</strong> AI Posts per platform / day (45 total)</span></li>
+              <li><Check size={16} className={styles.privacyIconYes} /><span><strong>Hide Watermark</strong> (Clean Unbranded Exports)</span></li>
+            </ul>
+            <Link href="/settings" className="btn-brutal btn-secondary" style={{ marginTop: 'auto', width: '100%' }}>
+              <span>Get Pro — $7/mo</span>
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+
+          {/* Advanced Plan */}
+          <div className={styles.pricingCardFeatured}>
+            <div className={styles.compareCardHeader}>
+              <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: '1.15rem' }}>Advanced</span>
+              <span className="badge-brutal badge-yellow" style={{ fontSize: '0.68rem' }}>CREATOR BRAND</span>
+            </div>
+            <div className={styles.pricingPrice}>
+              $15<span className={styles.pricingPeriod}>/month</span>
+            </div>
+            <ul className={styles.privacyList}>
+              <li><Check size={16} className={styles.privacyIconYes} /><span><strong>50</strong> Image Edits / day</span></li>
+              <li><Check size={16} className={styles.privacyIconYes} /><span><strong>20</strong> AI Posts per platform / day (60 total)</span></li>
+              <li><Check size={16} className={styles.privacyIconYes} /><span><strong>Custom Brand Handle</strong> (@you / domain) + Clean Export</span></li>
+            </ul>
+            <Link href="/settings" className="btn-brutal btn-primary" style={{ marginTop: 'auto', width: '100%' }}>
+              <span>Get Advanced — $15/mo</span>
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* 6. Dedicated "Privacy-First Architecture" Trust Section (#privacy-architecture) */}
       <section id="privacy-architecture" className={styles.sectionBlock}>
         <div className={styles.sectionHeadingGroup}>
           <div className="badge-brutal badge-yellow">PRIVACY-FIRST ARCHITECTURE</div>

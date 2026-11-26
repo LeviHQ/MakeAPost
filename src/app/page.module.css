@@ -516,6 +516,50 @@
   margin-top: 28px;
 }
 
+/* Pricing Grid (#pricing) */
+.pricingGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .pricingGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pricingCard,
+.pricingCardFeatured {
+  background-color: var(--surface);
+  border: var(--border-thick);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pricingCardFeatured {
+  box-shadow: 6px 6px 0px var(--accent-yellow);
+}
+
+.pricingPrice {
+  font-family: var(--font-heading);
+  font-size: 2.25rem;
+  font-weight: 900;
+  color: var(--ink);
+  line-height: 1;
+}
+
+.pricingPeriod {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--muted);
+  margin-left: 4px;
+}
+
 /* 5. Privacy-First Architecture Section (#privacy-architecture) */
 .privacyGrid {
   display: grid;
