@@ -161,6 +161,8 @@ export default function CanvasEditor({
   panOffset = { x: 0, y: 0 },
   onPanChange,
   isPanMode = false,
+  canvasMaxHeight = 'calc(100vh - 150px)',
+  disableFreeMovement = false,
 }) {
   const fileInputRef = useRef(null);
   const containerRef = useRef(null);
@@ -1050,6 +1052,7 @@ export default function CanvasEditor({
   };
 
   const startPanDrag = useCallback((clientX, clientY) => {
+    if (disableFreeMovement) return;
     panDragRef.current = {
       active: true,
       startClientX: clientX,
@@ -1058,7 +1061,7 @@ export default function CanvasEditor({
       startPanY: panOffsetRef.current.y,
     };
     setIsPanning(true);
-  }, []);
+  }, [disableFreeMovement]);
 
   const commitDragState = useCallback(() => {
     if (!dragState) return false;
@@ -1109,7 +1112,7 @@ export default function CanvasEditor({
     const clicked = findTopAnnotationAt(pt, annotations);
 
     if (activeTool === 'select') {
-      onSelectAnnotation(clicked ? clicked.id : null);
+      onSelectAnnotation?.(clicked ? clicked.id : null);
       if (clicked) {
         setDragState({
           id: clicked.id,
@@ -1516,7 +1519,7 @@ export default function CanvasEditor({
   // Native Non-Passive Event Listeners for 2-Finger Pinch-to-Zoom + 2-Finger Pan & Wheel Pan/Zoom
   useEffect(() => {
     const container = containerRef.current;
-    if (!container) return;
+    if (!container || disableFreeMovement) return;
 
     const handleTouchStartNative = (e) => {
       if (e.touches.length === 2) {
@@ -1617,7 +1620,7 @@ export default function CanvasEditor({
       container.removeEventListener('touchend', handleTouchEndNative);
       container.removeEventListener('wheel', handleWheelNative);
     };
-  }, [onZoomChange, onPanChange]);
+  }, [onZoomChange, onPanChange, disableFreeMovement]);
 
   return (
     <div
@@ -1809,7 +1812,7 @@ export default function CanvasEditor({
             onTouchEnd={handleTouchEnd}
             style={{
               maxWidth: '100%',
-              maxHeight: 'calc(100vh - 150px)',
+              maxHeight: canvasMaxHeight,
               objectFit: 'contain',
               cursor: isPanning
                 ? 'grabbing'
@@ -1820,7 +1823,9 @@ export default function CanvasEditor({
                 : hoveredSelected
                 ? 'move'
                 : activeTool === 'select'
-                ? 'grab'
+                ? disableFreeMovement
+                  ? 'default'
+                  : 'grab'
                 : activeTool === 'text'
                 ? 'text'
                 : activeTool === 'badge'

@@ -7,11 +7,13 @@
 ## 1. Architecture & Components
 - **`src/app/page.js`:** Server component rendering the conversion-focused landing flow (no Pricing section yet; deferred to upcoming billing milestone).
 - **`src/components/LandingNavbar.js`:** Sticky Neobrutalist top navigation bar featuring:
-  - Brand logo + `"100% ZERO SCREENSHOT STORAGE"` pill badge.
+  - Brand logo.
   - Anchor links (`#problem`, `#features`, `#privacy-architecture`, `#faq`).
   - Dynamic auth CTAs (`Sign In with Google` + `Launch Studio Free` when logged out; `Settings` + `Open Studio` when logged in). Theme switching remains centralized inside `/settings`.
   - Mobile overlay hamburger menu (`position: absolute; top: 100%`) with zero layout shift.
-- **`src/components/LandingLivePreview.js`:** Interactive client widget allowing visitors to switch between 4 creator scenarios (`Coding / Build in Public`, `Client Appreciation DM`, `Learning / Notes Win`, `Email Milestone`) and 3 target platforms (`X`, `LinkedIn`, `Reddit`).
+- **`src/components/LandingLivePreview.js`:** Interactive **Mini 30/70 Studio Demo** embedding `<CanvasEditor />` pre-loaded with a MakeAPost Business Growth dashboard SVG (no local file upload) and a left 30% sidebar with `[ Editor | AI Mode ]` toggle:
+  - *Editor Mode:* Live controls for Aspect Ratio, Frame Style, Background swatches, Padding slider, 3D Tilt, and Watermark toggle.
+  - *AI Mode:* Platform tabs (`X`, `LinkedIn`, `Reddit`), Tone chips, and a `"Generate Demo Post"` button returning fixed pre-written posts with zero real API calls.
 - **`src/components/LandingFaq.js`:** 5-question accessible Neobrutalist accordion covering 1-click posting without passwords, zero-storage privacy, minimal stored account data, Google OAuth sign-in, and supported platforms.
 - **`src/components/Footer.js`:** Reusable footer linking `/privacy`, `/terms`, `/refund`, and `/contact`.
 

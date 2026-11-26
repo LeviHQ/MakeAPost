@@ -628,6 +628,333 @@
 }
 
 /* 5. Interactive Live Output Preview (#preview) */
+/* 5. Interactive Mini 30/70 Studio Demo (#features) */
+.miniStudioWindow {
+  background-color: var(--surface);
+  border: var(--border-thick);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card-lg);
+  overflow: hidden;
+}
+
+.miniStudioBar {
+  padding: 10px 16px;
+  background-color: var(--card-bg-subtle);
+  border-bottom: var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.miniStudioBarLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.miniStudioTitle {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.miniStudioBarRight {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.miniStudioGrid {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  min-height: 460px;
+}
+
+@media (max-width: 900px) {
+  .miniStudioGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.miniSidebar {
+  padding: 14px;
+  background-color: var(--surface);
+  border-right: var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (max-width: 900px) {
+  .miniSidebar {
+    border-right: none;
+    border-bottom: var(--border);
+  }
+}
+
+.modeSwitcherPill {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  padding: 4px;
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  background-color: var(--card-bg-subtle);
+}
+
+.modeTab {
+  padding: 7px 10px;
+  border: none;
+  border-radius: var(--radius-xs);
+  background-color: transparent;
+  color: var(--ink);
+  font-family: var(--font-heading);
+  font-size: 0.82rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.modeTabActive {
+  background-color: var(--accent-yellow);
+  color: #09090B;
+  border: 1.5px solid var(--border-color);
+  box-shadow: 2px 2px 0px var(--shadow-color);
+}
+
+.miniControlsStack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.miniControlBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.miniControlLabel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-heading);
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.miniFourGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+}
+
+.miniThreeGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+}
+
+.miniTwoGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.miniChipBtn {
+  padding: 5px 6px;
+  font-size: 0.72rem;
+  background-color: var(--card-bg-subtle);
+  color: var(--ink);
+  box-shadow: none;
+  border: 1.5px solid var(--border-color);
+}
+
+.miniChipActive {
+  background-color: var(--accent-yellow) !important;
+  color: #09090B !important;
+  box-shadow: 1.5px 1.5px 0px var(--shadow-color) !important;
+}
+
+.miniSwatchGrid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+
+.miniSwatch {
+  height: 26px;
+  border-radius: 5px;
+  border: 1.5px solid var(--border-color);
+  cursor: pointer;
+}
+
+.miniSwatchActive {
+  border: 2.5px solid var(--accent-yellow);
+  box-shadow: 2px 2px 0px var(--shadow-color);
+  transform: scale(1.06);
+}
+
+.miniAiOutputBox {
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  background-color: var(--card-bg-subtle);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.miniAiOutputHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.miniAiOutputText {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  line-height: 1.48;
+  color: var(--ink);
+  white-space: pre-wrap;
+  margin: 0;
+  max-height: 185px;
+  overflow-y: auto;
+}
+
+.miniCanvasPane {
+  background-color: var(--bg-primary);
+  background-image: radial-gradient(var(--dot-color) 1.5px, transparent 1.5px);
+  background-size: 20px 20px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  min-height: 440px;
+}
+
+/* Full-Parity 30/70 Interactive Studio Demo */
+.demoMobileTabs {
+  display: none;
+}
+
+.fullDemoGrid {
+  display: grid;
+  grid-template-columns: 350px 1fr;
+  height: 620px;
+}
+
+.fullDemoSidebar {
+  background-color: var(--surface);
+  border-right: var(--border);
+  overflow-y: auto;
+  height: 100%;
+}
+
+.fullDemoCanvasPane {
+  position: relative;
+  background-color: var(--bg-primary);
+  background-image: radial-gradient(var(--dot-color) 1.5px, transparent 1.5px);
+  background-size: 20px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 16px;
+  height: 100%;
+}
+
+.demoZoomBar {
+  position: absolute;
+  bottom: 14px;
+  left: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  background-color: var(--surface);
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: 2px 2px 0px var(--shadow-color);
+  z-index: 20;
+}
+
+.demoZoomBtn,
+.demoZoomReadout {
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  padding: 4px 7px;
+  border-radius: var(--radius-xs);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.demoZoomBtn:hover,
+.demoZoomReadout:hover {
+  background-color: var(--card-bg-subtle);
+}
+
+@media (max-width: 900px) {
+  .demoMobileTabs {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    border-bottom: var(--border);
+    background-color: var(--surface);
+  }
+
+  .demoMobileTabBtn {
+    padding: 10px;
+    border: none;
+    background-color: var(--card-bg-subtle);
+    color: var(--muted);
+    font-family: var(--font-heading);
+    font-size: 0.82rem;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+  }
+
+  .demoMobileTabActive {
+    background-color: var(--accent-yellow);
+    color: #09090B;
+  }
+
+  .fullDemoGrid {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .fullDemoSidebar,
+  .fullDemoCanvasPane {
+    display: none;
+    border-right: none;
+    height: 500px;
+  }
+
+  .demoPaneShow {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
 .livePreviewCard {
   background-color: var(--surface);
   border: var(--border-thick);

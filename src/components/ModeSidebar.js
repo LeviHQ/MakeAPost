@@ -65,6 +65,8 @@ export default function ModeSidebar({
   onVerticalAlignChange,
   watermark = 'made with makeapost.app',
   onWatermarkChange,
+  customAiNode = null,
+  isDemo = false,
 }) {
   const [showBgModal, setShowBgModal] = useState(false);
   const [bgCategory, setBgCategory] = useState('All');
@@ -253,11 +255,13 @@ export default function ModeSidebar({
 
         {/* State B: AI Post Mode Studio (Kept mounted to preserve generated posts across mode toggles) */}
         <div style={{ display: activeMode === 'ai' ? 'block' : 'none' }}>
-          <AiStudio
-            canvasRef={canvasRef}
-            image={image}
-            onSwitchToEditor={() => onModeChange('editor')}
-          />
+          {customAiNode || (
+            <AiStudio
+              canvasRef={canvasRef}
+              image={image}
+              onSwitchToEditor={() => onModeChange('editor')}
+            />
+          )}
         </div>
 
         {/* State C: Active Image Editor Controls (Reordered & Enhanced) */}
@@ -404,20 +408,29 @@ export default function ModeSidebar({
                 )}
               </div>
 
-              {/* Tool Buttons (10 Comprehensive Studio Tools: 2 rows of 5) */}
+              {/* Tool Buttons (5 in Demo, 10 Comprehensive Studio Tools in Full Editor) */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '4px' }}>
-                {[
-                  { id: 'select', label: 'Pointer', renderIcon: () => <MousePointer size={15} /> },
-                  { id: 'box', label: 'Box', renderIcon: () => <Square size={15} /> },
-                  { id: 'circle', label: 'Circle', renderIcon: () => <Circle size={15} /> },
-                  { id: 'arrow', label: 'Arrow', renderIcon: () => <ArrowUpRight size={16} /> },
-                  { id: 'text', label: 'Text', renderIcon: () => <Type size={15} /> },
-                  { id: 'blur', label: 'Blur', renderIcon: () => <EyeOff size={15} /> },
-                  { id: 'zoom', label: 'Zoom 2x', renderIcon: () => <ZoomIn size={15} /> },
-                  { id: 'highlighter', label: 'Highlight', renderIcon: () => <Highlighter size={15} /> },
-                  { id: 'spotlight', label: 'Spotlight', renderIcon: () => <Focus size={15} /> },
-                  { id: 'badge', label: 'Step 123', renderIcon: () => <ListOrdered size={15} /> },
-                ].map((tool) => (
+                {(isDemo
+                  ? [
+                      { id: 'select', label: 'Pointer', renderIcon: () => <MousePointer size={15} /> },
+                      { id: 'box', label: 'Box', renderIcon: () => <Square size={15} /> },
+                      { id: 'arrow', label: 'Arrow', renderIcon: () => <ArrowUpRight size={16} /> },
+                      { id: 'text', label: 'Text', renderIcon: () => <Type size={15} /> },
+                      { id: 'blur', label: 'Blur', renderIcon: () => <EyeOff size={15} /> },
+                    ]
+                  : [
+                      { id: 'select', label: 'Pointer', renderIcon: () => <MousePointer size={15} /> },
+                      { id: 'box', label: 'Box', renderIcon: () => <Square size={15} /> },
+                      { id: 'circle', label: 'Circle', renderIcon: () => <Circle size={15} /> },
+                      { id: 'arrow', label: 'Arrow', renderIcon: () => <ArrowUpRight size={16} /> },
+                      { id: 'text', label: 'Text', renderIcon: () => <Type size={15} /> },
+                      { id: 'blur', label: 'Blur', renderIcon: () => <EyeOff size={15} /> },
+                      { id: 'zoom', label: 'Zoom 2x', renderIcon: () => <ZoomIn size={15} /> },
+                      { id: 'highlighter', label: 'Highlight', renderIcon: () => <Highlighter size={15} /> },
+                      { id: 'spotlight', label: 'Spotlight', renderIcon: () => <Focus size={15} /> },
+                      { id: 'badge', label: 'Step 123', renderIcon: () => <ListOrdered size={15} /> },
+                    ]
+                ).map((tool) => (
                   <button
                     key={tool.id}
                     type="button"
@@ -524,7 +537,7 @@ export default function ModeSidebar({
               )}
             </div>
 
-            {/* 4. Backgrounds (Moved Here with 16 Gradients + 8 Solids + Transparent) */}
+            {/* 4. Backgrounds (5 Normal Presets in Demo, Full 16+8+20 in Studio) */}
             <div className="card-brutal" style={{ padding: '14px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '0.82rem', textTransform: 'uppercase' }}>
@@ -535,26 +548,27 @@ export default function ModeSidebar({
                 </span>
               </div>
 
-              {/* 16 Curated Gradients */}
-              <div>
-                <div style={{ fontSize: '0.72rem', color: 'var(--muted)', fontWeight: 700, marginBottom: '6px' }}>
-                  16 CURATED GRADIENTS
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
-                  {Object.entries(GRADIENT_PRESETS).map(([key, item]) => {
-                    const bgCss = `linear-gradient(135deg, ${item.colors.join(', ')})`;
-                    const isSelected = background === key;
+              {isDemo ? (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' }}>
+                  {[
+                    { id: 'sunset', name: 'Sunset', bg: `linear-gradient(135deg, ${GRADIENT_PRESETS.sunset.colors.join(', ')})` },
+                    { id: 'cyber', name: 'Cyber', bg: `linear-gradient(135deg, ${GRADIENT_PRESETS.cyber.colors.join(', ')})` },
+                    { id: 'aurora', name: 'Aurora', bg: `linear-gradient(135deg, ${GRADIENT_PRESETS.aurora.colors.join(', ')})` },
+                    { id: '#09090B', name: 'Obsidian', bg: '#09090B' },
+                    { id: '#FFFFFF', name: 'Pure White', bg: '#FFFFFF' },
+                  ].map((item) => {
+                    const isSelected = background === item.id;
                     return (
                       <button
-                        key={key}
+                        key={item.id}
                         type="button"
                         title={item.name}
-                        onClick={() => onBackgroundChange(key)}
+                        onClick={() => onBackgroundChange(item.id)}
                         style={{
                           height: '32px',
                           borderRadius: '6px',
                           border: isSelected ? '2.5px solid var(--accent-yellow)' : '1.5px solid var(--border-color)',
-                          background: bgCss,
+                          background: item.bg,
                           boxShadow: isSelected ? '2px 2px 0px var(--shadow-color)' : 'none',
                           transform: isSelected ? 'scale(1.05)' : 'none',
                           cursor: 'pointer',
@@ -563,83 +577,116 @@ export default function ModeSidebar({
                     );
                   })}
                 </div>
-              </div>
+              ) : (
+                <>
+                  {/* 16 Curated Gradients */}
+                  <div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--muted)', fontWeight: 700, marginBottom: '6px' }}>
+                      16 CURATED GRADIENTS
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+                      {Object.entries(GRADIENT_PRESETS).map(([key, item]) => {
+                        const bgCss = `linear-gradient(135deg, ${item.colors.join(', ')})`;
+                        const isSelected = background === key;
+                        return (
+                          <button
+                            key={key}
+                            type="button"
+                            title={item.name}
+                            onClick={() => onBackgroundChange(key)}
+                            style={{
+                              height: '32px',
+                              borderRadius: '6px',
+                              border: isSelected ? '2.5px solid var(--accent-yellow)' : '1.5px solid var(--border-color)',
+                              background: bgCss,
+                              boxShadow: isSelected ? '2px 2px 0px var(--shadow-color)' : 'none',
+                              transform: isSelected ? 'scale(1.05)' : 'none',
+                              cursor: 'pointer',
+                            }}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
 
-              {/* 8 Solids + Transparent */}
-              <div>
-                <div style={{ fontSize: '0.72rem', color: 'var(--muted)', fontWeight: 700, marginBottom: '6px' }}>
-                  8 SOLIDS &amp; TRANSPARENT
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' }}>
-                  {SOLID_PRESETS.map((solid) => {
-                    const isSelected = background === solid.hex;
-                    return (
+                  {/* 8 Solids + Transparent */}
+                  <div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--muted)', fontWeight: 700, marginBottom: '6px' }}>
+                      8 SOLIDS &amp; TRANSPARENT
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' }}>
+                      {SOLID_PRESETS.map((solid) => {
+                        const isSelected = background === solid.hex;
+                        return (
+                          <button
+                            key={solid.hex}
+                            type="button"
+                            title={solid.name}
+                            onClick={() => onBackgroundChange(solid.hex)}
+                            style={{
+                              height: '28px',
+                              borderRadius: '6px',
+                              border: isSelected ? '2.5px solid var(--accent-yellow)' : '1.5px solid var(--border-color)',
+                              backgroundColor: solid.hex,
+                              boxShadow: isSelected ? '2px 2px 0px var(--shadow-color)' : 'none',
+                              transform: isSelected ? 'scale(1.05)' : 'none',
+                              cursor: 'pointer',
+                            }}
+                          />
+                        );
+                      })}
+                      {/* Transparent Button */}
                       <button
-                        key={solid.hex}
                         type="button"
-                        title={solid.name}
-                        onClick={() => onBackgroundChange(solid.hex)}
+                        title="Transparent Checkerboard"
+                        onClick={() => onBackgroundChange('transparent')}
                         style={{
                           height: '28px',
                           borderRadius: '6px',
-                          border: isSelected ? '2.5px solid var(--accent-yellow)' : '1.5px solid var(--border-color)',
-                          backgroundColor: solid.hex,
-                          boxShadow: isSelected ? '2px 2px 0px var(--shadow-color)' : 'none',
-                          transform: isSelected ? 'scale(1.05)' : 'none',
+                          border: background === 'transparent' ? '2.5px solid var(--accent-yellow)' : '1.5px solid var(--border-color)',
+                          backgroundImage:
+                            'linear-gradient(45deg, #CBD5E1 25%, transparent 25%), linear-gradient(-45deg, #CBD5E1 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #CBD5E1 75%), linear-gradient(-45deg, transparent 75%, #CBD5E1 75%)',
+                          backgroundSize: '10px 10px',
+                          backgroundPosition: '0 0, 0 5px, 5px -5px, -5px 0px',
+                          boxShadow: background === 'transparent' ? '2px 2px 0px var(--shadow-color)' : 'none',
                           cursor: 'pointer',
                         }}
                       />
-                    );
-                  })}
-                  {/* Transparent Button */}
+                    </div>
+                  </div>
+
+                  {/* Show More Button -> Opens 20+ Neon, Modern Aura & AI Style Backgrounds Modal */}
                   <button
                     type="button"
-                    title="Transparent Checkerboard"
-                    onClick={() => onBackgroundChange('transparent')}
+                    className="btn-brutal"
+                    onClick={() => setShowBgModal(true)}
                     style={{
-                      height: '28px',
-                      borderRadius: '6px',
-                      border: background === 'transparent' ? '2.5px solid var(--accent-yellow)' : '1.5px solid var(--border-color)',
-                      backgroundImage:
-                        'linear-gradient(45deg, #CBD5E1 25%, transparent 25%), linear-gradient(-45deg, #CBD5E1 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #CBD5E1 75%), linear-gradient(-45deg, transparent 75%, #CBD5E1 75%)',
-                      backgroundSize: '10px 10px',
-                      backgroundPosition: '0 0, 0 5px, 5px -5px, -5px 0px',
-                      boxShadow: background === 'transparent' ? '2px 2px 0px var(--shadow-color)' : 'none',
-                      cursor: 'pointer',
+                      width: '100%',
+                      padding: '8px 12px',
+                      fontSize: '0.78rem',
+                      fontWeight: 800,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      backgroundColor: AURA_PRESETS_MAP[background] ? 'var(--accent-yellow)' : 'var(--card-bg-subtle)',
+                      color: AURA_PRESETS_MAP[background] ? '#09090B' : 'var(--ink)',
+                      border: '2px solid var(--border-color)',
+                      boxShadow: '2px 2px 0px var(--shadow-color)',
                     }}
-                  />
-                </div>
-              </div>
-
-              {/* Show More Button -> Opens 20+ Neon, Modern Aura & AI Style Backgrounds Modal */}
-              <button
-                type="button"
-                className="btn-brutal"
-                onClick={() => setShowBgModal(true)}
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  fontSize: '0.78rem',
-                  fontWeight: 800,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  backgroundColor: AURA_PRESETS_MAP[background] ? 'var(--accent-yellow)' : 'var(--card-bg-subtle)',
-                  color: AURA_PRESETS_MAP[background] ? '#09090B' : 'var(--ink)',
-                  border: '2px solid var(--border-color)',
-                  boxShadow: '2px 2px 0px var(--shadow-color)',
-                }}
-                title="Browse 20 Neon, Aura Mesh & AI-generated studio backgrounds"
-              >
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                  <Sparkles size={14} />
-                  <span>Show More (20 Neon &amp; Aura)</span>
-                </span>
-                <ArrowRight size={14} />
-              </button>
+                    title="Browse 20 Neon, Aura Mesh & AI-generated studio backgrounds"
+                  >
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      <Sparkles size={14} />
+                      <span>Show More (20 Neon &amp; Aura)</span>
+                    </span>
+                    <ArrowRight size={14} />
+                  </button>
+                </>
+              )}
             </div>
 
-            {/* 5. Core & Pro Configurations (Underrated Studio Settings) */}
+            {/* 5. Core & Pro Configurations (Underrated Studio Settings — Hidden in Demo) */}
+            {!isDemo && (
             <div className="card-brutal" style={{ padding: '14px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '0.82rem', textTransform: 'uppercase' }}>
@@ -873,6 +920,7 @@ export default function ModeSidebar({
                 )}
               </div>
             </div>
+            )}
           </div>
         </div>
 

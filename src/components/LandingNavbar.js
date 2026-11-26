@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Logo from '@/components/Logo';
 import { createClient } from '@/lib/supabase/client';
 import { GoogleIcon } from '@/components/NavbarAuth';
-import { Settings, ArrowRight, Menu, X, ShieldCheck } from 'lucide-react';
+import { Settings, ArrowRight, Menu, X } from 'lucide-react';
 import styles from '@/app/page.module.css';
 
 const NAV_LINKS = [
@@ -70,13 +70,9 @@ export default function LandingNavbar() {
   return (
     <header className={styles.navbar}>
       <div className={styles.navInner}>
-        {/* Left: Brand Logo + 100% Zero Screenshot Storage Pill */}
+        {/* Left: Brand Logo */}
         <div className={styles.navBrandGroup}>
           <Logo size={36} />
-          <div className={`badge-brutal badge-green ${styles.navZeroBadge}`}>
-            <ShieldCheck size={12} />
-            <span>100% ZERO SCREENSHOT STORAGE</span>
-          </div>
         </div>
 
         {/* Center: Smooth Anchor Links (Desktop) */}
