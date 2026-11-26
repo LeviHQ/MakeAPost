@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Logo from '@/components/Logo';
-import ThemeToggle from '@/components/ThemeToggle';
 import { createClient } from '@/lib/supabase/client';
 import { GoogleIcon } from '@/components/NavbarAuth';
 import { Settings, ArrowRight, Menu, X, ShieldCheck } from 'lucide-react';
@@ -89,10 +88,8 @@ export default function LandingNavbar() {
           ))}
         </nav>
 
-        {/* Right: Theme Toggle + Dynamic Auth & Studio CTA (Desktop) */}
+        {/* Right: Dynamic Auth & Studio CTA (Desktop) */}
         <div className={styles.desktopNav}>
-          <ThemeToggle />
-
           {!loading && !user && (
             <>
               <button
@@ -164,9 +161,8 @@ export default function LandingNavbar() {
           )}
         </div>
 
-        {/* Mobile Controls: Theme Toggle + Hamburger */}
+        {/* Mobile Controls: Hamburger */}
         <div className={styles.mobileControls}>
-          <ThemeToggle style={{ padding: '7px 10px' }} />
           <button
             type="button"
             onClick={() => setMenuOpen(!menuOpen)}

@@ -9,8 +9,7 @@
 - **`src/components/LandingNavbar.js`:** Sticky Neobrutalist top navigation bar featuring:
   - Brand logo + `"ZERO POST HISTORY"` pill badge.
   - Anchor links (`#problem`, `#features`, `#preview`, `#faq`).
-  - `ThemeToggle` for instant Dark/Light mode switching.
-  - Dynamic auth CTAs (`Sign In` + `Launch Studio Free` when logged out; `Settings` + `Open Studio` when logged in).
+  - Dynamic auth CTAs (`Sign In` + `Launch Studio Free` when logged out; `Settings` + `Open Studio` when logged in). Theme switching remains strictly centralized inside `/settings`.
   - Mobile overlay hamburger menu (`position: absolute; top: 100%`) with zero layout shift.
 - **`src/components/LandingLivePreview.js`:** Interactive client widget allowing visitors to toggle between 3 creator use cases (`Code / Build in Public`, `Client Win`, `Learning Note`) and 3 platform tabs (`X`, `LinkedIn`, `Reddit`) to inspect framed canvas mockups alongside tailored AI post copy.
 - **`src/components/LandingFaq.js`:** 4-question accessible Neobrutalist accordion covering 1-click native intent posting, zero-storage privacy, 3-day free trial details, and supported platforms.
