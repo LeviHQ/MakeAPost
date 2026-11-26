@@ -19,7 +19,10 @@ import styles from '../legal.module.css';
 export const metadata = {
   title: 'Contact & Data Deletion — MakeAPost',
   description:
-    'Need support or want your data completely deleted? Contact founder Adarsh Jayprakash Mishra or follow our step-by-step account and token deletion instructions.',
+    'Need support or want your MakeAPost (https://makeapost.site) account data permanently deleted? Contact founder Adarsh Jayprakash Mishra or follow our account deletion instructions.',
+  alternates: {
+    canonical: '/contact',
+  },
 };
 
 export default function ContactPage() {
@@ -70,7 +73,7 @@ export default function ContactPage() {
 
           <h1 className={styles.title}>Contact & Data Deletion</h1>
           <p className={styles.subtitle}>
-            Have questions, feedback, or want your account and connected OAuth tokens permanently wiped?
+            Have questions, feedback, or want your MakeAPost account and minimal profile preferences permanently deleted?
             Here is everything you need to reach out directly to the team or execute your data rights.
           </p>
         </div>
@@ -131,7 +134,7 @@ export default function ContactPage() {
                 For general support, feedback, and technical assistance:
               </p>
               <a
-                href="mailto:support@makeapost.app"
+                href="mailto:support@makeapost.site"
                 className="btn-brutal"
                 style={{
                   display: 'inline-flex',
@@ -141,7 +144,7 @@ export default function ContactPage() {
                   wordBreak: 'break-all',
                 }}
               >
-                support@makeapost.app
+                support@makeapost.site
               </a>
             </div>
 
@@ -210,11 +213,10 @@ export default function ContactPage() {
                 <span className="badge-brutal badge-yellow" style={{ fontSize: '0.72rem', padding: '2px 8px' }}>
                   STEP 1
                 </span>
-                <strong style={{ fontSize: '0.92rem' }}>Revoke OAuth Access from Social Providers</strong>
+                <strong style={{ fontSize: '0.92rem' }}>Revoke Google OAuth Access</strong>
               </div>
               <p style={{ fontSize: '0.84rem', margin: 0, color: 'var(--text-secondary)' }}>
-                You can immediately terminate MakeAPost&apos;s API access directly from the account security
-                dashboard of the connected platform at any time:
+                MakeAPost uses only Google OAuth (via Supabase Auth) for sign-in. You can revoke MakeAPost&apos;s sign-in access anytime directly from your Google Account:
               </p>
               <ul style={{ margin: '8px 0 0 0', paddingLeft: '20px', fontSize: '0.82rem' }}>
                 <li>
@@ -228,18 +230,6 @@ export default function ContactPage() {
                     Google Account Permissions
                   </a>{' '}
                   &rarr; Select MakeAPost &rarr; Remove Access.
-                </li>
-                <li>
-                  <strong>X (Twitter):</strong> Settings &amp; Privacy &rarr; Security and account access &rarr;
-                  Connected apps &rarr; Revoke MakeAPost.
-                </li>
-                <li>
-                  <strong>LinkedIn:</strong> Settings &amp; Privacy &rarr; Data privacy &rarr; Other applications &rarr;
-                  Permitted services &rarr; Remove.
-                </li>
-                <li>
-                  <strong>Reddit:</strong> User Settings &rarr; Safety &amp; Privacy &rarr; Manage third-party app
-                  authorizations &rarr; Revoke.
                 </li>
               </ul>
             </div>
@@ -283,8 +273,8 @@ export default function ContactPage() {
               <p style={{ fontSize: '0.84rem', margin: 0, color: 'var(--text-secondary)' }}>
                 To permanently wipe your entire user account, profile record, usage counters, and all linked associations
                 from our Supabase PostgreSQL cluster, email{' '}
-                <a href="mailto:support@makeapost.app?subject=Account%20Deletion%20Request" style={{ fontWeight: 600 }}>
-                  support@makeapost.app
+                <a href="mailto:support@makeapost.site?subject=Account%20Deletion%20Request" style={{ fontWeight: 600 }}>
+                  support@makeapost.site
                 </a>{' '}
                 or{' '}
                 <a href="mailto:adarshmishra70931@gmail.com?subject=Account%20Deletion%20Request" style={{ fontWeight: 600 }}>

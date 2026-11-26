@@ -10,8 +10,8 @@ import styles from '@/app/page.module.css';
 
 const NAV_LINKS = [
   { href: '#problem', label: 'The Problem' },
-  { href: '#features', label: 'Features' },
-  { href: '#preview', label: 'Live Preview' },
+  { href: '#features', label: 'Studio & AI' },
+  { href: '#privacy-architecture', label: 'Privacy Architecture' },
   { href: '#faq', label: 'FAQ' },
 ];
 
@@ -70,16 +70,16 @@ export default function LandingNavbar() {
   return (
     <header className={styles.navbar}>
       <div className={styles.navInner}>
-        {/* Left: Brand Logo + Zero Post History Pill */}
+        {/* Left: Brand Logo + 100% Zero Screenshot Storage Pill */}
         <div className={styles.navBrandGroup}>
           <Logo size={36} />
           <div className={`badge-brutal badge-green ${styles.navZeroBadge}`}>
             <ShieldCheck size={12} />
-            <span>ZERO POST HISTORY</span>
+            <span>100% ZERO SCREENSHOT STORAGE</span>
           </div>
         </div>
 
-        {/* Center: Clean Section Links (Desktop) */}
+        {/* Center: Smooth Anchor Links (Desktop) */}
         <nav className={styles.navLinksDesktop} aria-label="Landing sections">
           {NAV_LINKS.map((item) => (
             <a key={item.href} href={item.href} className={styles.navSectionLink}>
@@ -106,7 +106,7 @@ export default function LandingNavbar() {
                 title="Sign in with Google"
               >
                 <GoogleIcon size={15} />
-                <span>Sign In</span>
+                <span>Sign In with Google</span>
               </button>
 
               <Link

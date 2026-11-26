@@ -185,3 +185,5 @@ The 30% control sidebar features two distinct UI states:
 [x] Phase 8: Restored Canvas Watermark & Creator Brand Handle (Default Badge, Custom Handle/URL Promotion, Clean Export/None, PostgreSQL default_watermark Column, Live Badge Preview in /settings & ModeSidebar, docs/04-auth-credits.md, supabase/watermark.sql)
 
 [x] Phase 9: Conversion-Ready Landing Page (`https://makeapost.site`) — Sticky Navbar with Auth/Theme/Anchor Links, Pain-Point Hero + Before/After Split, Old vs. 1-Tab Workflow Comparison, 6-Card Feature Grid, Interactive Use-Case × Platform Live Preview (`LandingLivePreview.js`), 4-Question FAQ Accordion (`LandingFaq.js`), & Canonical Metadata Sync (src/app/page.js, src/app/page.module.css, src/app/layout.js, LandingNavbar.js, docs/01-landing-page.md)
+
+[x] Phase 10: Production Polish & Privacy-First Alignment (`https://makeapost.site`) — Landing Page Upgrade (`100% ZERO SCREENSHOT STORAGE` badge, 4-Scenario Live Preview, Dedicated `#privacy-architecture` Trust Section, 5-Question FAQ) & Full Legal Pages Accuracy Sync (`/privacy`, `/terms`, `/refund`, `/contact` with canonical metadata & zero-social-token disclosures)

@@ -16,7 +16,10 @@ import styles from '../legal.module.css';
 export const metadata = {
   title: 'Refund & Cancellation Policy — MakeAPost',
   description:
-    'Transparent Refund and Cancellation Policy for MakeAPost. Free access, zero hidden lock-ins, and fair refund evaluation.',
+    'Transparent Refund and Cancellation Policy for MakeAPost (https://makeapost.site). Free core access, zero hidden lock-ins, and fair refund evaluation.',
+  alternates: {
+    canonical: '/refund',
+  },
 };
 
 export default function RefundPage() {
@@ -157,7 +160,7 @@ export default function RefundPage() {
               <Link href="/contact" style={{ color: 'var(--ink)', fontWeight: 700, textDecoration: 'underline' }}>
                 Contact Page
               </Link>{' '}
-              or email us directly at <code>billing@makeapost.app</code>. We review and process all eligible refund requests within 24 to 48 business hours.
+              or email us directly at <code>billing@makeapost.site</code>. We review and process all eligible refund requests within 24 to 48 business hours.
             </p>
           </section>
         </article>

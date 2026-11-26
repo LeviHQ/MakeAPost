@@ -16,7 +16,10 @@ import styles from '../legal.module.css';
 export const metadata = {
   title: 'Terms of Service — MakeAPost',
   description:
-    'Terms of Service governing the use of MakeAPost. You own 100% of your screenshots and generated posts.',
+    'Terms of Service governing the use of MakeAPost (https://makeapost.site). You retain 100% ownership of your screenshots and generated posts.',
+  alternates: {
+    canonical: '/terms',
+  },
 };
 
 export default function TermsPage() {
@@ -77,7 +80,7 @@ export default function TermsPage() {
               <span>1. Agreement to Terms</span>
             </h2>
             <p className={styles.sectionText}>
-              By visiting our website or utilizing the MakeAPost studio at <code>makeapost.app</code>, you confirm that you are at least 13 years of age and legally capable of entering into this agreement. If you are using the service on behalf of an organization, you represent that you have authority to bind that entity to these terms.
+              By visiting our website or utilizing the MakeAPost studio at <code>https://makeapost.site</code>, you confirm that you are at least 13 years of age and legally capable of entering into this agreement. MakeAPost is a browser-based screenshot styling and AI social post drafting tool. If you are using the service on behalf of an organization, you represent that you have authority to bind that entity to these terms.
             </p>
           </section>
 
@@ -100,7 +103,7 @@ export default function TermsPage() {
               <li className={styles.listItem}>
                 <span className={styles.listBullet} />
                 <span>
-                  <strong>Generated Copy:</strong> You own 100% of all generated post copy (for X, LinkedIn, and Reddit) produced via the AI studio. You are free to publish, monetize, commercialize, or edit this text without any royalties or licensing fees.
+                  <strong>Generated Copy &amp; Publishing Responsibility:</strong> You own 100% of all generated post copy (for X, LinkedIn, and Reddit) produced via the AI studio without royalties or licensing fees. You are solely responsible for reviewing and editing generated drafts before publishing them on X, LinkedIn, or Reddit.
                 </span>
               </li>
               <li className={styles.listItem}>

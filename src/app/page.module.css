@@ -512,6 +512,65 @@
   gap: 18px;
 }
 
+.capabilitiesWrap {
+  margin-top: 28px;
+}
+
+/* 5. Privacy-First Architecture Section (#privacy-architecture) */
+.privacyGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+@media (max-width: 820px) {
+  .privacyGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.privacyNeverCard,
+.privacyMinimalCard {
+  background-color: var(--surface);
+  border: var(--border-thick);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.privacyList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 0.92rem;
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+.privacyList li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.privacyIconNo {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: #EF4444;
+}
+
+.privacyIconYes {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: #16A34A;
+}
+
 @media (max-width: 960px) {
   .featuresGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));

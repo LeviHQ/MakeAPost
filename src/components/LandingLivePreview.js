@@ -3,17 +3,16 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { XIcon, LinkedInIcon, RedditIcon } from '@/components/SocialIcons';
-import { Code2, MessageSquareQuote, BookOpen, ArrowRight, Sparkles, Check } from 'lucide-react';
+import { Code2, MessageSquareQuote, BookOpen, Mail, ArrowRight, Sparkles, Check } from 'lucide-react';
 import styles from '@/app/page.module.css';
 
 const USE_CASES = [
   {
     id: 'code',
-    label: 'Code / Build in Public',
+    label: 'Coding / Build in Public',
     icon: Code2,
     frameBg: 'linear-gradient(135deg, #4F46E5 0%, #DB2777 100%)',
     windowTitle: 'imageCompress.ts — MakeAPost',
-    mockupTitle: 'Shipped 78% Smaller Vision Payloads',
     mockupType: 'code',
     posts: {
       x: {
@@ -32,11 +31,10 @@ const USE_CASES = [
   },
   {
     id: 'client',
-    label: 'Client Win',
+    label: 'Client Appreciation DM',
     icon: MessageSquareQuote,
     frameBg: 'linear-gradient(135deg, #F59E0B 0%, #EF4444 100%)',
-    windowTitle: 'client-feedback.png',
-    mockupTitle: 'Client Testimonial Milestone',
+    windowTitle: 'client-dm.png',
     mockupType: 'client',
     posts: {
       x: {
@@ -55,11 +53,10 @@ const USE_CASES = [
   },
   {
     id: 'learning',
-    label: 'Learning Note',
+    label: 'Learning / Notes Win',
     icon: BookOpen,
     frameBg: 'linear-gradient(135deg, #10B981 0%, #06B6D4 100%)',
     windowTitle: 'dev-notes.md',
-    mockupTitle: 'Zero-Upload Clipboard PNG Trick',
     mockupType: 'learning',
     posts: {
       x: {
@@ -73,6 +70,28 @@ const USE_CASES = [
       reddit: {
         badge: 'r/javascript • TIL',
         copy: `Title: TIL you can pass a canvas.toBlob() Promise directly into ClipboardItem for instant image copy in modern browsers\n\nTip for anyone building canvas tools: keep the ClipboardItem creation inside the synchronous click handler and pass the blob Promise directly so Safari and Chrome don't block the clipboard gesture.`,
+      },
+    },
+  },
+  {
+    id: 'email',
+    label: 'Email Milestone',
+    icon: Mail,
+    frameBg: 'linear-gradient(135deg, #0EA5E9 0%, #6366F1 100%)',
+    windowTitle: 'stripe-payout.png',
+    mockupType: 'email',
+    posts: {
+      x: {
+        badge: '179 chars • Milestone',
+        copy: `First $1,000 in organic revenue from a weekend side project—zero paid ads.\n\nJust solved one annoying workflow problem, talked to early users daily, and kept shipping.\n\nKeep going.`,
+      },
+      linkedin: {
+        badge: 'Founder Milestone',
+        copy: `Crossed $1,000 in organic revenue this morning.\n\nNo viral launch video. No ad budget. Just solving a real bottleneck creators face every day and listening closely to feedback.\n\nIf you're building something small right now, stay consistent—the first milestone hits faster than you expect.`,
+      },
+      reddit: {
+        badge: 'r/SideProject • Milestone',
+        copy: `Title: Hit our first $1,000 milestone from organic traffic alone — here's what actually moved the needle\n\nWanted to share a quick breakdown for fellow builders: 80% of signups came from sharing framed build-in-public screenshots showing real progress rather than polished marketing copy.`,
       },
     },
   },
@@ -93,9 +112,9 @@ export default function LandingLivePreview() {
 
   return (
     <div className={styles.livePreviewCard}>
-      {/* Top Switcher Bar: Use Cases + Platform Tabs */}
+      {/* Top Switcher Bar: Scenarios + Platform Tabs */}
       <div className={styles.livePreviewToolbar}>
-        <div className={styles.useCaseTabs} role="tablist" aria-label="Select creator use case">
+        <div className={styles.useCaseTabs} role="tablist" aria-label="Select creator scenario">
           {USE_CASES.map((item) => {
             const Icon = item.icon;
             const isActive = item.id === activeCaseId;
@@ -175,7 +194,7 @@ export default function LandingLivePreview() {
                     <div className={styles.liveClientAvatar}>MK</div>
                     <div>
                       <div style={{ fontWeight: 800, fontSize: '0.82rem' }}>Maya Kapoor • Founder</div>
-                      <div style={{ fontSize: '0.7rem', opacity: 0.7 }}>Verified Client Message</div>
+                      <div style={{ fontSize: '0.7rem', opacity: 0.7 }}>Client Appreciation DM</div>
                     </div>
                   </div>
                   <p className={styles.liveClientQuote}>
@@ -197,10 +216,24 @@ export default function LandingLivePreview() {
                   </p>
                 </div>
               )}
+
+              {currentCase.mockupType === 'email' && (
+                <div className={styles.liveNoteMock}>
+                  <div className="badge-brutal badge-green" style={{ fontSize: '0.65rem', padding: '2px 8px' }}>
+                    INBOX MILESTONE
+                  </div>
+                  <div style={{ fontWeight: 800, fontSize: '0.94rem', marginTop: '8px', color: '#FFD93D' }}>
+                    New Payout Notification: $1,000.00
+                  </div>
+                  <p style={{ fontSize: '0.78rem', opacity: 0.85, marginTop: '6px', lineHeight: 1.45 }}>
+                    Organic creator signups reached milestone #1 with zero paid ad spend. Processed automatically.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
-          <div className={styles.liveWatermarkPill}>made with makeapost.app</div>
+          <div className={styles.liveWatermarkPill}>made with makeapost.site</div>
         </div>
 
         {/* Right: Platform-Tuned AI Copy Output */}
@@ -219,7 +252,7 @@ export default function LandingLivePreview() {
 
           <div className={styles.liveCopyFooter}>
             <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontFamily: 'var(--font-mono)' }}>
-              1-click &ldquo;Post&rdquo; copies PNG + opens composer
+              1-click &ldquo;Share&rdquo; copies PNG + opens composer
             </span>
             <Link
               href="/editor"

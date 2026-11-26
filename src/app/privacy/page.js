@@ -16,7 +16,10 @@ import styles from '../legal.module.css';
 export const metadata = {
   title: 'Privacy Policy — MakeAPost',
   description:
-    'Our privacy policy explains how MakeAPost handles your data with a strict zero-storage architecture, transient AI processing, and secure OAuth tokens.',
+    'MakeAPost operates on a Zero-Content-Storage architecture: screenshots and generated posts are never saved, while only minimal Google OAuth account preferences are stored via Supabase.',
+  alternates: {
+    canonical: '/privacy',
+  },
 };
 
 export default function PrivacyPage() {
@@ -148,13 +151,13 @@ export default function PrivacyPage() {
               <li className={styles.listItem}>
                 <span className={styles.listBullet} />
                 <span>
-                  <strong>Profile Information:</strong> Your Google email address, display name, and avatar picture URL.
+                  <strong>Profile Information:</strong> Your Google email address, display name, and avatar picture URL (via Google OAuth powered by Supabase Auth).
                 </span>
               </li>
               <li className={styles.listItem}>
                 <span className={styles.listBullet} />
                 <span>
-                  <strong>Studio Preferences:</strong> Your selected UI theme preference (<code>light</code> or <code>dark</code> mode).
+                  <strong>Studio Preferences &amp; Operational Metadata:</strong> Your UI theme preference (<code>light</code> or <code>dark</code>), default watermark preference, daily generation counter, and subscription/billing status metadata when applicable (processed via third-party payment processors; MakeAPost never stores raw card numbers).
                 </span>
               </li>
               {/* [FUTURE FEATURE - COMMENTED OUT FOR BUDGET]: Auto-Learned Project Context disclosure
@@ -213,7 +216,7 @@ export default function PrivacyPage() {
               <Link href="/contact" style={{ color: 'var(--ink)', fontWeight: 700, textDecoration: 'underline' }}>
                 Contact &amp; Data Deletion page
               </Link>{' '}
-              or emailing us at <code>privacy@makeapost.app</code>. Upon receiving your verified request, all records are permanently deleted within 48 business hours.
+              or emailing us at <code>privacy@makeapost.site</code>. Upon receiving your verified request, all records are permanently deleted within 48 business hours.
             </p>
           </section>
         </article>

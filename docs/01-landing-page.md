@@ -1,31 +1,31 @@
-# MakeAPost — Conversion-Ready Landing Page (`src/app/page.js`)
+# MakeAPost — Privacy-First Conversion Landing Page (`src/app/page.js`)
 
-> Documentation for the Neobrutalist conversion landing page (`https://makeapost.site`), interactive live output preview, Before/After visual split, comparison cards, and FAQ accordion.
+> Documentation for the Neobrutalist landing page (`https://makeapost.site`), interactive scenario × platform preview, Before/After visual split, Privacy-First Architecture section, and 5-question FAQ accordion.
 
 ---
 
 ## 1. Architecture & Components
-- **`src/app/page.js`:** Server component rendering the conversion-focused landing flow (without a pricing section, which will be added later alongside billing).
+- **`src/app/page.js`:** Server component rendering the conversion-focused landing flow (no Pricing section yet; deferred to upcoming billing milestone).
 - **`src/components/LandingNavbar.js`:** Sticky Neobrutalist top navigation bar featuring:
-  - Brand logo + `"ZERO POST HISTORY"` pill badge.
-  - Anchor links (`#problem`, `#features`, `#preview`, `#faq`).
-  - Dynamic auth CTAs (`Sign In` + `Launch Studio Free` when logged out; `Settings` + `Open Studio` when logged in). Theme switching remains strictly centralized inside `/settings`.
+  - Brand logo + `"100% ZERO SCREENSHOT STORAGE"` pill badge.
+  - Anchor links (`#problem`, `#features`, `#privacy-architecture`, `#faq`).
+  - Dynamic auth CTAs (`Sign In with Google` + `Launch Studio Free` when logged out; `Settings` + `Open Studio` when logged in). Theme switching remains centralized inside `/settings`.
   - Mobile overlay hamburger menu (`position: absolute; top: 100%`) with zero layout shift.
-- **`src/components/LandingLivePreview.js`:** Interactive client widget allowing visitors to toggle between 3 creator use cases (`Code / Build in Public`, `Client Win`, `Learning Note`) and 3 platform tabs (`X`, `LinkedIn`, `Reddit`) to inspect framed canvas mockups alongside tailored AI post copy.
-- **`src/components/LandingFaq.js`:** 4-question accessible Neobrutalist accordion covering 1-click native intent posting, zero-storage privacy, 3-day free trial details, and supported platforms.
+- **`src/components/LandingLivePreview.js`:** Interactive client widget allowing visitors to switch between 4 creator scenarios (`Coding / Build in Public`, `Client Appreciation DM`, `Learning / Notes Win`, `Email Milestone`) and 3 target platforms (`X`, `LinkedIn`, `Reddit`).
+- **`src/components/LandingFaq.js`:** 5-question accessible Neobrutalist accordion covering 1-click posting without passwords, zero-storage privacy, minimal stored account data, Google OAuth sign-in, and supported platforms.
 - **`src/components/Footer.js`:** Reusable footer linking `/privacy`, `/terms`, `/refund`, and `/contact`.
 
 ---
 
 ## 2. Page Sections
-1. **Hero Section & Before/After Split (`#before-after`):** Addresses the raw-screenshot pain point with `"Try MakeAPost Free — No Card Needed"` CTA and a side-by-side Before vs. After visual comparison.
-2. **Why MakeAPost? (`#problem`):** Compares *The Old 4-Tab Headache* (~15 mins/post) against *The MakeAPost 1-Tab Flow* (~10 seconds).
-3. **All-in-One Feature Grid (`#features`):** 6 Neobrutalist cards covering Instant Canvas Framing, Context-Aware AI Copywriter, 1-Click Clipboard PNG + Native Intent, 100% Zero Post History Stored, Built for Every Creator Moment, and 3-Day Free Trial.
-4. **Interactive Live Output Preview (`#preview`):** Real-time Use Case × Platform switcher.
+1. **Hero Section & Before/After Split (`#before-after`):** Addresses raw-screenshot friction with `"Open Studio Free — No Card Needed"` CTA and a side-by-side Before vs. After visual comparison.
+2. **Why We Built MakeAPost (`#problem`):** Contrasts *Before MakeAPost (4-Tab Friction)* against *With MakeAPost (1-Tab Flow)*.
+3. **Interactive Studio & Multi-Platform Preview + 6 Core Capabilities (`#features`):** Scenario × Platform switcher plus 6 Neobrutalist capability cards.
+4. **Privacy-First Architecture (`#privacy-architecture`):** Transparent side-by-side breakdown of *What We NEVER Store* vs. *What Minimal Data We Store*.
 5. **FAQ Accordion (`#faq`) & Final CTA:** Answers key trust/workflow questions before linking into `/editor`.
 
 ---
 
 ## 3. Domain & SEO Metadata (`src/app/layout.js`)
 - `getBaseUrl()` resolves `process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || ... || 'https://makeapost.site'`.
-- `alternates: { canonical: '/' }` is configured in `metadata`.
+- `alternates: { canonical: '/' }` configured across `layout.js` and legal routes (`/privacy`, `/terms`, `/refund`, `/contact`).

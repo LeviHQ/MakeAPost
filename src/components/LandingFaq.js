@@ -6,20 +6,24 @@ import styles from '@/app/page.module.css';
 
 const FAQ_ITEMS = [
   {
-    q: 'How does 1-click posting work without connecting my X or LinkedIn password?',
-    a: 'MakeAPost never asks for your social passwords or OAuth tokens. When you click "Post", MakeAPost automatically copies your framed high-res PNG to your clipboard and opens the native X, LinkedIn, or Reddit composer with your AI-generated text pre-filled—so you keep 100% edit control with zero API ban risk.',
+    q: 'How does 1-click posting work without connecting my X, LinkedIn, or Reddit account?',
+    a: 'MakeAPost never asks for your social passwords or OAuth tokens. When you click "Share", MakeAPost automatically copies your framed high-res PNG to your clipboard and opens the native X, LinkedIn, or Reddit composer with your AI-generated text pre-filled—so you keep 100% manual edit freedom with zero third-party API ban risk.',
   },
   {
-    q: 'Are my screenshots or client messages saved on your servers?',
-    a: 'Never. All canvas framing, blurring, and annotations run 100% locally in your browser. When you generate AI copy, only a compressed temporary image is processed statelessly and discarded immediately—zero screenshots, zero drafts, and zero post history are ever stored.',
+    q: 'Do you store my private client messages, emails, or screenshots?',
+    a: 'Never. All canvas framing, blurring, and annotations run 100% locally in your browser. When you generate AI copy, only a compressed temporary image is sent transiently in-memory for processing and immediately discarded—zero uploaded screenshots, zero edited images, and zero post drafts are ever stored.',
   },
   {
-    q: 'What can I create during the 3-day free trial?',
-    a: 'You get full access to the Neobrutalist Canvas Editor (unlimited frames, annotations, and HD PNG exports) plus 5 free AI post generations per day across X, LinkedIn, and Reddit—no credit card required to start.',
+    q: 'What exact data does MakeAPost save in my account?',
+    a: 'Only minimal operational account data stored securely via Supabase: your Google OAuth email, display name/avatar, UI theme preference (Light/Dark), default watermark preference, daily usage counter, and future billing status metadata when applicable.',
   },
   {
-    q: 'Which platforms are supported?',
-    a: 'X (Twitter), LinkedIn, and Reddit are all live right now. Every generation creates platform-tuned hooks and formatting tailored to each network, ready to copy or share in one click.',
+    q: 'How do I sign in?',
+    a: 'Sign in with one click using Google OAuth (powered by Supabase Auth). The browser-based image editor works instantly without an account, and signing in with Google unlocks AI post generation and cross-device preference sync.',
+  },
+  {
+    q: 'Which social platforms are supported?',
+    a: 'X (Twitter), LinkedIn, and Reddit are all live right now. Every generation crafts native hooks and platform-appropriate formatting for each network simultaneously.',
   },
 ];
 
