@@ -17,8 +17,9 @@ export default function UpgradeModal({
 
   if (!isOpen) return null;
 
-  const showPro = plansToShow.includes('pro');
-  const showAdvanced = plansToShow.includes('advanced');
+  const showPro = currentPlanId === 'free' && plansToShow.includes('pro');
+  const showAdvanced = currentPlanId !== 'advanced' && plansToShow.includes('advanced');
+  const visiblePlanCount = (showPro ? 1 : 0) + (showAdvanced ? 1 : 0);
 
   const handleCheckout = async (planId) => {
     setLoadingPlan(planId);
@@ -60,7 +61,7 @@ export default function UpgradeModal({
       <div
         className="card-brutal"
         style={{
-          maxWidth: plansToShow.length === 1 ? '460px' : '720px',
+          maxWidth: visiblePlanCount <= 1 ? '460px' : '720px',
           width: '100%',
           maxHeight: '90vh',
           overflowY: 'auto',
