@@ -685,11 +685,11 @@ export default function ModeSidebar({
                       border: '2px solid var(--border-color)',
                       boxShadow: '2px 2px 0px var(--shadow-color)',
                     }}
-                    title="Browse 20 Neon, Aura Mesh & AI-generated studio backgrounds"
+                    title={`Browse ${AURA_BACKGROUND_PRESETS.length} Neon, Aura Mesh & Galaxy Cosmic studio backgrounds`}
                   >
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                       <Sparkles size={14} />
-                      <span>Show More (20 Neon &amp; Aura)</span>
+                      <span>Show More ({AURA_BACKGROUND_PRESETS.length} Studio &amp; Cosmic)</span>
                     </span>
                     <ArrowRight size={14} />
                   </button>
@@ -1057,7 +1057,7 @@ export default function ModeSidebar({
                 borderBottom: '2px solid var(--border-color)',
               }}
             >
-              {['All', 'Neon Dark', 'AI Studio', 'Mesh Aura', 'Pastel & Light'].map((cat) => {
+              {['All', 'Neon Dark', 'AI Studio', 'Mesh Aura', 'Pastel & Light', 'Galaxy & Cosmic'].map((cat) => {
                 const isActive = bgCategory === cat;
                 return (
                   <button

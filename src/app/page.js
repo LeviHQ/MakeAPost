@@ -2,6 +2,7 @@ import Link from 'next/link';
 import LandingNavbar from '@/components/LandingNavbar';
 import LandingLivePreview from '@/components/LandingLivePreview';
 import LandingPricingSection from '@/components/LandingPricingSection';
+import LandingHeroCta from '@/components/LandingHeroCta';
 import LandingFaq from '@/components/LandingFaq';
 import Footer from '@/components/Footer';
 import { XIcon, LinkedInIcon } from '@/components/SocialIcons';
@@ -100,13 +101,7 @@ export default function LandingPage() {
 
         <div className={styles.heroCtaGroup}>
           <div className={styles.heroCtaButtons}>
-            <Link
-              href="/editor"
-              className={`btn-brutal btn-primary ${styles.heroBtn}`}
-            >
-              <Rocket size={17} />
-              <span>Open Studio Free — No Card Needed</span>
-            </Link>
+            <LandingHeroCta />
 
             <a
               href="#before-after"

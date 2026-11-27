@@ -101,7 +101,7 @@ const PLATFORMS = [
 export default function LandingLivePreview() {
   const canvasRef = useRef(null);
   const [demoImage, setDemoImage] = useState(null);
-  const [mobileTab, setMobileTab] = useState('canvas'); // 'canvas' | 'controls'
+  const [mobileTab, setMobileTab] = useState('controls'); // 'canvas' | 'controls'
 
   // Full Studio State (mirrors src/app/editor/page.js)
   const [activeMode, setActiveMode] = useState('editor');

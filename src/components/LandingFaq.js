@@ -6,24 +6,32 @@ import styles from '@/app/page.module.css';
 
 const FAQ_ITEMS = [
   {
+    q: 'Do you store my private screenshots, client messages, or generated posts?',
+    a: 'Never. All canvas framing, blurring, and annotations run 100% locally in your browser. When you generate AI copy, only a compressed temporary image is processed transiently in-memory and immediately discarded—zero screenshots, zero edited graphics, and zero post drafts are ever stored on our servers.',
+  },
+  {
+    q: 'How does the Free Plan work, and what are the daily limits on Pro and Advanced?',
+    a: 'Every user is automatically enrolled in our monthly auto-renewing Free Plan upon Google Sign-In—no credit card or setup needed. Free includes 3 image edits/day and 1 AI post per platform/day (X, LinkedIn, Reddit). Pro ($7/mo) unlocks 30 image edits/day and 10 AI posts per platform/day; Advanced ($15/mo) unlocks 50 image edits/day and 15 AI posts per platform/day.',
+  },
+  {
+    q: 'Can I test the Studio and AI Post Mode without spending my daily credits?',
+    a: 'Yes! Load either the built-in Code Snippet Sample or SaaS Analytics Sample in the Studio. Sample images use 0 image edit credits and 0 AI post credits—you can test framing, annotations, and AI post previews as many times as you like for free.',
+  },
+  {
     q: 'How does 1-click posting work without connecting my X, LinkedIn, or Reddit account?',
-    a: 'MakeAPost never asks for your social passwords or OAuth tokens. When you click "Share", MakeAPost automatically copies your framed high-res PNG to your clipboard and opens the native X, LinkedIn, or Reddit composer with your AI-generated text pre-filled—so you keep 100% manual edit freedom with zero third-party API ban risk.',
+    a: 'MakeAPost never asks for social media passwords or OAuth tokens. When you click "Post", your framed high-res PNG is automatically copied to your clipboard and the native X, LinkedIn, or Reddit composer opens with your generated text pre-filled—giving you full manual control with zero third-party API ban risk.',
   },
   {
-    q: 'Do you store my private client messages, emails, or screenshots?',
-    a: 'Never. All canvas framing, blurring, and annotations run 100% locally in your browser. When you generate AI copy, only a compressed temporary image is sent transiently in-memory for processing and immediately discarded—zero uploaded screenshots, zero edited images, and zero post drafts are ever stored.',
+    q: 'Can I hide the MakeAPost watermark or use my own brand handle?',
+    a: 'Yes. Free accounts export with the subtle "made with makeapost.site" badge. Pro ($7/mo) unlocks Hide Watermark for clean, unbranded exports. Advanced ($15/mo) unlocks Custom Brand Handle so you can stamp your own @handle or website URL on every exported graphic.',
   },
   {
-    q: 'What exact data does MakeAPost save in my account?',
-    a: 'Only minimal operational account data stored securely via Supabase: your Google OAuth email, display name/avatar, UI theme preference (Light/Dark), default watermark preference, daily usage counter, and future billing status metadata when applicable.',
+    q: 'How can I hide API keys, emails, or sensitive metrics in my screenshots?',
+    a: 'Use the built-in Blur/Redact tool right inside the 70% Canvas Editor before exporting or generating AI posts. You also get 10+ annotation tools including arrows, boxes, circles, spotlight focus, 2x zoom loupe, step badges, and custom text.',
   },
   {
-    q: 'How do I sign in?',
-    a: 'Sign in with one click using Google OAuth (powered by Supabase Auth). The browser-based image editor works instantly without an account, and signing in with Google unlocks AI post generation and cross-device preference sync.',
-  },
-  {
-    q: 'Which social platforms are supported?',
-    a: 'X (Twitter), LinkedIn, and Reddit are all live right now. Every generation crafts native hooks and platform-appropriate formatting for each network simultaneously.',
+    q: 'How do billing, upgrades, and refunds work?',
+    a: 'Subscriptions are billed monthly via Dodo Payments with instant activation. You can upgrade from Free to Pro or Advanced anytime from Account Settings or the Pricing section, and all paid plans are backed by our transparent 14-day refund policy for billing errors or service issues.',
   },
 ];
 

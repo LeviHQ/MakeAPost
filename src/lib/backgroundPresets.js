@@ -1,5 +1,5 @@
 /**
- * MakeAPost — 20 Creative Neon, Modern Aura, Mesh & AI-Generated Style Backgrounds
+ * MakeAPost — 30 Creative Neon, Modern Aura, Mesh, AI-Style & Galaxy Cosmic Backgrounds
  * Vector-rendered on HTML5 Canvas for infinite HD resolution and rendered in CSS
  * for crisp, zero-lag modal swatches.
  */
@@ -254,6 +254,137 @@ export const AURA_BACKGROUND_PRESETS = [
     ],
     pattern: 'none',
   },
+  // 10 Galaxy & Cosmic Backgrounds
+  {
+    id: 'aura_andromeda_nebula',
+    name: 'Andromeda',
+    category: 'Galaxy & Cosmic',
+    baseGradient: ['#050114', '#160738', '#090D28'],
+    orbs: [
+      { x: 0.25, y: 0.30, r: 0.72, color: 'rgba(168, 85, 247, 0.58)' },
+      { x: 0.78, y: 0.72, r: 0.68, color: 'rgba(236, 72, 153, 0.48)' },
+      { x: 0.65, y: 0.18, r: 0.52, color: 'rgba(56, 189, 248, 0.42)' },
+    ],
+    pattern: 'stars',
+    patternColor: 'rgba(255, 255, 255, 0.85)',
+  },
+  {
+    id: 'aura_supernova_core',
+    name: 'Supernova',
+    category: 'Galaxy & Cosmic',
+    baseGradient: ['#07030A', '#1B0718', '#090B1A'],
+    orbs: [
+      { x: 0.50, y: 0.48, r: 0.62, color: 'rgba(249, 115, 22, 0.64)' },
+      { x: 0.22, y: 0.22, r: 0.58, color: 'rgba(244, 63, 94, 0.48)' },
+      { x: 0.82, y: 0.78, r: 0.60, color: 'rgba(56, 189, 248, 0.44)' },
+    ],
+    pattern: 'stars',
+    patternColor: 'rgba(254, 243, 199, 0.85)',
+  },
+  {
+    id: 'aura_milky_way',
+    name: 'Milky Way',
+    category: 'Galaxy & Cosmic',
+    baseGradient: ['#020617', '#0B1120', '#1E1B4B'],
+    orbs: [
+      { x: 0.20, y: 0.80, r: 0.75, color: 'rgba(99, 102, 241, 0.52)' },
+      { x: 0.55, y: 0.45, r: 0.65, color: 'rgba(147, 197, 253, 0.36)' },
+      { x: 0.85, y: 0.15, r: 0.60, color: 'rgba(192, 132, 252, 0.42)' },
+    ],
+    pattern: 'stars',
+    patternColor: 'rgba(224, 242, 254, 0.90)',
+  },
+  {
+    id: 'aura_event_horizon',
+    name: 'Event Horizon',
+    category: 'Galaxy & Cosmic',
+    baseGradient: ['#030305', '#0D0B14', '#181007'],
+    orbs: [
+      { x: 0.50, y: 0.50, r: 0.58, color: 'rgba(251, 191, 36, 0.45)' },
+      { x: 0.20, y: 0.25, r: 0.55, color: 'rgba(234, 88, 12, 0.40)' },
+      { x: 0.82, y: 0.80, r: 0.55, color: 'rgba(139, 92, 246, 0.35)' },
+    ],
+    pattern: 'stars',
+    patternColor: 'rgba(253, 230, 138, 0.85)',
+  },
+  {
+    id: 'aura_orion_veil',
+    name: 'Orion Veil',
+    category: 'Galaxy & Cosmic',
+    baseGradient: ['#020B18', '#042F2E', '#0F172A'],
+    orbs: [
+      { x: 0.18, y: 0.25, r: 0.70, color: 'rgba(20, 184, 166, 0.56)' },
+      { x: 0.78, y: 0.70, r: 0.68, color: 'rgba(59, 130, 246, 0.52)' },
+      { x: 0.52, y: 0.22, r: 0.50, color: 'rgba(167, 243, 208, 0.32)' },
+    ],
+    pattern: 'stars',
+    patternColor: 'rgba(204, 251, 241, 0.88)',
+  },
+  {
+    id: 'aura_cosmic_violet',
+    name: 'Cosmic Violet',
+    category: 'Galaxy & Cosmic',
+    baseGradient: ['#0B021D', '#1E0836', '#09090B'],
+    orbs: [
+      { x: 0.22, y: 0.72, r: 0.70, color: 'rgba(139, 92, 246, 0.62)' },
+      { x: 0.80, y: 0.24, r: 0.62, color: 'rgba(217, 70, 239, 0.52)' },
+      { x: 0.50, y: 0.50, r: 0.50, color: 'rgba(99, 102, 241, 0.38)' },
+    ],
+    pattern: 'stars',
+    patternColor: 'rgba(245, 208, 254, 0.88)',
+  },
+  {
+    id: 'aura_stardust_rose',
+    name: 'Stardust Rose',
+    category: 'Galaxy & Cosmic',
+    baseGradient: ['#130414', '#260824', '#0C0A1D'],
+    orbs: [
+      { x: 0.24, y: 0.24, r: 0.68, color: 'rgba(244, 114, 182, 0.56)' },
+      { x: 0.80, y: 0.78, r: 0.65, color: 'rgba(168, 85, 247, 0.50)' },
+      { x: 0.72, y: 0.20, r: 0.48, color: 'rgba(251, 191, 36, 0.34)' },
+    ],
+    pattern: 'stars',
+    patternColor: 'rgba(252, 231, 243, 0.88)',
+  },
+  {
+    id: 'aura_pulsar_cyan',
+    name: 'Pulsar Cyan',
+    category: 'Galaxy & Cosmic',
+    baseGradient: ['#020817', '#08203E', '#020617'],
+    orbs: [
+      { x: 0.50, y: 0.35, r: 0.66, color: 'rgba(6, 182, 212, 0.62)' },
+      { x: 0.18, y: 0.80, r: 0.60, color: 'rgba(37, 99, 235, 0.55)' },
+      { x: 0.85, y: 0.75, r: 0.55, color: 'rgba(125, 211, 252, 0.42)' },
+    ],
+    pattern: 'stars',
+    patternColor: 'rgba(224, 242, 254, 0.92)',
+  },
+  {
+    id: 'aura_crimson_eclipse',
+    name: 'Crimson Eclipse',
+    category: 'Galaxy & Cosmic',
+    baseGradient: ['#090205', '#1F0610', '#09090B'],
+    orbs: [
+      { x: 0.76, y: 0.28, r: 0.68, color: 'rgba(225, 29, 72, 0.62)' },
+      { x: 0.22, y: 0.78, r: 0.65, color: 'rgba(249, 115, 22, 0.48)' },
+      { x: 0.48, y: 0.48, r: 0.45, color: 'rgba(168, 85, 247, 0.34)' },
+    ],
+    pattern: 'stars',
+    patternColor: 'rgba(254, 226, 226, 0.85)',
+  },
+  {
+    id: 'aura_celestial_mint',
+    name: 'Celestial Mint',
+    category: 'Galaxy & Cosmic',
+    baseGradient: ['#031214', '#072729', '#090D1A'],
+    orbs: [
+      { x: 0.22, y: 0.28, r: 0.68, color: 'rgba(52, 211, 153, 0.56)' },
+      { x: 0.82, y: 0.76, r: 0.66, color: 'rgba(34, 211, 238, 0.50)' },
+      { x: 0.50, y: 0.85, r: 0.52, color: 'rgba(129, 140, 248, 0.38)' },
+    ],
+    pattern: 'stars',
+    patternColor: 'rgba(209, 250, 229, 0.88)',
+  },
 ];
 
 export const AURA_PRESETS_MAP = Object.fromEntries(
@@ -272,10 +403,20 @@ export function getAuraCssStyle(preset) {
     return `radial-gradient(circle at ${px}% ${py}%, ${orb.color} 0%, transparent ${pr}%)`;
   });
   const baseLayer = `linear-gradient(135deg, ${preset.baseGradient.join(', ')})`;
+  const starLayers =
+    preset.pattern === 'stars'
+      ? [
+          'radial-gradient(1px 1px at 14% 22%, rgba(255,255,255,0.9) 100%, transparent)',
+          'radial-gradient(1.5px 1.5px at 78% 18%, rgba(255,255,255,0.8) 100%, transparent)',
+          'radial-gradient(1px 1px at 42% 68%, rgba(255,255,255,0.75) 100%, transparent)',
+          'radial-gradient(1.5px 1.5px at 86% 74%, rgba(255,255,255,0.85) 100%, transparent)',
+          'radial-gradient(1px 1px at 26% 84%, rgba(255,255,255,0.7) 100%, transparent)',
+        ]
+      : [];
 
   return {
     backgroundColor: preset.baseGradient[0],
-    backgroundImage: [...radialLayers, baseLayer].join(', '),
+    backgroundImage: [...starLayers, ...radialLayers, baseLayer].join(', '),
   };
 }
 
@@ -347,6 +488,25 @@ export function drawAuraBackground(ctx, width, height, preset) {
     beamGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
     ctx.fillStyle = beamGrad;
     ctx.fillRect(0, 0, width, height);
+    ctx.restore();
+  } else if (preset.pattern === 'stars') {
+    ctx.save();
+    const starColor = preset.patternColor || 'rgba(255, 255, 255, 0.85)';
+    const starCount = 95;
+    for (let i = 1; i <= starCount; i++) {
+      // Deterministic pseudo-random coordinates & sizes for crisp, consistent HD exports
+      const rx = ((Math.sin(i * 12.9898 + 78.233) * 43758.5453) % 1 + 1) % 1;
+      const ry = ((Math.sin(i * 93.989 + 19.133) * 24634.6345) % 1 + 1) % 1;
+      const rs = ((Math.sin(i * 41.231) * 15731.743) % 1 + 1) % 1;
+      const x = rx * width;
+      const y = ry * height;
+      const radius = Math.max(0.8, (0.6 + rs * 1.4) * (maxDim / 1000));
+      ctx.globalAlpha = 0.25 + rs * 0.7;
+      ctx.fillStyle = starColor;
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
     ctx.restore();
   }
 }
