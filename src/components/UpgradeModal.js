@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Sparkles, Check, X, Loader2, ShieldCheck, ArrowRight } from 'lucide-react';
 import { PLANS } from '@/lib/billing';
 
@@ -14,6 +14,36 @@ export default function UpgradeModal({
 }) {
   const [loadingPlan, setLoadingPlan] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
+  const hasRedirectedRef = useRef(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setLoadingPlan(null);
+      setErrorMsg(null);
+      hasRedirectedRef.current = false;
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    const resetCheckoutState = () => {
+      hasRedirectedRef.current = false;
+      setLoadingPlan(null);
+      setErrorMsg(null);
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && hasRedirectedRef.current) {
+        resetCheckoutState();
+      }
+    };
+    window.addEventListener('pageshow', resetCheckoutState);
+    window.addEventListener('pagehide', resetCheckoutState);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      window.removeEventListener('pageshow', resetCheckoutState);
+      window.removeEventListener('pagehide', resetCheckoutState);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
 
   if (!isOpen) return null;
 
@@ -34,6 +64,7 @@ export default function UpgradeModal({
       if (!res.ok || !data?.checkoutUrl) {
         throw new Error(data?.error || 'Could not start checkout.');
       }
+      hasRedirectedRef.current = true;
       window.location.href = data.checkoutUrl;
     } catch (err) {
       setErrorMsg(err?.message || 'Unable to start Dodo checkout.');

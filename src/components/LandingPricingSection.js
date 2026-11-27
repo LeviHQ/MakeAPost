@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { GoogleIcon } from '@/components/NavbarAuth';
@@ -14,6 +14,7 @@ export default function LandingPricingSection() {
   const [cycleDates, setCycleDates] = useState({ start: null, end: null });
   const [checkoutLoading, setCheckoutLoading] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
+  const hasRedirectedRef = useRef(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -57,9 +58,33 @@ export default function LandingPricingSection() {
       subscription = data?.subscription || null;
     } catch {}
 
+    const resetCheckoutState = (event) => {
+      hasRedirectedRef.current = false;
+      setCheckoutLoading(null);
+      setErrorMsg(null);
+      if (event?.persisted) {
+        loadUserPlan();
+      }
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && hasRedirectedRef.current) {
+        hasRedirectedRef.current = false;
+        setCheckoutLoading(null);
+        setErrorMsg(null);
+        loadUserPlan();
+      }
+    };
+
+    window.addEventListener('pageshow', resetCheckoutState);
+    window.addEventListener('pagehide', resetCheckoutState);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     return () => {
       isMounted = false;
       subscription?.unsubscribe();
+      window.removeEventListener('pageshow', resetCheckoutState);
+      window.removeEventListener('pagehide', resetCheckoutState);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 
@@ -95,6 +120,7 @@ export default function LandingPricingSection() {
       if (!res.ok || !data?.checkoutUrl) {
         throw new Error(data?.error || 'Could not start Dodo checkout.');
       }
+      hasRedirectedRef.current = true;
       window.location.href = data.checkoutUrl;
     } catch (err) {
       setErrorMsg(err?.message || 'Unable to start checkout right now.');
