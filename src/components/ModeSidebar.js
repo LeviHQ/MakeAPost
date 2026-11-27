@@ -73,6 +73,7 @@ export default function ModeSidebar({
 }) {
   const [showBgModal, setShowBgModal] = useState(false);
   const [bgCategory, setBgCategory] = useState('All');
+  const [isAiGenerating, setIsAiGenerating] = useState(false);
 
   useEffect(() => {
     if (!showBgModal) return;
@@ -124,6 +125,7 @@ export default function ModeSidebar({
         >
           <button
             type="button"
+            disabled={isAiGenerating}
             className="btn-brutal"
             style={{
               padding: '8px 10px',
@@ -136,6 +138,8 @@ export default function ModeSidebar({
               alignItems: 'center',
               justifyContent: 'center',
               gap: '6px',
+              opacity: isAiGenerating ? 0.6 : 1,
+              cursor: isAiGenerating ? 'not-allowed' : 'pointer',
             }}
             onClick={() => onModeChange('editor')}
           >
@@ -145,6 +149,7 @@ export default function ModeSidebar({
 
           <button
             type="button"
+            disabled={isAiGenerating}
             className="btn-brutal"
             style={{
               padding: '8px 10px',
@@ -157,6 +162,8 @@ export default function ModeSidebar({
               alignItems: 'center',
               justifyContent: 'center',
               gap: '6px',
+              opacity: isAiGenerating ? 0.6 : 1,
+              cursor: isAiGenerating ? 'not-allowed' : 'pointer',
             }}
             onClick={() => onModeChange('ai')}
           >
@@ -263,6 +270,7 @@ export default function ModeSidebar({
               canvasRef={canvasRef}
               image={image}
               onSwitchToEditor={() => onModeChange('editor')}
+              onGeneratingChange={setIsAiGenerating}
               {...aiProps}
             />
           )}

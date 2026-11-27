@@ -159,15 +159,39 @@ export default function EditorPage() {
     };
   }, []);
 
-  // Warn user on browser tab close / hard refresh if edited image hasn't been exported
+  // Warn user on browser tab close / hard refresh AND intercept Browser Back button (popstate)
+  const exitGuardPushedRef = useRef(false);
+  const bypassExitGuardRef = useRef(false);
+
   useEffect(() => {
-    if (!image || hasExportedImage) return;
+    if (!image || hasExportedImage) {
+      exitGuardPushedRef.current = false;
+      return;
+    }
+
+    bypassExitGuardRef.current = false;
+    if (!exitGuardPushedRef.current) {
+      window.history.pushState({ studioExitGuard: true }, '', window.location.href);
+      exitGuardPushedRef.current = true;
+    }
+
     const handleBeforeUnload = (e) => {
       e.preventDefault();
       e.returnValue = '';
     };
+
+    const handlePopState = () => {
+      if (bypassExitGuardRef.current) return;
+      window.history.pushState({ studioExitGuard: true }, '', window.location.href);
+      setExitModal({ open: true, targetHref: '__BACK__' });
+    };
+
     window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('popstate', handlePopState);
+    };
   }, [image, hasExportedImage]);
 
   const showToast = useCallback((msg) => {
@@ -366,6 +390,17 @@ export default function EditorPage() {
       setShowAuthGateModal(true);
       return;
     }
+    if (img?.isSample) {
+      setImage(img);
+      setHasExportedImage(true);
+      setGeneratedPosts({ x: '', linkedin: '', reddit: '' });
+      setZoomScale(1);
+      setPanOffset({ x: 0, y: 0 });
+      setIsPanMode(false);
+      setMobileTab('canvas');
+      showToast('Sample loaded (0 credits used — free to test!)');
+      return;
+    }
     try {
       const res = await fetch('/api/credits/image', { method: 'POST' });
       const data = await res.json();
@@ -487,7 +522,15 @@ export default function EditorPage() {
       {/* 1. Responsive Slim Top Header */}
       <header className={styles.editorHeader}>
         <div className={styles.headerLeft}>
-          <Logo size={30} />
+          <Logo
+            size={30}
+            onClick={(e) => {
+              if (image && !hasExportedImage) {
+                e.preventDefault();
+                handleRequestExit('/');
+              }
+            }}
+          />
           <div className={`${styles.headerStudioBadge} badge-brutal badge-yellow`} style={{ fontSize: '0.65rem', padding: '2px 8px' }}>
             {usage.planName.toUpperCase()} • {Math.max(0, usage.imageLimit - usage.imageCreditsUsed)}/{usage.imageLimit} EDITS
           </div>
@@ -506,7 +549,15 @@ export default function EditorPage() {
             <span>Back to Home</span>
           </button>
 
-          <NavbarAuth />
+          <NavbarAuth
+            onBeforeNavigate={(href) => {
+              if (image && !hasExportedImage) {
+                handleRequestExit(href);
+                return false;
+              }
+              return true;
+            }}
+          />
 
           {image && (
             <button
@@ -581,7 +632,18 @@ export default function EditorPage() {
         {/* Mobile Dropdown Menu */}
         {mobileMenuOpen && (
           <div className={styles.mobileDropdown}>
-            <NavbarAuth fullWidth onNavigate={() => setMobileMenuOpen(false)} />
+            <NavbarAuth
+              fullWidth
+              onNavigate={() => setMobileMenuOpen(false)}
+              onBeforeNavigate={(href) => {
+                setMobileMenuOpen(false);
+                if (image && !hasExportedImage) {
+                  handleRequestExit(href);
+                  return false;
+                }
+                return true;
+              }}
+            />
 
             {image && (
               <button
@@ -719,10 +781,26 @@ export default function EditorPage() {
                 }));
               },
               onLimitReached: (limitData) => {
+                if (limitData.platform === 'all') {
+                  setUpgradeModal({
+                    open: true,
+                    title: `All Daily AI Post Credits Used (${limitData.used}/${limitData.limit})`,
+                    desc: `You have used all ${limitData.limit} daily AI post generations across X, LinkedIn, and Reddit. Upgrade to unlock up to 15 posts per platform daily!`,
+                  });
+                  return;
+                }
+                const platformLabel =
+                  limitData.platform === 'x'
+                    ? 'X'
+                    : limitData.platform === 'linkedin'
+                    ? 'LinkedIn'
+                    : limitData.platform === 'reddit'
+                    ? 'Reddit'
+                    : (limitData.platform || 'AI').toUpperCase();
                 setUpgradeModal({
                   open: true,
-                  title: `Daily ${(limitData.platform || 'AI').toUpperCase()} Post Limit Reached (${limitData.used}/${limitData.limit})`,
-                  desc: `You have used all ${limitData.limit} ${(limitData.platform || '').toUpperCase()} AI generations for today. Upgrade to unlock up to 15 posts per platform daily!`,
+                  title: `Daily ${platformLabel} Post Limit Reached (${limitData.used}/${limitData.limit})`,
+                  desc: `You have used all ${limitData.limit} ${platformLabel} AI generations for today. Upgrade to unlock up to 15 posts per platform daily!`,
                 });
               },
               onImageExported: () => setHasExportedImage(true),
@@ -937,9 +1015,10 @@ export default function EditorPage() {
         onClose={() => setExitModal({ open: false, targetHref: '/' })}
         onConfirmLeave={() => {
           const dest = exitModal.targetHref || '/';
+          bypassExitGuardRef.current = true;
           setExitModal({ open: false, targetHref: '/' });
           setHasExportedImage(true);
-          router.push(dest);
+          router.push(dest === '__BACK__' ? '/' : dest);
         }}
         onDownloadPng={handleDownloadPng}
         onCopyPng={handleCopyPng}

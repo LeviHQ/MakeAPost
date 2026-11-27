@@ -28,7 +28,7 @@ export function GoogleIcon({ size = 16 }) {
   );
 }
 
-export default function NavbarAuth({ className = '', style = {}, fullWidth = false, onNavigate }) {
+export default function NavbarAuth({ className = '', style = {}, fullWidth = false, onNavigate, onBeforeNavigate }) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -152,7 +152,13 @@ export default function NavbarAuth({ className = '', style = {}, fullWidth = fal
       {!loading && user && (
         <Link
           href="/settings"
-          onClick={() => onNavigate?.()}
+          onClick={(e) => {
+            if (onBeforeNavigate && onBeforeNavigate('/settings') === false) {
+              e.preventDefault();
+              return;
+            }
+            onNavigate?.();
+          }}
           className="btn-brutal"
           style={{
             width: fullWidth ? '100%' : 'auto',

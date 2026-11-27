@@ -253,7 +253,7 @@ export default function CanvasEditor({
 
   // 1. Image Ingestion Helper
   const loadFromDataUrl = useCallback(
-    (dataUrl) => {
+    (dataUrl, sampleId = null) => {
       const img = new Image();
       img.onload = () => {
         onImageLoaded({
@@ -261,6 +261,8 @@ export default function CanvasEditor({
           width: img.naturalWidth || 800,
           height: img.naturalHeight || 500,
           element: img,
+          isSample: Boolean(sampleId),
+          sampleId,
         });
         if (onSelectAnnotation) onSelectAnnotation(null);
       };
@@ -1764,7 +1766,7 @@ export default function CanvasEditor({
                   justifyContent: 'center',
                   gap: '6px',
                 }}
-                onClick={() => loadFromDataUrl(SAMPLE_CODE_SVG)}
+                onClick={() => loadFromDataUrl(SAMPLE_CODE_SVG, 'code')}
               >
                 <Code2 size={15} />
                 <span>Code Snippet Sample</span>
@@ -1783,7 +1785,7 @@ export default function CanvasEditor({
                   justifyContent: 'center',
                   gap: '6px',
                 }}
-                onClick={() => loadFromDataUrl(SAMPLE_ANALYTICS_SVG)}
+                onClick={() => loadFromDataUrl(SAMPLE_ANALYTICS_SVG, 'analytics')}
               >
                 <BarChart3 size={15} />
                 <span>SaaS Analytics Sample</span>

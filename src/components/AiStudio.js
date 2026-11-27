@@ -37,12 +37,32 @@ const TONE_OPTIONS = [
   { id: 'How It Works', label: 'How It Works (ELI5)', icon: Lightbulb, desc: 'Dead-simple explanation of complex technical concepts' },
 ];
 
+const SAMPLE_AI_POSTS = {
+  code: {
+    x_post:
+      'Stopped shipping raw terminal screenshots.\n\nBuilt a tiny engine that turns code snippets into 2x crisp cards, blurs API keys automatically, and writes platform-ready posts in one click.\n\nNo more cropping in Figma before every launch.',
+    linkedin_post:
+      'Most developers spend 20 minutes formatting a single code screenshot before sharing a feature update.\n\nHere is how we streamlined it in make-a-post-engine.js:\n\n1. Render snippets at 2x scale with clean padding and shadows\n2. Auto-blur sensitive tokens (like sk_live_* keys) before export\n3. Generate tailored copy for X, LinkedIn, and Reddit from the same canvas\n\nLess friction between shipping code and sharing what you built.',
+    reddit_post:
+      'I got tired of manually cropping VS Code screenshots and redacting API keys before posting updates, so I wired up a quick export pipeline.\n\nIt renders the snippet at 2x resolution, blurs sensitive strings before they ever leave the canvas, and formats the post for each platform. Sharing the workflow in case anyone else hates pre-launch image editing as much as I do.',
+  },
+  analytics: {
+    x_post:
+      'MakeAPost Growth Dashboard update:\n\n• MRR: $18,420 (+48%)\n• Viral Post Impressions: 482,900 (+112%)\n• Click-Through Rate: 24.8% (Top 3%)\n\nVisual proof beats plain text updates every single time.',
+    linkedin_post:
+      'One lesson from growing our SaaS metrics this quarter:\n\nPeople scroll past text-only announcements, but they stop for clear visual proof.\n\nOur latest MakeAPost Growth Dashboard snapshot:\n- MRR reached $18,420 (+48%)\n- Viral post impressions crossed 482,900 (+112%)\n- Click-through rate hit 24.8% (Top 3%)\n\nIf you are building in public, turn your milestone screenshots into clean, readable visuals before hitting publish.',
+    reddit_post:
+      'Sharing a quick milestone breakdown from our growth dashboard after switching to visual-first build-in-public updates:\n\n- MRR: $18,420 (+48%)\n- Impressions: 482,900 (+112%)\n- CTR: 24.8%\n\nTurning raw dashboard grabs into clean annotated cards made a noticeable difference in engagement and click-throughs.',
+  },
+};
+
 export default function AiStudio({
   canvasRef,
   image,
   onSwitchToEditor,
   onPostsUpdated,
   onCreditsUpdated,
+  onGeneratingChange,
   onLimitReached,
   onImageExported,
   usage,
@@ -84,21 +104,66 @@ export default function AiStudio({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [guideModalPlatform]);
 
+  const aiLimit = usage?.aiLimitPerPlatform ?? 1;
+  const getPlatformUsed = (platformId) => usage?.aiCreditsUsed?.[platformId] ?? 0;
+  const isPlatformExhausted = (platformId) => {
+    if (image?.isSample) return false;
+    return getPlatformUsed(platformId) >= aiLimit;
+  };
+  const triggerPlatformLimitPopup = (platformId) => {
+    if (platformId === 'all') {
+      const totalUsed = ['x', 'linkedin', 'reddit'].reduce((sum, p) => sum + getPlatformUsed(p), 0);
+      const totalLimit = aiLimit * 3;
+      onLimitReached?.({
+        platform: 'all',
+        used: totalUsed,
+        limit: totalLimit,
+      });
+      return;
+    }
+    onLimitReached?.({
+      platform: platformId,
+      used: getPlatformUsed(platformId),
+      limit: aiLimit,
+    });
+  };
+
+  // Keep selectedPlatforms free of exhausted platforms (and auto-select first available)
+  useEffect(() => {
+    if (image?.isSample) return;
+    const limit = usage?.aiLimitPerPlatform ?? 1;
+    const usedMap = usage?.aiCreditsUsed || {};
+    setSelectedPlatforms((prev) => {
+      const available = prev.filter((p) => (usedMap[p] ?? 0) < limit);
+      if (available.length === prev.length && available.length > 0) return prev;
+      if (available.length > 0) return available;
+      const firstAvailable = ['x', 'linkedin', 'reddit'].find((p) => (usedMap[p] ?? 0) < limit);
+      return firstAvailable ? [firstAvailable] : [];
+    });
+  }, [usage?.aiCreditsUsed, usage?.aiLimitPerPlatform, image?.isSample]);
+
   // Reset generated posts when image is cleared (e.g. user clicked Reset / New Image)
   useEffect(() => {
     if (!image) {
       setPosts(null);
       setEditedPosts({ x: '', linkedin: '', reddit: '' });
-      setSelectedPlatforms(['x']);
+      const limit = usage?.aiLimitPerPlatform ?? 1;
+      const usedMap = usage?.aiCreditsUsed || {};
+      const firstAvailable = ['x', 'linkedin', 'reddit'].find((p) => (usedMap[p] ?? 0) < limit);
+      setSelectedPlatforms(firstAvailable ? [firstAvailable] : []);
       setGeneratingPlatform(null);
       setPrompt('');
       setThumbnailUrl(null);
       setErrorMessage(null);
       setGuideModalPlatform(null);
     }
-  }, [image]);
+  }, [image, usage?.aiCreditsUsed, usage?.aiLimitPerPlatform]);
 
   const handleTogglePlatform = (platformId) => {
+    if (isPlatformExhausted(platformId)) {
+      triggerPlatformLimitPopup(platformId);
+      return;
+    }
     setSelectedPlatforms((prev) => {
       if (prev.includes(platformId)) {
         if (prev.length === 1) return prev;
@@ -218,6 +283,41 @@ export default function AiStudio({
       const compressed = await compressImageForAI(canvasRef.current);
       setThumbnailUrl(compressed.dataUrl);
 
+      // Built-in Sample Mode: return hardcoded posts with 0 API calls & 0 AI credits deducted
+      if (image?.isSample) {
+        await new Promise((resolve) => setTimeout(resolve, 350));
+        const sampleSet = SAMPLE_AI_POSTS[image.sampleId] || SAMPLE_AI_POSTS.code;
+        const samplePosts = {};
+        if (targetPlatforms.includes('x')) samplePosts.x_post = sampleSet.x_post;
+        if (targetPlatforms.includes('linkedin')) samplePosts.linkedin_post = sampleSet.linkedin_post;
+        if (targetPlatforms.includes('reddit')) samplePosts.reddit_post = sampleSet.reddit_post;
+
+        let nextEditedPosts = editedPosts;
+        if (singlePlatformId) {
+          setPosts((prev) => ({ ...(prev || {}), ...samplePosts }));
+          nextEditedPosts = {
+            ...editedPosts,
+            ...(samplePosts.x_post !== undefined ? { x: samplePosts.x_post } : {}),
+            ...(samplePosts.linkedin_post !== undefined ? { linkedin: samplePosts.linkedin_post } : {}),
+            ...(samplePosts.reddit_post !== undefined ? { reddit: samplePosts.reddit_post } : {}),
+          };
+          setEditedPosts(nextEditedPosts);
+        } else {
+          setPosts(samplePosts);
+          nextEditedPosts = {
+            x: samplePosts.x_post || '',
+            linkedin: samplePosts.linkedin_post || '',
+            reddit: samplePosts.reddit_post || '',
+          };
+          setEditedPosts(nextEditedPosts);
+          if (!targetPlatforms.includes(activePlatform)) {
+            setActivePlatform(targetPlatforms[0]);
+          }
+        }
+        onPostsUpdated?.(nextEditedPosts);
+        return;
+      }
+
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -295,6 +395,12 @@ export default function AiStudio({
   };
 
   // Current Post for active platform
+  const isGenerating = isLoading || Boolean(generatingPlatform);
+
+  useEffect(() => {
+    onGeneratingChange?.(isGenerating);
+  }, [isGenerating, onGeneratingChange]);
+
   const currentPostText = editedPosts[activePlatform] || '';
   const xCharCount = editedPosts.x.length;
   const isXOverLimit = xCharCount > 280;
@@ -317,8 +423,11 @@ export default function AiStudio({
             AI Post Generator
           </span>
         </div>
-        <span className="badge-brutal badge-blue" style={{ fontSize: '0.65rem', padding: '2px 8px' }}>
-          Multimodal
+        <span
+          className={`badge-brutal ${image?.isSample ? 'badge-yellow' : 'badge-blue'}`}
+          style={{ fontSize: '0.65rem', padding: '2px 8px' }}
+        >
+          {image?.isSample ? 'Sample • 0 Credits' : 'Multimodal'}
         </span>
       </div>
 
@@ -383,8 +492,19 @@ export default function AiStudio({
           {onSwitchToEditor && (
             <button
               type="button"
+              disabled={isGenerating}
               className="btn-brutal"
-              style={{ padding: '6px 12px', fontSize: '0.78rem', alignSelf: 'flex-start', marginTop: '4px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+              style={{
+                padding: '6px 12px',
+                fontSize: '0.78rem',
+                alignSelf: 'flex-start',
+                marginTop: '4px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                opacity: isGenerating ? 0.6 : 1,
+                cursor: isGenerating ? 'not-allowed' : 'pointer',
+              }}
               onClick={onSwitchToEditor}
             >
               <ArrowLeft size={13} />
@@ -411,6 +531,7 @@ export default function AiStudio({
               <button
                 key={t.id}
                 type="button"
+                disabled={isGenerating}
                 className="btn-brutal"
                 style={{
                   padding: '8px 6px',
@@ -425,6 +546,8 @@ export default function AiStudio({
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '6px',
+                  opacity: isGenerating ? 0.6 : 1,
+                  cursor: isGenerating ? 'not-allowed' : 'pointer',
                 }}
                 onClick={() => setTone(t.id)}
               >
@@ -479,11 +602,19 @@ export default function AiStudio({
             { id: 'linkedin', label: 'LinkedIn', Icon: LinkedInIcon, size: 14 },
             { id: 'reddit', label: 'Reddit', Icon: RedditIcon, size: 15 },
           ].map(({ id, label, Icon, size }) => {
-            const isSelected = selectedPlatforms.includes(id);
+            const isExhausted = isPlatformExhausted(id);
+            const isSelected = !isExhausted && selectedPlatforms.includes(id);
             return (
               <button
                 key={id}
                 type="button"
+                disabled={isGenerating}
+                aria-disabled={isGenerating || isExhausted}
+                title={
+                  isExhausted
+                    ? `Daily ${label} credit limit reached (${getPlatformUsed(id)}/${aiLimit}) — click to upgrade`
+                    : `Select ${label}`
+                }
                 className="btn-brutal"
                 onClick={() => handleTogglePlatform(id)}
                 style={{
@@ -493,15 +624,22 @@ export default function AiStudio({
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '6px',
+                  gap: '5px',
                   backgroundColor: isSelected ? 'var(--accent-yellow)' : 'var(--card-bg-subtle)',
-                  color: isSelected ? '#09090B' : 'var(--ink)',
+                  color: isSelected ? '#09090B' : isExhausted ? 'var(--muted)' : 'var(--ink)',
                   boxShadow: isSelected ? '2px 2px 0px var(--shadow-color)' : 'none',
-                  border: isSelected ? '2px solid var(--border-color)' : '1.5px solid var(--border-color)',
+                  border: isSelected
+                    ? '2px solid var(--border-color)'
+                    : isExhausted
+                    ? '1.5px dashed var(--border-color)'
+                    : '1.5px solid var(--border-color)',
+                  opacity: isGenerating ? 0.5 : isExhausted ? 0.65 : 1,
+                  cursor: isGenerating ? 'not-allowed' : 'pointer',
                 }}
               >
                 <Icon size={size} />
                 <span>{label}</span>
+                {isExhausted && <Lock size={11} style={{ flexShrink: 0, opacity: 0.85 }} />}
               </button>
             );
           })}
@@ -523,6 +661,7 @@ export default function AiStudio({
 
         <textarea
           rows={3}
+          disabled={isGenerating}
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           placeholder="Describe context (optional — AI also reads your screenshot code, metrics, and annotations)..."
@@ -532,6 +671,8 @@ export default function AiStudio({
             fontSize: '0.82rem',
             lineHeight: 1.45,
             minHeight: '68px',
+            opacity: isGenerating ? 0.65 : 1,
+            cursor: isGenerating ? 'not-allowed' : 'text',
           }}
         />
       </div>
@@ -558,21 +699,28 @@ export default function AiStudio({
       ) : (
         <button
           type="button"
-          disabled={isLoading || !image}
+          disabled={isGenerating || !image}
           className="btn-brutal btn-primary"
           style={{
-            padding: '12px 18px',
-            fontSize: '0.92rem',
+            padding: '12px 16px',
+            fontSize: '0.88rem',
             fontWeight: 800,
-            opacity: isLoading || !image ? 0.65 : 1,
-            cursor: isLoading || !image ? 'not-allowed' : 'pointer',
+            opacity: isGenerating || !image ? 0.65 : 1,
+            cursor: isGenerating || !image ? 'not-allowed' : 'pointer',
             boxShadow: '3px 3px 0px var(--shadow-color)',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
             gap: '8px',
+            whiteSpace: 'normal',
+            textAlign: 'center',
+            lineHeight: 1.3,
           }}
-          onClick={handleGenerate}
+          onClick={
+            selectedPlatforms.length === 0
+              ? () => triggerPlatformLimitPopup('all')
+              : handleGenerate
+          }
         >
           {isLoading ? (
             <>
@@ -586,6 +734,11 @@ export default function AiStudio({
                 }}
               />
               <span>Analyzing Screenshot &amp; Writing...</span>
+            </>
+          ) : selectedPlatforms.length === 0 ? (
+            <>
+              <Lock size={15} />
+              <span>All Daily AI Credits Used — Upgrade</span>
             </>
           ) : (
             <>
@@ -655,6 +808,7 @@ export default function AiStudio({
                 <button
                   key={id}
                   type="button"
+                  disabled={isGenerating}
                   className="btn-brutal"
                   style={{
                     padding: '6px',
@@ -665,6 +819,8 @@ export default function AiStudio({
                     boxShadow: isTabActive ? '1.5px 1.5px 0px var(--shadow-color)' : 'none',
                     gap: '5px',
                     position: 'relative',
+                    opacity: isGenerating ? 0.6 : 1,
+                    cursor: isGenerating ? 'not-allowed' : 'pointer',
                   }}
                   onClick={() => handlePlatformChange(id)}
                 >
@@ -783,18 +939,30 @@ export default function AiStudio({
                   type="button"
                   className="btn-brutal btn-primary"
                   disabled={isLoading || Boolean(generatingPlatform) || !image}
-                  onClick={() => generateForPlatforms([activePlatform], activePlatform)}
+                  onClick={() =>
+                    isPlatformExhausted(activePlatform)
+                      ? triggerPlatformLimitPopup(activePlatform)
+                      : generateForPlatforms([activePlatform], activePlatform)
+                  }
                   style={{
                     width: '100%',
-                    padding: '10px 14px',
-                    fontSize: '0.84rem',
+                    padding: '10px 12px',
+                    fontSize: '0.8rem',
                     fontWeight: 800,
                     display: 'inline-flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '8px',
+                    gap: '7px',
                     marginTop: '4px',
-                    opacity: isLoading || Boolean(generatingPlatform) || !image ? 0.65 : 1,
+                    whiteSpace: 'normal',
+                    textAlign: 'center',
+                    lineHeight: 1.3,
+                    opacity:
+                      isLoading || Boolean(generatingPlatform) || !image
+                        ? 0.65
+                        : isPlatformExhausted(activePlatform)
+                        ? 0.85
+                        : 1,
                   }}
                 >
                   {generatingPlatform === activePlatform ? (
@@ -802,13 +970,20 @@ export default function AiStudio({
                       <Loader2
                         size={16}
                         className="animate-spin"
-                        style={{ display: 'inline-block', animation: 'spin 0.75s linear infinite' }}
+                        style={{ display: 'inline-block', animation: 'spin 0.75s linear infinite', flexShrink: 0 }}
                       />
                       <span>Generating {activePlatform === 'x' ? 'X' : activePlatform === 'linkedin' ? 'LinkedIn' : 'Reddit'} Post...</span>
                     </>
+                  ) : isPlatformExhausted(activePlatform) ? (
+                    <>
+                      <Lock size={14} style={{ flexShrink: 0 }} />
+                      <span>
+                        {activePlatform === 'x' ? 'X' : activePlatform === 'linkedin' ? 'LinkedIn' : 'Reddit'} Limit Reached — Upgrade
+                      </span>
+                    </>
                   ) : (
                     <>
-                      <Sparkles size={15} />
+                      <Sparkles size={15} style={{ flexShrink: 0 }} />
                       <span>Generate {activePlatform === 'x' ? 'X' : activePlatform === 'linkedin' ? 'LinkedIn' : 'Reddit'} Post</span>
                     </>
                   )}
@@ -819,6 +994,7 @@ export default function AiStudio({
                 {/* Editable Content Textarea */}
                 <textarea
                   rows={6}
+                  disabled={isGenerating}
                   value={currentPostText}
                   onChange={(e) => {
                     const val = e.target.value;
@@ -833,6 +1009,8 @@ export default function AiStudio({
                     fontFamily: activePlatform === 'reddit' ? 'var(--font-mono)' : 'var(--font-body)',
                     minHeight: '130px',
                     resize: 'vertical',
+                    opacity: isGenerating ? 0.65 : 1,
+                    cursor: isGenerating ? 'not-allowed' : 'text',
                   }}
                 />
 
@@ -878,8 +1056,10 @@ export default function AiStudio({
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: '8px',
+                        opacity: isSharing || isGenerating ? 0.65 : 1,
+                        cursor: isSharing || isGenerating ? 'not-allowed' : 'pointer',
                       }}
-                      disabled={isSharing}
+                      disabled={isSharing || isGenerating}
                       onClick={() => handleInitiatePost('x')}
                       title="Open X posting guide and composer"
                     >
@@ -902,8 +1082,10 @@ export default function AiStudio({
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: '8px',
+                        opacity: isSharing || isGenerating ? 0.65 : 1,
+                        cursor: isSharing || isGenerating ? 'not-allowed' : 'pointer',
                       }}
-                      disabled={isSharing}
+                      disabled={isSharing || isGenerating}
                       onClick={() => handleInitiatePost('linkedin')}
                       title="Open LinkedIn posting guide and composer"
                     >
@@ -926,8 +1108,10 @@ export default function AiStudio({
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: '8px',
+                        opacity: isSharing || isGenerating ? 0.65 : 1,
+                        cursor: isSharing || isGenerating ? 'not-allowed' : 'pointer',
                       }}
-                      disabled={isSharing}
+                      disabled={isSharing || isGenerating}
                       onClick={() => handleInitiatePost('reddit')}
                       title="Open Reddit posting guide and submission composer"
                     >
@@ -940,6 +1124,7 @@ export default function AiStudio({
                   {/* 2. Secondary Full-Width Copy Text Button */}
                   <button
                     type="button"
+                    disabled={isGenerating}
                     className="btn-brutal"
                     style={{
                       width: '100%',
@@ -951,6 +1136,8 @@ export default function AiStudio({
                       justifyContent: 'center',
                       gap: '6px',
                       backgroundColor: 'var(--surface)',
+                      opacity: isGenerating ? 0.6 : 1,
+                      cursor: isGenerating ? 'not-allowed' : 'pointer',
                     }}
                     onClick={() => handleCopy(currentPostText)}
                     title="Copy generated post text to clipboard"

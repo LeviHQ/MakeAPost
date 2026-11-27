@@ -1,9 +1,10 @@
 import Link from 'next/link';
 
-export default function Logo({ size = 36, showWordmark = true, className = '' }) {
+export default function Logo({ size = 36, showWordmark = true, className = '', onClick }) {
   return (
     <Link
       href="/"
+      onClick={onClick}
       style={{
         display: 'inline-flex',
         alignItems: 'center',
