@@ -6,6 +6,7 @@ import {
   getPlanConfig,
   normalizeDailyCredits,
   enforceWatermarkForPlan,
+  getFreeCycleDates,
 } from '@/lib/billing';
 
 export const runtime = 'nodejs';
@@ -27,7 +28,7 @@ export async function GET() {
     const { data: userRow, error: dbError } = await admin
       .from('users')
       .select(
-        'plan, plan_status, image_credits_used, ai_credits_used, last_credit_reset, current_period_end, billing_customer_id, default_watermark'
+        'plan, plan_status, image_credits_used, ai_credits_used, last_credit_reset, current_period_end, billing_customer_id, default_watermark, created_at'
       )
       .eq('id', user.id)
       .single();
@@ -59,12 +60,31 @@ export async function GET() {
       planId
     );
 
+    const accountCreatedAt = userRow.created_at || user.created_at || new Date().toISOString();
+    let cycleStart = null;
+    let cycleEnd = null;
+    if (planId === 'free') {
+      const freeCycle = getFreeCycleDates(accountCreatedAt);
+      cycleStart = freeCycle.cycleStart;
+      cycleEnd = freeCycle.cycleEnd;
+    } else if (userRow.current_period_end) {
+      cycleEnd = userRow.current_period_end;
+      const startDt = new Date(userRow.current_period_end);
+      if (!Number.isNaN(startDt.getTime())) {
+        startDt.setMonth(startDt.getMonth() - 1);
+        cycleStart = startDt.toISOString();
+      }
+    }
+
     return NextResponse.json({
       authenticated: true,
       planId,
       planName: planConfig.name,
       planStatus: userRow.plan_status || 'active',
       currentPeriodEnd: userRow.current_period_end || null,
+      cycleStart,
+      cycleEnd,
+      accountCreatedAt,
       hasBillingCustomer: Boolean(userRow.billing_customer_id),
       defaultWatermark: effectiveWatermark,
       imageCreditsUsed: normalized.imageCreditsUsed,

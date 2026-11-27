@@ -517,37 +517,50 @@
 }
 
 /* Pricing Grid (#pricing) */
+.pricingWrapper {
+  width: 100%;
+}
+
 .pricingGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 20px;
-}
-
-@media (max-width: 900px) {
-  .pricingGrid {
-    grid-template-columns: 1fr;
-  }
+  align-items: stretch;
 }
 
 .pricingCard,
 .pricingCardFeatured {
+  min-width: 0;
   background-color: var(--surface);
   border: var(--border-thick);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-card);
-  padding: 24px;
+  padding: 22px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 .pricingCardFeatured {
   box-shadow: 6px 6px 0px var(--accent-yellow);
 }
 
+.pricingPlanTitle {
+  font-family: var(--font-heading);
+  font-weight: 900;
+  font-size: 1.15rem;
+  color: var(--ink);
+}
+
+.pricingPriceRow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .pricingPrice {
   font-family: var(--font-heading);
-  font-size: 2.25rem;
+  font-size: clamp(1.9rem, 3vw, 2.3rem);
   font-weight: 900;
   color: var(--ink);
   line-height: 1;
@@ -558,6 +571,61 @@
   font-weight: 600;
   color: var(--muted);
   margin-left: 4px;
+}
+
+.pricingMonthlyPill {
+  display: inline-block;
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: var(--radius-xs);
+  border: 1.5px solid var(--border-color);
+  background-color: var(--card-bg-subtle);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--ink);
+  max-width: 100%;
+}
+
+.pricingCycleNote {
+  font-family: var(--font-mono);
+  font-size: 0.71rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.inlineCodeWrap {
+  word-break: break-word;
+  font-size: 0.84em;
+}
+
+.pricingCtaSlot {
+  margin-top: auto;
+  padding-top: 6px;
+}
+
+.pricingCtaBtn {
+  width: 100%;
+  white-space: normal;
+  text-align: center;
+  padding: 11px 14px;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 980px) {
+  .pricingGrid {
+    grid-template-columns: 1fr;
+    max-width: 520px;
+    margin: 0 auto;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pricingCard,
+  .pricingCardFeatured {
+    padding: 18px 14px;
+  }
 }
 
 /* 5. Privacy-First Architecture Section (#privacy-architecture) */

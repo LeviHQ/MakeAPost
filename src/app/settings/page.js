@@ -27,7 +27,6 @@ import {
   Tag,
   Save,
   EyeOff,
-  CreditCard,
   Image as ImageIcon,
   ArrowRight,
   // FolderKanban,
@@ -58,13 +57,14 @@ export default function SettingsPage() {
     planName: 'Free',
     planStatus: 'active',
     currentPeriodEnd: null,
+    cycleStart: null,
+    cycleEnd: null,
     hasBillingCustomer: false,
     imageCreditsUsed: 0,
     imageLimit: PLANS.free.dailyImages,
     aiCreditsUsed: { x: 0, linkedin: 0, reddit: 0 },
     aiLimitPerPlatform: PLANS.free.dailyAiPerPlatform,
   });
-  const [portalLoading, setPortalLoading] = useState(false);
   const [upgradeModal, setUpgradeModal] = useState({
     open: false,
     title: '',
@@ -146,6 +146,8 @@ export default function SettingsPage() {
                   planName: usageData.planName || 'Free',
                   planStatus: usageData.planStatus || 'active',
                   currentPeriodEnd: usageData.currentPeriodEnd || null,
+                  cycleStart: usageData.cycleStart || null,
+                  cycleEnd: usageData.cycleEnd || null,
                   hasBillingCustomer: Boolean(usageData.hasBillingCustomer),
                   imageCreditsUsed: usageData.imageCreditsUsed || 0,
                   imageLimit: usageData.imageLimit || PLANS.free.dailyImages,
@@ -244,23 +246,6 @@ export default function SettingsPage() {
       showToast(`Error: ${err?.message || 'Failed to save watermark'}`);
     } finally {
       setSavingWatermark(false);
-    }
-  };
-
-  // Open Dodo Customer Billing Portal
-  const handleOpenBillingPortal = async () => {
-    setPortalLoading(true);
-    try {
-      const res = await fetch('/api/billing/portal', { method: 'POST' });
-      const data = await res.json();
-      if (!res.ok || !data?.portalUrl) {
-        throw new Error(data?.error || 'Could not open billing portal.');
-      }
-      window.location.href = data.portalUrl;
-    } catch (err) {
-      showToast(err?.message || 'Unable to open Dodo billing portal.');
-    } finally {
-      setPortalLoading(false);
     }
   };
 
@@ -506,20 +491,45 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* Plan Summary & Subscription Status */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
-            <div style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--ink)' }}>
-              {usage.planId === 'free'
-                ? 'Free Tier • 5 Image Edits & 2 AI Posts / Platform Daily'
-                : usage.planId === 'pro'
-                ? 'Pro Plan ($7/mo) • 30 Image Edits & 15 AI Posts / Platform Daily'
-                : 'Advanced Plan ($15/mo) • 50 Image Edits & 20 AI Posts / Platform Daily'}
+          {/* Plan Summary & Date-Wise Monthly Cycle */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+              <div style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--ink)' }}>
+                {usage.planId === 'free'
+                  ? 'Free Tier • 3 Image Edits & 1 AI Post / Platform Daily'
+                  : usage.planId === 'pro'
+                  ? 'Pro Plan ($7/mo) • 30 Image Edits & 10 AI Posts / Platform Daily'
+                  : 'Advanced Plan ($15/mo) • 50 Image Edits & 15 AI Posts / Platform Daily'}
+              </div>
             </div>
-            {usage.currentPeriodEnd && (
-              <span className="tag-mono" style={{ fontSize: '0.72rem' }}>
-                {usage.planStatus === 'cancelled' ? 'Ends on ' : 'Renews '}
-                {new Date(usage.currentPeriodEnd).toLocaleDateString()}
-              </span>
+
+            {usage.cycleEnd && (
+              <div
+                style={{
+                  padding: '9px 12px',
+                  borderRadius: 'var(--radius-xs)',
+                  border: '1.5px dashed var(--border-color)',
+                  backgroundColor: 'var(--card-bg-subtle)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: '8px',
+                  fontSize: '0.78rem',
+                  fontFamily: 'var(--font-mono)',
+                }}
+              >
+                <span>
+                  <strong>Active Cycle:</strong>{' '}
+                  {usage.cycleStart
+                    ? `${new Date(usage.cycleStart).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} – `
+                    : ''}
+                  {new Date(usage.cycleEnd).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                </span>
+                <span className="badge-brutal badge-green" style={{ fontSize: '0.66rem', padding: '1px 7px' }}>
+                  {usage.planId === 'free' ? 'AUTO-RENEWS MONTHLY' : 'ACTIVE MONTHLY'}
+                </span>
+              </div>
             )}
           </div>
 
@@ -616,7 +626,7 @@ export default function SettingsPage() {
                     setUpgradeModal({
                       open: true,
                       title: 'Upgrade Your MakeAPost Plan',
-                      desc: 'Get up to 50 daily image edits, 20 AI posts per platform/day, Clean Exports, and Custom Brand Handles.',
+                      desc: 'Get up to 1,500 monthly image edits, 1,350 AI posts/month, Clean Exports, and Custom Brand Handles.',
                     })
                   }
                   className="btn-brutal btn-primary"
@@ -625,19 +635,6 @@ export default function SettingsPage() {
                   <Sparkles size={14} />
                   <span>{usage.planId === 'pro' ? 'Upgrade to Advanced ($15/mo)' : 'Upgrade Plan'}</span>
                   <ArrowRight size={14} />
-                </button>
-              )}
-
-              {usage.hasBillingCustomer && (
-                <button
-                  type="button"
-                  disabled={portalLoading}
-                  onClick={handleOpenBillingPortal}
-                  className="btn-brutal"
-                  style={{ padding: '8px 14px', fontSize: '0.82rem', gap: '6px', backgroundColor: 'var(--surface)' }}
-                >
-                  <CreditCard size={14} />
-                  <span>{portalLoading ? 'Opening Portal...' : 'Manage / Cancel Subscription'}</span>
                 </button>
               )}
             </div>

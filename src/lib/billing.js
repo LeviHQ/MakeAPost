@@ -7,8 +7,8 @@ export const PLANS = {
     id: 'free',
     name: 'Free',
     priceMonthly: 0,
-    dailyImages: 5,
-    dailyAiPerPlatform: 2,
+    dailyImages: 3,
+    dailyAiPerPlatform: 1,
     canHideWatermark: false,
     canCustomWatermark: false,
     badgeLabel: 'FREE',
@@ -18,7 +18,7 @@ export const PLANS = {
     name: 'Pro',
     priceMonthly: 7,
     dailyImages: 30,
-    dailyAiPerPlatform: 15,
+    dailyAiPerPlatform: 10,
     canHideWatermark: true,
     canCustomWatermark: false,
     badgeLabel: 'PRO',
@@ -28,7 +28,7 @@ export const PLANS = {
     name: 'Advanced',
     priceMonthly: 15,
     dailyImages: 50,
-    dailyAiPerPlatform: 20,
+    dailyAiPerPlatform: 15,
     canHideWatermark: true,
     canCustomWatermark: true,
     badgeLabel: 'ADVANCED',
@@ -37,6 +37,35 @@ export const PLANS = {
 
 export function getTodayUtcDate() {
   return new Date().toISOString().slice(0, 10);
+}
+
+/**
+ * Computes the user's current auto-renewing 1-month Free plan cycle
+ * anchored to their first Google Sign-In date (createdAt).
+ */
+export function getFreeCycleDates(createdAt) {
+  const anchor = createdAt ? new Date(createdAt) : new Date();
+  const now = new Date();
+  let start = new Date(anchor.getTime());
+  if (Number.isNaN(start.getTime())) {
+    start = new Date();
+  }
+
+  let end = new Date(start.getTime());
+  end.setMonth(end.getMonth() + 1);
+
+  let guard = 0;
+  while (end.getTime() <= now.getTime() && guard < 240) {
+    start = new Date(end.getTime());
+    end = new Date(start.getTime());
+    end.setMonth(end.getMonth() + 1);
+    guard += 1;
+  }
+
+  return {
+    cycleStart: start.toISOString(),
+    cycleEnd: end.toISOString(),
+  };
 }
 
 /**

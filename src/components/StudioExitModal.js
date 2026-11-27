@@ -22,7 +22,7 @@ export default function StudioExitModal({
   canvasRef,
   generatedPosts = { x: '', linkedin: '', reddit: '' },
   imageCreditsUsed = 0,
-  imageLimit = 5,
+  imageLimit = 3,
   hasExported = false,
 }) {
   const [sharingPlatform, setSharingPlatform] = useState(null);

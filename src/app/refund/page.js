@@ -97,22 +97,22 @@ export default function RefundPage() {
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>
               <RefreshCw size={18} />
-              <span>2. Subscription Cancellation Policy (Future Paid Plans)</span>
+              <span>2. Monthly Subscription Terms</span>
             </h2>
             <p className={styles.sectionText}>
-              When premium plans (such as high-volume API quotas or custom watermarking) are introduced in future releases:
+              Paid monthly plans (Pro `$7/mo` and Advanced `$15/mo`) are billed upfront per monthly cycle via Dodo Payments:
             </p>
             <ul className={styles.list}>
               <li className={styles.listItem}>
                 <span className={styles.listBullet} />
                 <span>
-                  <strong>1-Click Cancellation:</strong> You can cancel your subscription at any time directly from the Account Settings dashboard. No phone calls, complex retention forms, or delay tricks.
+                  <strong>Active Billing Cycle:</strong> Subscriptions remain active for the paid billing period with full daily image editing and per-platform AI quotas. Self-serve mid-cycle cancellation is not offered inside the dashboard.
                 </span>
               </li>
               <li className={styles.listItem}>
                 <span className={styles.listBullet} />
                 <span>
-                  <strong>Access Through Billing Period:</strong> Once cancelled, you retain full access to premium features until the end of your current monthly or annual billing period. You will not be charged again.
+                  <strong>Billing Support:</strong> For duplicate charges or urgent billing inquiries, please reach out directly to <code>billing@makeapost.site</code>.
                 </span>
               </li>
             </ul>

@@ -139,11 +139,11 @@ export default function UpgradeModal({
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.84rem' }}>
               <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Check size={15} style={{ color: '#16A34A', flexShrink: 0 }} />
-                <span><strong>30</strong> Image Edits / day</span>
+                <span><strong>900 Image Edits / month</strong> (30 / day)</span>
               </li>
               <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Check size={15} style={{ color: '#16A34A', flexShrink: 0 }} />
-                <span><strong>15</strong> AI Posts per platform / day (45 total)</span>
+                <span><strong>900 AI Posts / month</strong> (10 per platform / day)</span>
               </li>
               <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Check size={15} style={{ color: '#16A34A', flexShrink: 0 }} />
@@ -203,11 +203,11 @@ export default function UpgradeModal({
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.84rem' }}>
               <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Check size={15} style={{ color: '#16A34A', flexShrink: 0 }} />
-                <span><strong>50</strong> Image Edits / day</span>
+                <span><strong>1,500 Image Edits / month</strong> (50 / day)</span>
               </li>
               <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Check size={15} style={{ color: '#16A34A', flexShrink: 0 }} />
-                <span><strong>20</strong> AI Posts per platform / day (60 total)</span>
+                <span><strong>1,350 AI Posts / month</strong> (15 per platform / day)</span>
               </li>
               <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Check size={15} style={{ color: '#16A34A', flexShrink: 0 }} />
@@ -240,7 +240,7 @@ export default function UpgradeModal({
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '0.75rem', color: 'var(--muted)' }}>
           <ShieldCheck size={14} />
-          <span>Secure checkout powered by Dodo Payments • Cancel anytime in 1 click from Settings</span>
+          <span>Secure monthly checkout powered by Dodo Payments</span>
         </div>
       </div>
     </div>

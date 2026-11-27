@@ -362,6 +362,82 @@ export default function EditorPage() {
     }
   };
 
+  // Strict Google Sign-In Gate: Do not allow /editor access until authenticated
+  if (isAuthenticated === null) {
+    return (
+      <div
+        className={styles.editorContainer}
+        style={{ alignItems: 'center', justifyContent: 'center', padding: '24px' }}
+      >
+        <div className="badge-brutal badge-yellow" style={{ fontSize: '0.9rem', padding: '8px 16px' }}>
+          <Zap size={16} />
+          <span>Verifying Studio Access...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (isAuthenticated === false) {
+    return (
+      <div
+        className={styles.editorContainer}
+        style={{
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px',
+          backgroundImage: 'radial-gradient(var(--dot-color) 1.5px, transparent 1.5px)',
+          backgroundSize: '20px 20px',
+        }}
+      >
+        <div
+          className="card-brutal"
+          style={{
+            maxWidth: '460px',
+            width: '100%',
+            padding: '28px 24px',
+            backgroundColor: 'var(--surface)',
+            color: 'var(--ink)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center',
+            gap: '16px',
+          }}
+        >
+          <Logo size={40} />
+          <div className="badge-brutal badge-yellow" style={{ fontSize: '0.74rem' }}>
+            <span>GOOGLE SIGN-IN REQUIRED</span>
+          </div>
+          <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.45rem', fontWeight: 900, margin: 0 }}>
+            Sign In to Open MakeAPost Studio
+          </h1>
+          <p style={{ fontSize: '0.88rem', color: 'var(--muted)', margin: 0, lineHeight: 1.55 }}>
+            Every account automatically starts on the <strong>Free Plan</strong> (<strong>3 image edits/day</strong> +{' '}
+            <strong>1 AI post per platform/day</strong>, auto-renewed monthly)—no setup required.
+          </p>
+          <button
+            type="button"
+            onClick={handleGoogleSignIn}
+            className="btn-brutal btn-primary"
+            style={{ width: '100%', padding: '12px 18px', fontSize: '0.95rem' }}
+          >
+            <GoogleIcon size={18} />
+            <span>Continue with Google</span>
+            <ArrowRight size={15} />
+          </button>
+          <Link
+            href="/"
+            className="btn-brutal"
+            style={{ width: '100%', padding: '9px 14px', fontSize: '0.85rem', backgroundColor: 'var(--surface)' }}
+          >
+            <Home size={14} />
+            <span>Back to Home</span>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.editorContainer}>
       {/* 1. Responsive Slim Top Header */}
@@ -600,7 +676,7 @@ export default function EditorPage() {
                 setUpgradeModal({
                   open: true,
                   title: `Daily ${(limitData.platform || 'AI').toUpperCase()} Post Limit Reached (${limitData.used}/${limitData.limit})`,
-                  desc: `You have used all ${limitData.limit} ${(limitData.platform || '').toUpperCase()} AI generations for today. Upgrade to unlock up to 20 posts per platform daily!`,
+                  desc: `You have used all ${limitData.limit} ${(limitData.platform || '').toUpperCase()} AI generations for today. Upgrade to unlock up to 15 posts per platform daily!`,
                 });
               },
               onImageExported: () => setHasExportedImage(true),
@@ -785,8 +861,8 @@ export default function EditorPage() {
               Sign In to Start Editing &amp; Posting
             </h2>
             <p style={{ fontSize: '0.86rem', color: 'var(--muted)', margin: 0, lineHeight: 1.5 }}>
-              Sign in with Google to unlock <strong>5 free image edits/day</strong> and{' '}
-              <strong>2 AI posts per platform/day</strong> (X, LinkedIn &amp; Reddit). Zero screenshots or post history stored.
+              Sign in with Google to unlock <strong>3 free image edits/day</strong> and{' '}
+              <strong>1 AI post per platform/day</strong> (X, LinkedIn &amp; Reddit). Zero screenshots or post history stored.
             </p>
             <button
               type="button"
