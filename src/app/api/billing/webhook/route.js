@@ -2,6 +2,11 @@ import crypto from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { DEFAULT_WATERMARK_TEXT } from '@/lib/billing';
+import {
+  sendPlanUpgradedEmail,
+  sendSubscriptionRenewedEmail,
+  sendPaymentIssueEmail,
+} from '@/lib/email';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -85,6 +90,15 @@ export async function POST(req) {
     const matchColumn = userId ? 'id' : 'billing_customer_id';
     const matchValue = userId || customerId;
 
+    const { data: existingUser } = await admin
+      .from('users')
+      .select('email, full_name, plan')
+      .eq(matchColumn, matchValue)
+      .maybeSingle();
+
+    const recipientEmail = data?.customer?.email || existingUser?.email || null;
+    const recipientName = data?.customer?.name || existingUser?.full_name || null;
+
     if (eventType === 'subscription.active' || eventType === 'subscription.renewed') {
       const resolvedPlan = resolvePlanFromPayload(data);
       if (!resolvedPlan) {
@@ -101,6 +115,28 @@ export async function POST(req) {
           current_period_end: nextBillingDate,
         })
         .eq(matchColumn, matchValue);
+
+      try {
+        if (recipientEmail) {
+          if (eventType === 'subscription.active') {
+            await sendPlanUpgradedEmail({
+              to: recipientEmail,
+              name: recipientName,
+              planId: resolvedPlan,
+              nextBillingDate,
+            });
+          } else {
+            await sendSubscriptionRenewedEmail({
+              to: recipientEmail,
+              name: recipientName,
+              planId: resolvedPlan,
+              nextBillingDate,
+            });
+          }
+        }
+      } catch (emailErr) {
+        console.warn('Non-blocking billing email error:', emailErr);
+      }
     } else if (eventType === 'subscription.cancelled') {
       await admin
         .from('users')
@@ -119,6 +155,19 @@ export async function POST(req) {
           current_period_end: null,
         })
         .eq(matchColumn, matchValue);
+
+      try {
+        if (recipientEmail) {
+          await sendPaymentIssueEmail({
+            to: recipientEmail,
+            name: recipientName,
+            eventType,
+            planId: existingUser?.plan || resolvePlanFromPayload(data),
+          });
+        }
+      } catch (emailErr) {
+        console.warn('Non-blocking payment issue email error:', emailErr);
+      }
     } else if (eventType === 'subscription.on_hold') {
       await admin
         .from('users')
@@ -126,6 +175,19 @@ export async function POST(req) {
           plan_status: 'on_hold',
         })
         .eq(matchColumn, matchValue);
+
+      try {
+        if (recipientEmail) {
+          await sendPaymentIssueEmail({
+            to: recipientEmail,
+            name: recipientName,
+            eventType,
+            planId: existingUser?.plan || resolvePlanFromPayload(data),
+          });
+        }
+      } catch (emailErr) {
+        console.warn('Non-blocking payment on-hold email error:', emailErr);
+      }
     }
 
     return NextResponse.json({ received: true });

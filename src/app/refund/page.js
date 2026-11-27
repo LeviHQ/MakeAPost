@@ -112,7 +112,17 @@ export default function RefundPage() {
               <li className={styles.listItem}>
                 <span className={styles.listBullet} />
                 <span>
-                  <strong>Billing Support:</strong> For duplicate charges or urgent billing inquiries, please reach out directly to <code>billing@makeapost.site</code>.
+                  <strong>Billing Notifications:</strong> MakeAPost sends automated transactional emails (via Resend, alongside official Dodo Payments receipts) when your subscription activates, renews, expires, or requires payment attention.
+                </span>
+              </li>
+              <li className={styles.listItem}>
+                <span className={styles.listBullet} />
+                <span>
+                  <strong>Billing Support:</strong> For duplicate charges or urgent billing inquiries, please reach out directly to <code>billing@makeapost.site</code> or use our{' '}
+                  <Link href="/contact" style={{ color: 'var(--ink)', fontWeight: 700, textDecoration: 'underline' }}>
+                    Contact form
+                  </Link>
+                  .
                 </span>
               </li>
             </ul>

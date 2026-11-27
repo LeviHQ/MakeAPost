@@ -151,7 +151,7 @@ export default function TermsPage() {
               <span>4. Third-Party Services &amp; Native Social Intents</span>
             </h2>
             <p className={styles.sectionText}>
-              MakeAPost integrates with Google OAuth for authentication, Google Gemini for visual understanding, and native web intents for social platforms (X, LinkedIn, Reddit). We do not store your social account credentials. Your interactions with these external services are subject to their respective terms and privacy policies. MakeAPost is not responsible for content moderation decisions, algorithm updates, or account actions taken by third-party platforms.
+              MakeAPost integrates with Google OAuth for authentication, Google Gemini for visual understanding, Dodo Payments for subscription billing, Resend for essential transactional and support emails, and native web intents for social platforms (X, LinkedIn, Reddit). We do not store your social account credentials. Your interactions with these external services are subject to their respective terms and privacy policies. MakeAPost is not responsible for content moderation decisions, algorithm updates, or account actions taken by third-party platforms.
             </p>
           </section>
 

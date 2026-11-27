@@ -160,6 +160,16 @@ export default function PrivacyPage() {
                   <strong>Studio Preferences &amp; Operational Metadata:</strong> Your UI theme preference (<code>light</code> or <code>dark</code>), default watermark preference, daily generation counter, and subscription/billing status metadata when applicable (processed via third-party payment processors; MakeAPost never stores raw card numbers).
                 </span>
               </li>
+              <li className={styles.listItem}>
+                <span className={styles.listBullet} />
+                <span>
+                  <strong>Transactional &amp; Support Emails (Resend):</strong> We use Resend strictly to deliver essential account and billing emails (a one-time welcome email on your first Google Sign-In, subscription activation, renewal, or payment-issue alerts, and confirmation/support replies from our{' '}
+                  <Link href="/contact" style={{ color: 'var(--ink)', fontWeight: 700, textDecoration: 'underline' }}>
+                    Contact page
+                  </Link>
+                  ). We never send marketing spam or sell/share your email address.
+                </span>
+              </li>
               {/* [FUTURE FEATURE - COMMENTED OUT FOR BUDGET]: Auto-Learned Project Context disclosure
               <li className={styles.listItem}>
                 <span className={styles.listBullet} />

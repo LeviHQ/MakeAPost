@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Logo from '@/components/Logo';
 import Footer from '@/components/Footer';
+import ContactForm from '@/components/ContactForm';
 import {
   Mail,
   UserCheck,
@@ -99,11 +100,24 @@ export default function ContactPage() {
           </div>
         </div>
 
-        {/* Direct Contact Channels */}
+        {/* Direct Contact Form */}
         <div className={styles.sectionCard}>
           <div className={styles.sectionHeading}>
             <div className={styles.sectionNumber}>02</div>
-            <h2>Support & Legal Contacts</h2>
+            <h2>Send Us a Direct Message</h2>
+          </div>
+          <p>
+            Submit support questions, billing/refund inquiries, or account deletion requests directly below.
+            Messages are delivered straight to our founder inbox via Resend with an instant email confirmation.
+          </p>
+          <ContactForm />
+        </div>
+
+        {/* Direct Contact Channels */}
+        <div className={styles.sectionCard}>
+          <div className={styles.sectionHeading}>
+            <div className={styles.sectionNumber}>03</div>
+            <h2>Support &amp; Legal Contacts</h2>
           </div>
           <p>
             You can reach us through any of the following verified communication channels:
@@ -184,8 +198,8 @@ export default function ContactPage() {
         {/* Step-by-Step Data Deletion Instructions */}
         <div className={styles.sectionCard}>
           <div className={styles.sectionHeading}>
-            <div className={styles.sectionNumber}>03</div>
-            <h2>Step-by-Step Data & Account Deletion</h2>
+            <div className={styles.sectionNumber}>04</div>
+            <h2>Step-by-Step Data &amp; Account Deletion</h2>
           </div>
           <p>
             In compliance with global data privacy frameworks (GDPR Article 17 Right to Erasure, CCPA, and platform
