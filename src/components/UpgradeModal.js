@@ -10,11 +10,15 @@ export default function UpgradeModal({
   reasonTitle = 'Unlock More Power',
   reasonDesc = 'Upgrade your MakeAPost plan to unlock higher daily limits and custom branding.',
   currentPlanId = 'free',
+  plansToShow = ['pro', 'advanced'],
 }) {
   const [loadingPlan, setLoadingPlan] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
 
   if (!isOpen) return null;
+
+  const showPro = plansToShow.includes('pro');
+  const showAdvanced = plansToShow.includes('advanced');
 
   const handleCheckout = async (planId) => {
     setLoadingPlan(planId);
@@ -56,7 +60,7 @@ export default function UpgradeModal({
       <div
         className="card-brutal"
         style={{
-          maxWidth: '720px',
+          maxWidth: plansToShow.length === 1 ? '460px' : '720px',
           width: '100%',
           maxHeight: '90vh',
           overflowY: 'auto',
@@ -114,6 +118,7 @@ export default function UpgradeModal({
         {/* Pro & Advanced Cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '14px' }}>
           {/* PRO PLAN */}
+          {showPro && (
           <div
             className="card-brutal"
             style={{
@@ -174,8 +179,10 @@ export default function UpgradeModal({
               )}
             </button>
           </div>
+          )}
 
           {/* ADVANCED PLAN */}
+          {showAdvanced && (
           <div
             className="card-brutal"
             style={{
@@ -236,6 +243,7 @@ export default function UpgradeModal({
               )}
             </button>
           </div>
+          )}
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '0.75rem', color: 'var(--muted)' }}>

@@ -69,6 +69,7 @@ export default function SettingsPage() {
     open: false,
     title: '',
     desc: '',
+    plansToShow: ['pro', 'advanced'],
   });
   /* [FUTURE FEATURE - COMMENTED OUT FOR BUDGET]: Project Memory State
   const [projects, setProjects] = useState([]);
@@ -123,26 +124,20 @@ export default function SettingsPage() {
             localStorage.setItem('makeapost-theme', activeTheme);
           } catch {}
 
-          // Load Watermark Preference
-          const savedMark = profileData.default_watermark;
-          if (savedMark === 'none' || savedMark === 'hide') {
-            setWatermarkMode('none');
-            setCustomWatermarkText('');
-          } else if (!savedMark || savedMark === 'made with makeapost.app') {
-            setWatermarkMode('default');
-            setCustomWatermarkText('');
-          } else {
-            setWatermarkMode('custom');
-            setCustomWatermarkText(savedMark);
-          }
-          // Load live billing & usage status from server
+          // Load live billing & usage status from server, then resolve effective watermark
+          let effectivePlan = 'free';
+          let serverWatermark = profileData.default_watermark;
           try {
             const usageRes = await fetch('/api/credits/status');
             if (usageRes.ok) {
               const usageData = await usageRes.json();
               if (usageData?.authenticated && isMounted) {
+                effectivePlan = usageData.planId || 'free';
+                if (usageData.defaultWatermark) {
+                  serverWatermark = usageData.defaultWatermark;
+                }
                 setUsage({
-                  planId: usageData.planId || 'free',
+                  planId: effectivePlan,
                   planName: usageData.planName || 'Free',
                   planStatus: usageData.planStatus || 'active',
                   currentPeriodEnd: usageData.currentPeriodEnd || null,
@@ -157,6 +152,25 @@ export default function SettingsPage() {
               }
             }
           } catch {}
+
+          const resolvedMark = enforceWatermarkForPlan(
+            serverWatermark || DEFAULT_WATERMARK_TEXT,
+            effectivePlan
+          );
+          if (resolvedMark === 'none' || resolvedMark === 'hide') {
+            setWatermarkMode('none');
+            setCustomWatermarkText('');
+          } else if (
+            !resolvedMark ||
+            resolvedMark === DEFAULT_WATERMARK_TEXT ||
+            resolvedMark === 'made with makeapost.app'
+          ) {
+            setWatermarkMode('default');
+            setCustomWatermarkText('');
+          } else {
+            setWatermarkMode('custom');
+            setCustomWatermarkText(resolvedMark);
+          }
 
           // Show success toast if redirected back from Dodo checkout
           if (typeof window !== 'undefined' && window.location.search.includes('billing=success')) {
@@ -832,9 +846,9 @@ export default function SettingsPage() {
             Configure how your graphics are branded when exported from MakeAPost. You can use our default badge, promote your own social handle or website, or export completely unbranded graphics.
           </p>
 
-          {/* 3-Way Mode Selection */}
+          {/* 3-Way Mode Selection (Order: Free Default -> Pro+ Hide -> Advanced Custom) */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' }}>
-            {/* Option 1: Default Watermark */}
+            {/* Option 1: Default Watermark (Free+) */}
             <div
               className="card-brutal"
               style={{
@@ -858,57 +872,11 @@ export default function SettingsPage() {
                 {watermarkMode === 'default' && <Check size={16} />}
               </div>
               <span style={{ fontSize: '0.74rem', opacity: 0.85, lineHeight: 1.4 }}>
-                Displays official &quot;made with makeapost.app&quot; badge pill.
+                Displays official &quot;made with makeapost.site&quot; badge pill.
               </span>
             </div>
 
-            {/* Option 2: Custom Brand Handle (Advanced Only) */}
-            <div
-              className="card-brutal"
-              style={{
-                padding: '14px',
-                cursor: 'pointer',
-                backgroundColor: watermarkMode === 'custom' ? 'var(--accent-yellow)' : 'var(--bg-secondary)',
-                color: watermarkMode === 'custom' ? '#09090B' : 'var(--ink)',
-                border: 'var(--border)',
-                boxShadow: watermarkMode === 'custom' ? '3px 3px 0px var(--shadow-color)' : '1.5px 1.5px 0px var(--shadow-color)',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '6px',
-                transition: 'all 0.15s ease',
-                opacity: usage.planId === 'advanced' ? 1 : 0.78,
-              }}
-              onClick={() => {
-                if (usage.planId !== 'advanced') {
-                  setUpgradeModal({
-                    open: true,
-                    title: 'Custom Brand Handle Requires Advanced',
-                    desc: 'Promote your personal handle (@you) or startup domain on every exported image with the Advanced Plan ($15/mo).',
-                  });
-                  return;
-                }
-                setWatermarkMode('custom');
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
-                <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '0.88rem' }}>
-                  Custom Brand Handle
-                </span>
-                {usage.planId !== 'advanced' ? (
-                  <span className="badge-brutal badge-yellow" style={{ fontSize: '0.6rem', padding: '1px 6px' }}>
-                    <Lock size={10} />
-                    <span>ADVANCED</span>
-                  </span>
-                ) : (
-                  watermarkMode === 'custom' && <Check size={16} />
-                )}
-              </div>
-              <span style={{ fontSize: '0.74rem', opacity: 0.85, lineHeight: 1.4 }}>
-                Promote your personal handle (e.g. @founder) or domain.
-              </span>
-            </div>
-
-            {/* Option 3: Clean Export (Pro & Advanced) */}
+            {/* Option 2: Clean Export (Pro & Advanced) */}
             <div
               className="card-brutal"
               style={{
@@ -930,6 +898,7 @@ export default function SettingsPage() {
                     open: true,
                     title: 'Hide Watermark Requires Pro or Advanced',
                     desc: 'Remove the MakeAPost watermark for clean, unbranded exports by upgrading to Pro ($7/mo) or Advanced ($15/mo).',
+                    plansToShow: ['pro', 'advanced'],
                   });
                   return;
                 }
@@ -951,6 +920,53 @@ export default function SettingsPage() {
               </div>
               <span style={{ fontSize: '0.74rem', opacity: 0.85, lineHeight: 1.4 }}>
                 Export clean, unbranded graphics with zero watermark pills.
+              </span>
+            </div>
+
+            {/* Option 3: Custom Brand Handle (Advanced Only) */}
+            <div
+              className="card-brutal"
+              style={{
+                padding: '14px',
+                cursor: 'pointer',
+                backgroundColor: watermarkMode === 'custom' ? 'var(--accent-yellow)' : 'var(--bg-secondary)',
+                color: watermarkMode === 'custom' ? '#09090B' : 'var(--ink)',
+                border: 'var(--border)',
+                boxShadow: watermarkMode === 'custom' ? '3px 3px 0px var(--shadow-color)' : '1.5px 1.5px 0px var(--shadow-color)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '6px',
+                transition: 'all 0.15s ease',
+                opacity: usage.planId === 'advanced' ? 1 : 0.78,
+              }}
+              onClick={() => {
+                if (usage.planId !== 'advanced') {
+                  setUpgradeModal({
+                    open: true,
+                    title: 'Custom Brand Handle Requires Advanced',
+                    desc: 'Promote your personal handle (@you) or startup domain on every exported image with the Advanced Plan ($15/mo).',
+                    plansToShow: ['advanced'],
+                  });
+                  return;
+                }
+                setWatermarkMode('custom');
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
+                <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '0.88rem' }}>
+                  Custom Brand Handle
+                </span>
+                {usage.planId !== 'advanced' ? (
+                  <span className="badge-brutal badge-yellow" style={{ fontSize: '0.6rem', padding: '1px 6px' }}>
+                    <Lock size={10} />
+                    <span>ADVANCED</span>
+                  </span>
+                ) : (
+                  watermarkMode === 'custom' && <Check size={16} />
+                )}
+              </div>
+              <span style={{ fontSize: '0.74rem', opacity: 0.85, lineHeight: 1.4 }}>
+                Promote your personal handle (e.g. @founder) or domain.
               </span>
             </div>
           </div>
@@ -1039,7 +1055,7 @@ export default function SettingsPage() {
               >
                 {watermarkMode === 'custom'
                   ? (customWatermarkText.trim() || '@yourhandle')
-                  : 'made with makeapost.app'}
+                  : DEFAULT_WATERMARK_TEXT}
               </div>
             )}
           </div>
@@ -1058,8 +1074,7 @@ export default function SettingsPage() {
             </button>
 
             <div style={{ fontSize: '0.74rem', color: 'var(--muted)', lineHeight: 1.45, maxWidth: '420px' }}>
-              <strong>Upcoming Billing Notice:</strong> Currently 100% free for Beta creators. When billing is enabled:
-              Free Tier (Default Badge) • Pro Tier (Clean Export) • Advanced Tier (Custom Brand Handle).
+              <strong>Plan Access:</strong> Free Tier (Default Badge) • Pro Tier (Clean Export) • Advanced Tier (Custom Brand Handle).
             </div>
           </div>
         </section>
@@ -1241,10 +1256,11 @@ export default function SettingsPage() {
       {/* Upgrade Plan Modal */}
       <UpgradeModal
         isOpen={upgradeModal.open}
-        onClose={() => setUpgradeModal({ open: false, title: '', desc: '' })}
+        onClose={() => setUpgradeModal({ open: false, title: '', desc: '', plansToShow: ['pro', 'advanced'] })}
         reasonTitle={upgradeModal.title}
         reasonDesc={upgradeModal.desc}
         currentPlanId={usage.planId}
+        plansToShow={upgradeModal.plansToShow}
       />
 
       {/* Floating Feedback Toast */}

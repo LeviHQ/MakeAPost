@@ -76,37 +76,59 @@ export default function EditorPage() {
   const [hasExportedImage, setHasExportedImage] = useState(false);
   const [generatedPosts, setGeneratedPosts] = useState({ x: '', linkedin: '', reddit: '' });
   const [showAuthGateModal, setShowAuthGateModal] = useState(false);
-  const [upgradeModal, setUpgradeModal] = useState({ open: false, title: '', desc: '' });
+  const [upgradeModal, setUpgradeModal] = useState({ open: false, title: '', desc: '', plansToShow: ['pro', 'advanced'] });
   const [exitModal, setExitModal] = useState({ open: false, targetHref: '/' });
 
-  // Sync Watermark, Auth & Live Usage Credits from Server
+  // Sync Watermark, Auth & Live Usage Credits from Server + Supabase Auth Listener
+  const [signingIn, setSigningIn] = useState(false);
+
   useEffect(() => {
     let isMounted = true;
+    let supabase = null;
+    try {
+      supabase = createClient();
+    } catch {}
+
     async function loadBillingAndPreferences() {
       try {
-        const res = await fetch('/api/credits/status');
-        const data = await res.json();
-        if (!isMounted) return;
+        // 1. Verify direct Supabase client auth first so logged-in users are never blocked
+        if (supabase) {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user && isMounted) {
+            setIsAuthenticated(true);
+          }
+        }
 
-        if (data?.authenticated) {
-          setIsAuthenticated(true);
-          setUsage({
-            planId: data.planId || 'free',
-            planName: data.planName || 'Free',
-            imageCreditsUsed: data.imageCreditsUsed || 0,
-            imageLimit: data.imageLimit || PLANS.free.dailyImages,
-            aiCreditsUsed: data.aiCreditsUsed || { x: 0, linkedin: 0, reddit: 0 },
-            aiLimitPerPlatform: data.aiLimitPerPlatform || PLANS.free.dailyAiPerPlatform,
-          });
-          const safeMark = enforceWatermarkForPlan(
-            data.defaultWatermark || DEFAULT_WATERMARK_TEXT,
-            data.planId || 'free'
-          );
-          setWatermark(safeMark);
-          try {
-            localStorage.setItem('makeapost-default-watermark', safeMark);
-          } catch {}
-        } else {
+        // 2. Fetch full plan & credit usage from backend
+        const res = await fetch('/api/credits/status');
+        if (res.ok) {
+          const data = await res.json();
+          if (!isMounted) return;
+          if (data?.authenticated) {
+            setIsAuthenticated(true);
+            setUsage({
+              planId: data.planId || 'free',
+              planName: data.planName || 'Free',
+              imageCreditsUsed: data.imageCreditsUsed || 0,
+              imageLimit: data.imageLimit || PLANS.free.dailyImages,
+              aiCreditsUsed: data.aiCreditsUsed || { x: 0, linkedin: 0, reddit: 0 },
+              aiLimitPerPlatform: data.aiLimitPerPlatform || PLANS.free.dailyAiPerPlatform,
+            });
+            const safeMark = enforceWatermarkForPlan(
+              data.defaultWatermark || DEFAULT_WATERMARK_TEXT,
+              data.planId || 'free'
+            );
+            setWatermark(safeMark);
+            try {
+              localStorage.setItem('makeapost-default-watermark', safeMark);
+            } catch {}
+          } else {
+            setIsAuthenticated(false);
+          }
+        } else if (supabase) {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (isMounted) setIsAuthenticated(Boolean(user));
+        } else if (isMounted) {
           setIsAuthenticated(false);
         }
       } catch (err) {
@@ -114,9 +136,26 @@ export default function EditorPage() {
         if (isMounted) setIsAuthenticated(false);
       }
     }
+
     loadBillingAndPreferences();
+
+    let subscription = null;
+    if (supabase) {
+      const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+        if (!isMounted) return;
+        if (session?.user) {
+          setIsAuthenticated(true);
+          loadBillingAndPreferences();
+        } else {
+          setIsAuthenticated(false);
+        }
+      });
+      subscription = data?.subscription || null;
+    }
+
     return () => {
       isMounted = false;
+      subscription?.unsubscribe();
     };
   }, []);
 
@@ -297,16 +336,20 @@ export default function EditorPage() {
   };
 
   const handleGoogleSignIn = async () => {
+    setSigningIn(true);
     try {
       const supabase = createClient();
-      await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback?next=/editor`,
         },
       });
+      if (error) throw error;
     } catch (err) {
       console.error('Google sign in error:', err);
+      setSigningIn(false);
+      showToast('Could not start Google Sign-In. Please check popup/redirect settings.');
     }
   };
 
@@ -417,12 +460,13 @@ export default function EditorPage() {
           </p>
           <button
             type="button"
+            disabled={signingIn}
             onClick={handleGoogleSignIn}
             className="btn-brutal btn-primary"
             style={{ width: '100%', padding: '12px 18px', fontSize: '0.95rem' }}
           >
             <GoogleIcon size={18} />
-            <span>Continue with Google</span>
+            <span>{signingIn ? 'Redirecting to Google...' : 'Continue with Google'}</span>
             <ArrowRight size={15} />
           </button>
           <Link
@@ -653,12 +697,14 @@ export default function EditorPage() {
                   open: true,
                   title: 'Custom Brand Handle Requires Advanced',
                   desc: 'Promote your personal handle (@you) or project domain on every exported image with the Advanced Plan ($15/mo).',
+                  plansToShow: ['advanced'],
                 });
               } else {
                 setUpgradeModal({
                   open: true,
                   title: 'Hide Watermark Requires Pro or Advanced',
                   desc: 'Remove the MakeAPost badge for clean, unbranded exports by upgrading to Pro ($7/mo) or Advanced ($15/mo).',
+                  plansToShow: ['pro', 'advanced'],
                 });
               }
             }}
@@ -907,10 +953,11 @@ export default function EditorPage() {
       {/* Upgrade Plan Modal */}
       <UpgradeModal
         isOpen={upgradeModal.open}
-        onClose={() => setUpgradeModal({ open: false, title: '', desc: '' })}
+        onClose={() => setUpgradeModal({ open: false, title: '', desc: '', plansToShow: ['pro', 'advanced'] })}
         reasonTitle={upgradeModal.title}
         reasonDesc={upgradeModal.desc}
         currentPlanId={usage.planId}
+        plansToShow={upgradeModal.plansToShow}
       />
     </div>
   );

@@ -7,6 +7,7 @@ import {
   normalizeDailyCredits,
   enforceWatermarkForPlan,
   getFreeCycleDates,
+  DEFAULT_WATERMARK_TEXT,
 } from '@/lib/billing';
 
 export const runtime = 'nodejs';
@@ -24,50 +25,86 @@ export async function GET() {
       return NextResponse.json({ authenticated: false }, { status: 200 });
     }
 
-    const admin = createAdminClient();
-    const { data: userRow, error: dbError } = await admin
-      .from('users')
-      .select(
-        'plan, plan_status, image_credits_used, ai_credits_used, last_credit_reset, current_period_end, billing_customer_id, default_watermark, created_at'
-      )
-      .eq('id', user.id)
-      .single();
+    let userRow = null;
+    try {
+      const admin = createAdminClient();
+      const { data: existingRow } = await admin
+        .from('users')
+        .select(
+          'plan, plan_status, image_credits_used, ai_credits_used, last_credit_reset, current_period_end, billing_customer_id, default_watermark, created_at'
+        )
+        .eq('id', user.id)
+        .single();
 
-    if (dbError || !userRow) {
-      return NextResponse.json(
-        { error: 'User profile not found.' },
-        { status: 404 }
-      );
+      if (existingRow) {
+        userRow = existingRow;
+      } else {
+        // Auto-provision public.users row if missing for an authenticated Google user
+        const { data: insertedRow } = await admin
+          .from('users')
+          .upsert(
+            {
+              id: user.id,
+              email: user.email,
+              full_name: user.user_metadata?.full_name || user.user_metadata?.name || '',
+              avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || '',
+              theme: 'light',
+              default_watermark: DEFAULT_WATERMARK_TEXT,
+              plan: 'free',
+              plan_status: 'active',
+            },
+            { onConflict: 'id' }
+          )
+          .select(
+            'plan, plan_status, image_credits_used, ai_credits_used, last_credit_reset, current_period_end, billing_customer_id, default_watermark, created_at'
+          )
+          .single();
+        userRow = insertedRow || null;
+      }
+
+      if (userRow) {
+        const normalizedCheck = normalizeDailyCredits(userRow);
+        if (normalizedCheck.needsReset) {
+          await admin
+            .from('users')
+            .update({
+              image_credits_used: 0,
+              ai_credits_used: { x: 0, linkedin: 0, reddit: 0 },
+              last_credit_reset: normalizedCheck.today,
+            })
+            .eq('id', user.id);
+        }
+      }
+    } catch (adminErr) {
+      console.warn('Admin client fallback in /api/credits/status:', adminErr?.message || adminErr);
+      // Fallback to user-scoped RLS client if service role key is missing
+      const { data: rlsRow } = await supabase
+        .from('users')
+        .select(
+          'plan, plan_status, image_credits_used, ai_credits_used, last_credit_reset, current_period_end, billing_customer_id, default_watermark, created_at'
+        )
+        .eq('id', user.id)
+        .single();
+      userRow = rlsRow || null;
     }
 
     const planId = getEffectivePlanId(userRow);
     const planConfig = getPlanConfig(planId);
     const normalized = normalizeDailyCredits(userRow);
 
-    if (normalized.needsReset) {
-      await admin
-        .from('users')
-        .update({
-          image_credits_used: 0,
-          ai_credits_used: { x: 0, linkedin: 0, reddit: 0 },
-          last_credit_reset: normalized.today,
-        })
-        .eq('id', user.id);
-    }
-
     const effectiveWatermark = enforceWatermarkForPlan(
-      userRow.default_watermark,
+      userRow?.default_watermark || DEFAULT_WATERMARK_TEXT,
       planId
     );
 
-    const accountCreatedAt = userRow.created_at || user.created_at || new Date().toISOString();
+    const accountCreatedAt = userRow?.created_at || user.created_at || new Date().toISOString();
     let cycleStart = null;
     let cycleEnd = null;
     if (planId === 'free') {
       const freeCycle = getFreeCycleDates(accountCreatedAt);
       cycleStart = freeCycle.cycleStart;
       cycleEnd = freeCycle.cycleEnd;
-    } else if (userRow.current_period_end) {
+    } else if (userRow?.current_period_end) {
       cycleEnd = userRow.current_period_end;
       const startDt = new Date(userRow.current_period_end);
       if (!Number.isNaN(startDt.getTime())) {
@@ -80,12 +117,12 @@ export async function GET() {
       authenticated: true,
       planId,
       planName: planConfig.name,
-      planStatus: userRow.plan_status || 'active',
-      currentPeriodEnd: userRow.current_period_end || null,
+      planStatus: userRow?.plan_status || 'active',
+      currentPeriodEnd: userRow?.current_period_end || null,
       cycleStart,
       cycleEnd,
       accountCreatedAt,
-      hasBillingCustomer: Boolean(userRow.billing_customer_id),
+      hasBillingCustomer: Boolean(userRow?.billing_customer_id),
       defaultWatermark: effectiveWatermark,
       imageCreditsUsed: normalized.imageCreditsUsed,
       imageLimit: planConfig.dailyImages,
