@@ -30,8 +30,8 @@ const FAQ_ITEMS = [
     a: 'Use the built-in Blur/Redact tool right inside the 70% Canvas Editor before exporting or generating AI posts. You also get 10+ annotation tools including arrows, boxes, circles, spotlight focus, 2x zoom loupe, step badges, and custom text.',
   },
   {
-    q: 'How do billing, upgrades, and refunds work?',
-    a: 'Subscriptions are billed monthly via Dodo Payments with instant activation. You can upgrade from Free to Pro or Advanced anytime from Account Settings or the Pricing section, and all paid plans are backed by our transparent 14-day refund policy for billing errors or service issues.',
+    q: 'How do billing, upgrades, and refunds/cancellations work?',
+    a: 'Subscriptions are billed monthly upfront via Dodo Payments with instant activation. Because you can thoroughly test MakeAPost using the monthly Free Plan and unlimited 0-credit Sample Mode before upgrading, all sales are final—MakeAPost does not support refunds or mid-cycle cancellations (only verified duplicate processor charges may be reviewed via our Contact page).',
   },
 ];
 

@@ -9,6 +9,8 @@ import {
   Sparkles,
   ArrowRight,
   ExternalLink,
+  Building2,
+  UserCheck,
 } from 'lucide-react';
 import styles from './Footer.module.css';
 
@@ -47,6 +49,11 @@ export default function Footer({ className = '' }) {
                 </Link>
               </li>
               <li>
+                <Link href="/#pricing" className={styles.footerLink}>
+                  <span>Pricing Plans</span>
+                </Link>
+              </li>
+              <li>
                 <Link href="/settings" className={styles.footerLink}>
                   <span>Account &amp; Settings</span>
                 </Link>
@@ -59,7 +66,32 @@ export default function Footer({ className = '' }) {
             </ul>
           </div>
 
-          {/* Column 3: Legal & Compliance */}
+          {/* Column 3: Company */}
+          <div className={styles.col}>
+            <div className={styles.colTitle}>Company</div>
+            <ul className={styles.linkList}>
+              <li>
+                <Link href="/about" className={styles.footerLink}>
+                  <Building2 size={13} />
+                  <span>About MakeAPost</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/founder" className={styles.footerLink}>
+                  <UserCheck size={13} />
+                  <span>Founder</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact" className={styles.footerLink}>
+                  <Mail size={13} />
+                  <span>Contact &amp; Support</span>
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 4: Legal & Compliance */}
           <div className={styles.col}>
             <div className={styles.colTitle}>Legal &amp; Compliance</div>
             <ul className={styles.linkList}>
@@ -78,13 +110,13 @@ export default function Footer({ className = '' }) {
               <li>
                 <Link href="/refund" className={styles.footerLink}>
                   <RefreshCw size={13} />
-                  <span>Refund &amp; Cancellation</span>
+                  <span>No-Refund &amp; Billing</span>
                 </Link>
               </li>
               <li>
                 <Link href="/contact" className={styles.footerLink}>
-                  <Mail size={13} />
-                  <span>Contact &amp; Data Deletion</span>
+                  <ShieldCheck size={13} />
+                  <span>Data Deletion</span>
                 </Link>
               </li>
             </ul>

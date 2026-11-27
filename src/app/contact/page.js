@@ -142,41 +142,10 @@ export default function ContactPage() {
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                 <Mail size={18} style={{ color: 'var(--accent-primary)' }} />
-                <h3 style={{ fontSize: '0.95rem', margin: 0 }}>Official Support Desk</h3>
+                <h3 style={{ fontSize: '0.95rem', margin: 0 }}>Direct Founder &amp; Support Email</h3>
               </div>
               <p style={{ fontSize: '0.86rem', margin: '0 0 10px 0', color: 'var(--text-secondary)' }}>
-                For general support, feedback, and technical assistance:
-              </p>
-              <a
-                href="mailto:support@makeapost.site"
-                className="btn-brutal"
-                style={{
-                  display: 'inline-flex',
-                  fontSize: '0.82rem',
-                  padding: '6px 12px',
-                  textDecoration: 'none',
-                  wordBreak: 'break-all',
-                }}
-              >
-                support@makeapost.site
-              </a>
-            </div>
-
-            <div
-              style={{
-                border: 'var(--border)',
-                borderRadius: 'var(--radius)',
-                padding: '16px',
-                background: 'var(--bg-secondary)',
-                boxShadow: 'var(--shadow-card)',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                <UserCheck size={18} style={{ color: 'var(--accent-primary)' }} />
-                <h3 style={{ fontSize: '0.95rem', margin: 0 }}>Founder & Legal Lead</h3>
-              </div>
-              <p style={{ fontSize: '0.86rem', margin: '0 0 10px 0', color: 'var(--text-secondary)' }}>
-                Adarsh Jayprakash Mishra (Direct Escalations & Compliance):
+                For general support, billing inquiries, bug reports, and account deletion requests:
               </p>
               <a
                 href="mailto:adarshmishra70931@gmail.com"
@@ -191,6 +160,36 @@ export default function ContactPage() {
               >
                 adarshmishra70931@gmail.com
               </a>
+            </div>
+
+            <div
+              style={{
+                border: 'var(--border)',
+                borderRadius: 'var(--radius)',
+                padding: '16px',
+                background: 'var(--bg-secondary)',
+                boxShadow: 'var(--shadow-card)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                <UserCheck size={18} style={{ color: 'var(--accent-primary)' }} />
+                <h3 style={{ fontSize: '0.95rem', margin: 0 }}>Founder &amp; Operator (India)</h3>
+              </div>
+              <p style={{ fontSize: '0.86rem', margin: '0 0 10px 0', color: 'var(--text-secondary)' }}>
+                Operated independently by Adarsh Jayprakash Mishra in India. Typical response time: within 24–48 business hours.
+              </p>
+              <Link
+                href="/founder"
+                className="btn-brutal"
+                style={{
+                  display: 'inline-flex',
+                  fontSize: '0.82rem',
+                  padding: '6px 12px',
+                  textDecoration: 'none',
+                }}
+              >
+                View Founder Profile &rarr;
+              </Link>
             </div>
           </div>
         </div>
@@ -287,14 +286,10 @@ export default function ContactPage() {
               <p style={{ fontSize: '0.84rem', margin: 0, color: 'var(--text-secondary)' }}>
                 To permanently wipe your entire user account, profile record, usage counters, and all linked associations
                 from our Supabase PostgreSQL cluster, email{' '}
-                <a href="mailto:support@makeapost.site?subject=Account%20Deletion%20Request" style={{ fontWeight: 600 }}>
-                  support@makeapost.site
-                </a>{' '}
-                or{' '}
                 <a href="mailto:adarshmishra70931@gmail.com?subject=Account%20Deletion%20Request" style={{ fontWeight: 600 }}>
                   adarshmishra70931@gmail.com
                 </a>{' '}
-                with the subject line <code>Account Deletion Request</code> from your registered email address.
+                or submit the Contact form above with the topic <code>Account &amp; Data Deletion</code> from your registered email address.
               </p>
               <p style={{ fontSize: '0.82rem', marginTop: '8px', marginBottom: 0, color: 'var(--text-secondary)' }}>
                 All deletion requests are verified and permanently executed within <strong>48 hours</strong>.
@@ -319,7 +314,7 @@ export default function ContactPage() {
               Terms of Service
             </Link>
             <Link href="/refund" className="btn-brutal" style={{ fontSize: '0.82rem', padding: '6px 14px' }}>
-              Refund &amp; Cancellation
+              No-Refund &amp; Billing Policy
             </Link>
             <Link href="/editor" className="btn-brutal btn-primary" style={{ fontSize: '0.82rem', padding: '6px 14px' }}>
               Open Studio &rarr;

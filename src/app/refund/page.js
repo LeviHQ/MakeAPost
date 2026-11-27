@@ -1,22 +1,13 @@
 import Link from 'next/link';
 import Logo from '@/components/Logo';
 import Footer from '@/components/Footer';
-import {
-  RefreshCw,
-  CreditCard,
-  CheckCircle2,
-  AlertCircle,
-  HelpCircle,
-  Home,
-  Sparkles,
-  ShieldCheck,
-} from 'lucide-react';
+import { RefreshCw, ArrowLeft, CreditCard, AlertCircle, HelpCircle, CheckCircle2 } from 'lucide-react';
 import styles from '../legal.module.css';
 
 export const metadata = {
-  title: 'Refund & Cancellation Policy — MakeAPost',
+  title: 'No-Refund & Billing Policy — MakeAPost',
   description:
-    'Transparent Refund and Cancellation Policy for MakeAPost (https://makeapost.site). Free core access, zero hidden lock-ins, and fair refund evaluation.',
+    'Read the billing, all-sales-final, no-refund, and no-cancellation policy for MakeAPost (https://makeapost.site).',
   alternates: {
     canonical: '/refund',
   },
@@ -25,104 +16,82 @@ export const metadata = {
 export default function RefundPage() {
   return (
     <div className={styles.legalContainer}>
-      {/* Top Header */}
+      {/* Sticky Minimal Header */}
       <header className={styles.legalHeader}>
         <div className={styles.headerInner}>
-          <Logo size={36} />
-
-          <nav className={styles.headerNav}>
-            <Link
-              href="/"
-              className="btn-brutal"
-              style={{ padding: '6px 14px', fontSize: '0.84rem', gap: '6px' }}
-            >
-              <Home size={14} />
-              <span className={styles.headerNavText}>Home</span>
+          <Logo size={34} />
+          <div className={styles.headerNav}>
+            <Link href="/" className="btn-brutal" style={{ padding: '6px 14px', fontSize: '0.84rem' }}>
+              <ArrowLeft size={14} />
+              <span>Back to Home</span>
             </Link>
-
-            <Link
-              href="/editor"
-              className="btn-brutal btn-primary"
-              style={{ padding: '6px 14px', fontSize: '0.84rem', gap: '6px' }}
-            >
-              <Sparkles size={14} />
-              <span className={styles.headerNavText}>Studio</span>
+            <Link href="/editor" className="btn-brutal btn-primary" style={{ padding: '6px 14px', fontSize: '0.84rem' }}>
+              Open Studio
             </Link>
-          </nav>
+          </div>
         </div>
       </header>
 
-      {/* Main Legal Content */}
       <main className={styles.mainContent}>
         <div className={styles.pageHeader}>
           <div className={styles.headerMeta}>
-            <div className="badge-brutal badge-yellow" style={{ fontSize: '0.75rem', padding: '3px 10px' }}>
-              <CreditCard size={13} />
-              <span>BILLING &amp; REFUNDS</span>
-            </div>
-            <span className="tag-mono" style={{ fontSize: '0.72rem' }}>
-              EFFECTIVE: NOVEMBER 2026
+            <span className="badge-brutal badge-yellow" style={{ fontSize: '0.72rem' }}>
+              <RefreshCw size={12} />
+              <span>ALL SALES FINAL • NO REFUNDS</span>
+            </span>
+            <span className="tag-mono" style={{ fontSize: '0.75rem' }}>
+              Last Updated: November 27, 2026
             </span>
           </div>
-
-          <h1 className={styles.pageTitle}>Refund &amp; Cancellation Policy</h1>
-          <p className={styles.pageSubtitle}>
-            We believe in honest, fair business practices. Here is our straightforward refund and cancellation policy
-            with zero hidden lock-ins or surprise fees.
+          <h1 className={styles.title}>No-Refund &amp; Billing Policy</h1>
+          <p className={styles.subtitle}>
+            Clear, upfront billing rules for MakeAPost Free, Pro ($7/mo), and Advanced ($15/mo) plans.
           </p>
         </div>
 
-        <article className={styles.contentCard}>
+        <article className={styles.documentBody}>
           {/* Section 1 */}
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>
               <CheckCircle2 size={18} />
-              <span>1. 100% Free Core Access &amp; No Credit Card Required</span>
+              <span>1. Try MakeAPost Free Before Upgrading</span>
             </h2>
             <p className={styles.sectionText}>
-              All core features of MakeAPost — including the 70% Canvas Image Beautifier, high-resolution PNG exports, and AI Post Generation for X, LinkedIn, and Reddit — are currently available completely free of charge upon signing in with Google.
+              We want you to be 100% confident before purchasing a paid plan. Every Google Sign-In automatically starts on our monthly auto-renewing <strong>Free Plan</strong> (3 image edits/day + 1 AI post per platform/day), and our built-in <strong>Code Snippet</strong> and <strong>SaaS Analytics</strong> sample images let you test canvas editing and AI post previews unlimited times with <strong>0 credits used</strong>.
             </p>
             <div className={styles.callout}>
-              <div className={styles.calloutTitle}>
-                <ShieldCheck size={14} />
-                <span>Zero Financial Risk</span>
-              </div>
-              <div className={styles.calloutText}>
-                You will never be asked for credit card details to use the current free version of MakeAPost.
-              </div>
+              <p className={styles.sectionText} style={{ fontWeight: 700, color: 'var(--ink)' }}>
+                Because every user can evaluate MakeAPost thoroughly for free prior to upgrading, all paid plan purchases are final.
+              </p>
             </div>
           </section>
 
           {/* Section 2 */}
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>
-              <RefreshCw size={18} />
-              <span>2. Monthly Subscription Terms</span>
+              <CreditCard size={18} />
+              <span>2. No Refunds &amp; No Mid-Cycle Cancellations</span>
             </h2>
             <p className={styles.sectionText}>
-              Paid monthly plans (Pro `$7/mo` and Advanced `$15/mo`) are billed upfront per monthly cycle via Dodo Payments:
+              Paid monthly plans (Pro <code>$7/mo</code> and Advanced <code>$15/mo</code>) are billed upfront per monthly cycle via Dodo Payments:
             </p>
             <ul className={styles.list}>
               <li className={styles.listItem}>
                 <span className={styles.listBullet} />
                 <span>
-                  <strong>Active Billing Cycle:</strong> Subscriptions remain active for the paid billing period with full daily image editing and per-platform AI quotas. Self-serve mid-cycle cancellation is not offered inside the dashboard.
+                  <strong>No Refunds Supported:</strong> MakeAPost does not offer refunds, partial credits, or prorated reimbursements once a paid plan charge has been processed.
+                </span>
+              </li>
+              <li className={styles.listItem}>
+                <span className={styles.listBullet} />
+                <span>
+                  <strong>No Self-Serve Cancellation:</strong> Mid-cycle subscription cancellation is not supported inside the dashboard. Your paid tier remains active with full daily image editing and per-platform AI quotas for the entire paid billing cycle.
                 </span>
               </li>
               <li className={styles.listItem}>
                 <span className={styles.listBullet} />
                 <span>
                   <strong>Billing Notifications:</strong> MakeAPost sends automated transactional emails (via Resend, alongside official Dodo Payments receipts) when your subscription activates, renews, expires, or requires payment attention.
-                </span>
-              </li>
-              <li className={styles.listItem}>
-                <span className={styles.listBullet} />
-                <span>
-                  <strong>Billing Support:</strong> For duplicate charges or urgent billing inquiries, please reach out directly to <code>billing@makeapost.site</code> or use our{' '}
-                  <Link href="/contact" style={{ color: 'var(--ink)', fontWeight: 700, textDecoration: 'underline' }}>
-                    Contact form
-                  </Link>
-                  .
                 </span>
               </li>
             </ul>
@@ -132,45 +101,32 @@ export default function RefundPage() {
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>
               <AlertCircle size={18} />
-              <span>3. Refund Terms &amp; Eligibility</span>
+              <span>3. Failed Payments, Account Hold &amp; Duplicate Charges</span>
             </h2>
             <p className={styles.sectionText}>
-              For any future paid transactions, we maintain a customer-friendly <strong>14-day refund policy</strong> under the following conditions:
+              If a recurring renewal payment fails or is placed on hold by your card issuer, your account may temporarily enter an <code>on_hold</code> state or automatically revert to the monthly Free Plan (<code>3 image edits/day</code> + <code>1 AI post per platform/day</code>) with the default watermark restored until you choose to re-subscribe.
             </p>
-            <ul className={styles.list}>
-              <li className={styles.listItem}>
-                <span className={styles.listBullet} />
-                <span>
-                  <strong>Billing Errors &amp; Duplicate Charges:</strong> If you are accidentally billed multiple times or charged in error, we will issue an immediate 100% refund.
-                </span>
-              </li>
-              <li className={styles.listItem}>
-                <span className={styles.listBullet} />
-                <span>
-                  <strong>Service Outages:</strong> If MakeAPost experiences severe, prolonged platform unavailability preventing you from using your plan, you are entitled to a full or prorated refund.
-                </span>
-              </li>
-              <li className={styles.listItem}>
-                <span className={styles.listBullet} />
-                <span>
-                  <strong>14-Day Window:</strong> Refund requests must be submitted within 14 calendar days of the charge date to be eligible.
-                </span>
-              </li>
-            </ul>
+            <p className={styles.sectionText} style={{ marginTop: '10px' }}>
+              The only exception to our all-sales-final policy is a verified technical billing error—such as being accidentally charged twice for the same cycle due to a payment gateway glitch. If a verified duplicate charge occurs, please report it promptly so we can review the transaction with Dodo Payments.
+            </p>
           </section>
 
           {/* Section 4 */}
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>
               <HelpCircle size={18} />
-              <span>4. How to Request a Refund</span>
+              <span>4. Direct Billing Support &amp; Jurisdiction</span>
             </h2>
             <p className={styles.sectionText}>
-              To request a refund or raise a billing question, please contact us with your Google account email and payment reference via our{' '}
+              For duplicate charge reports or payment reference questions, please reach out with your Google account email and Dodo payment reference via our{' '}
               <Link href="/contact" style={{ color: 'var(--ink)', fontWeight: 700, textDecoration: 'underline' }}>
                 Contact Page
               </Link>{' '}
-              or email us directly at <code>billing@makeapost.site</code>. We review and process all eligible refund requests within 24 to 48 business hours.
+              or email our founder directly at{' '}
+              <a href="mailto:adarshmishra70931@gmail.com" style={{ color: 'var(--ink)', fontWeight: 700, textDecoration: 'underline' }}>
+                adarshmishra70931@gmail.com
+              </a>
+              . MakeAPost is operated from <strong>India</strong>, and all billing terms are governed by the laws of India.
             </p>
           </section>
         </article>

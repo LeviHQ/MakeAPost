@@ -5,7 +5,7 @@ import { Send, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 
 const TOPIC_OPTIONS = [
   'General Support',
-  'Billing & Refund Inquiry',
+  'Billing & Account Support',
   'Account & Data Deletion',
   'Bug Report / Feature Request',
 ];

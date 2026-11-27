@@ -77,10 +77,10 @@ export default function TermsPage() {
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>
               <CheckCircle2 size={18} />
-              <span>1. Agreement to Terms</span>
+              <span>1. Agreement to Terms &amp; Account Eligibility</span>
             </h2>
             <p className={styles.sectionText}>
-              By visiting our website or utilizing the MakeAPost studio at <code>https://makeapost.site</code>, you confirm that you are at least 13 years of age and legally capable of entering into this agreement. MakeAPost is a browser-based screenshot styling and AI social post drafting tool. If you are using the service on behalf of an organization, you represent that you have authority to bind that entity to these terms.
+              By visiting or using MakeAPost at <code>https://makeapost.site</code>, you confirm that you are at least 13 years of age (or the age of digital consent in your jurisdiction) and legally capable of entering into this agreement. Access to the MakeAPost Studio (<code>/editor</code>) requires signing in with Google OAuth so daily usage quotas and account preferences can be enforced fairly. Every authenticated account is automatically enrolled in our monthly auto-renewing Free Plan (3 image edits/day and 1 AI post per platform/day), alongside unlimited 0-credit testing via built-in Sample images.
             </p>
           </section>
 
@@ -153,18 +153,30 @@ export default function TermsPage() {
             <p className={styles.sectionText}>
               MakeAPost integrates with Google OAuth for authentication, Google Gemini for visual understanding, Dodo Payments for subscription billing, Resend for essential transactional and support emails, and native web intents for social platforms (X, LinkedIn, Reddit). We do not store your social account credentials. Your interactions with these external services are subject to their respective terms and privacy policies. MakeAPost is not responsible for content moderation decisions, algorithm updates, or account actions taken by third-party platforms.
             </p>
+            <p className={styles.sectionText} style={{ marginTop: '10px' }}>
+              Paid plans (Pro at <code>$7/mo</code> and Advanced at <code>$15/mo</code>) are billed upfront via Dodo Payments. By upgrading, you acknowledge and agree to our{' '}
+              <Link href="/refund" style={{ color: 'var(--ink)', fontWeight: 700, textDecoration: 'underline' }}>
+                No-Refund &amp; Billing Policy
+              </Link>{' '}
+              (all sales are final, with no refunds or mid-cycle cancellations).
+            </p>
           </section>
 
           {/* Section 5 */}
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>
               <HelpCircle size={18} />
-              <span>5. Disclaimers &amp; Limitation of Liability</span>
+              <span>5. Disclaimers, Limitation of Liability &amp; Governing Law</span>
             </h2>
             <p className={styles.sectionText}>
-              MakeAPost is provided on an &quot;AS IS&quot; and &quot;AS AVAILABLE&quot; basis without warranties of any kind, whether express or implied.
-              While we optimize prompts for high social engagement, we make no guarantee that generated posts will achieve viral reach or specific marketing metrics.
-              To the maximum extent permitted by law, MakeAPost and its founder shall not be liable for any indirect, incidental, or consequential damages resulting from the use of the platform.
+              MakeAPost is provided on an &quot;AS IS&quot; and &quot;AS AVAILABLE&quot; basis without warranties of any kind, whether express or implied. While we optimize prompts for high social engagement, we make no guarantee that generated posts will achieve viral reach or specific marketing metrics. To the maximum extent permitted by law, MakeAPost and its founder shall not be liable for any indirect, incidental, or consequential damages resulting from the use of the platform.
+            </p>
+            <p className={styles.sectionText} style={{ marginTop: '10px' }}>
+              <strong>Business Location &amp; Governing Law:</strong> MakeAPost is independently owned and operated by <strong>Adarsh Jayprakash Mishra</strong> in <strong>India</strong>. These Terms of Service and any disputes arising out of or relating to MakeAPost shall be governed by and construed in accordance with the laws of <strong>India</strong>, without regard to conflict of law principles. For legal or support notices, contact{' '}
+              <a href="mailto:adarshmishra70931@gmail.com" style={{ color: 'var(--ink)', fontWeight: 700, textDecoration: 'underline' }}>
+                adarshmishra70931@gmail.com
+              </a>
+              .
             </p>
           </section>
         </article>

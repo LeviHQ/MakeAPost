@@ -157,7 +157,7 @@ export default function PrivacyPage() {
               <li className={styles.listItem}>
                 <span className={styles.listBullet} />
                 <span>
-                  <strong>Studio Preferences &amp; Operational Metadata:</strong> Your UI theme preference (<code>light</code> or <code>dark</code>), default watermark preference, daily generation counter, and subscription/billing status metadata when applicable (processed via third-party payment processors; MakeAPost never stores raw card numbers).
+                  <strong>Studio Preferences &amp; Operational Metadata:</strong> Your UI theme preference (<code>light</code> or <code>dark</code>), default watermark preference, daily image edit and per-platform AI usage counters (reset daily at 00:00 UTC), one-time welcome email status flag, and subscription/billing metadata (plan tier, Dodo Payments customer/subscription identifiers, and billing cycle end date; MakeAPost never stores raw card numbers).
                 </span>
               </li>
               <li className={styles.listItem}>
@@ -219,14 +219,21 @@ export default function PrivacyPage() {
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>
               <Trash2 size={18} />
-              <span>5. Data Deletion Rights (GDPR &amp; CCPA)</span>
+              <span>5. Data Deletion Rights &amp; Jurisdiction (GDPR, CCPA &amp; India DPDP)</span>
             </h2>
             <p className={styles.sectionText}>
-              You have complete ownership and control over your data. You may request permanent deletion of your account and all associated profile attributes at any time by visiting our{' '}
+              You have complete ownership and control over your data. You may request permanent deletion of your MakeAPost account and all associated Supabase profile records at any time by submitting our{' '}
               <Link href="/contact" style={{ color: 'var(--ink)', fontWeight: 700, textDecoration: 'underline' }}>
-                Contact &amp; Data Deletion page
+                Contact &amp; Data Deletion form
               </Link>{' '}
-              or emailing us at <code>privacy@makeapost.site</code>. Upon receiving your verified request, all records are permanently deleted within 48 business hours.
+              or emailing our founder directly at{' '}
+              <a href="mailto:adarshmishra70931@gmail.com?subject=Account%20Deletion%20Request" style={{ color: 'var(--ink)', fontWeight: 700, textDecoration: 'underline' }}>
+                adarshmishra70931@gmail.com
+              </a>
+              . Upon receiving your verified request from your registered Google email address, all records are permanently deleted within 48 business hours.
+            </p>
+            <p className={styles.sectionText} style={{ marginTop: '10px' }}>
+              <strong>Data Controller:</strong> MakeAPost (<code>https://makeapost.site</code>) is independently operated by <strong>Adarsh Jayprakash Mishra</strong> in <strong>India</strong>.
             </p>
           </section>
         </article>
