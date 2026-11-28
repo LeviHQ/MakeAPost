@@ -108,6 +108,7 @@ export default function LandingPage() {
           'Multimodal AI Post Generation for X, LinkedIn & Reddit',
           '0-Credit Built-In Sample Mode',
           'Zero-Token Clipboard PNG & Native Composer Intents',
+          'Custom Gemini API Key (BYOK) Fast Lane on Advanced',
         ],
         offers: [
           {
@@ -129,7 +130,7 @@ export default function LandingPage() {
             name: 'Advanced Plan',
             price: '15',
             priceCurrency: 'USD',
-            description: '50 image edits/day, 15 AI posts per platform/day, Custom Brand Handle',
+            description: '50 image edits/day, 15 AI posts per platform/day, Custom Brand Handle, and Custom Gemini API Key (BYOK)',
           },
         ],
       },

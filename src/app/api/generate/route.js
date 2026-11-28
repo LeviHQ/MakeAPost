@@ -183,15 +183,32 @@ export async function POST(req) {
     }
     */
 
-    // 3. Validation & Sanitization: Gemini API Key
-    const rawApiKey = process.env.GEMINI_API_KEY;
+    // 3. Validation & Sanitization: Strictly One Active Gemini API Key (Custom BYOK for Advanced OR Platform Default)
+    let usingCustomKey = false;
+    let customKeyValue = '';
+    if (planId === 'advanced') {
+      try {
+        const { data: byokRow } = await admin
+          .from('users')
+          .select('use_custom_gemini_key, custom_gemini_api_key')
+          .eq('id', user.id)
+          .single();
+        if (byokRow?.use_custom_gemini_key && byokRow?.custom_gemini_api_key?.trim()) {
+          usingCustomKey = true;
+          customKeyValue = byokRow.custom_gemini_api_key.trim();
+        }
+      } catch {}
+    }
+
+    const rawApiKey = usingCustomKey ? customKeyValue : process.env.GEMINI_API_KEY;
     if (!rawApiKey) {
       return NextResponse.json(
         {
-          error:
-            'GEMINI_API_KEY is not configured in your environment. Please add GEMINI_API_KEY to your Vercel Project Settings > Environment Variables and redeploy.',
+          error: usingCustomKey
+            ? 'Your Custom Gemini API Key is missing. Please add it or switch to Default Platform Key in Account Settings.'
+            : 'GEMINI_API_KEY is not configured in your environment. Please add GEMINI_API_KEY to your Vercel Project Settings > Environment Variables and redeploy.',
         },
-        { status: 401 }
+        { status: usingCustomKey ? 400 : 401 }
       );
     }
 
@@ -199,10 +216,11 @@ export async function POST(req) {
     if (!apiKey) {
       return NextResponse.json(
         {
-          error:
-            'GEMINI_API_KEY is empty or malformed. Please verify the value in Vercel Environment Variables and redeploy.',
+          error: usingCustomKey
+            ? 'Your Custom Gemini API Key is empty or malformed. Please update it in Account Settings.'
+            : 'GEMINI_API_KEY is empty or malformed. Please verify the value in Vercel Environment Variables and redeploy.',
         },
-        { status: 401 }
+        { status: usingCustomKey ? 400 : 401 }
       );
     }
 
@@ -393,6 +411,19 @@ ${selectedSchemaExamples}
     }
 
     if (!result) {
+      if (
+        usingCustomKey &&
+        (lastError?.message?.includes('API_KEY_INVALID') ||
+          lastError?.message?.includes('API key not valid'))
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              'Your Custom Gemini API Key was rejected by Google AI. Please update your key or switch to Default Platform Key in Account Settings.',
+          },
+          { status: 400 }
+        );
+      }
       throw lastError || new Error('All candidate AI models were unavailable.');
     }
 

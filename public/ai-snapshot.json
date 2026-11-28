@@ -56,7 +56,8 @@
       "price_monthly_usd": 15,
       "daily_image_edits": 50,
       "daily_ai_posts_per_platform": 15,
-      "watermark": "Custom Brand Handle + Clean Export"
+      "watermark": "Custom Brand Handle + Clean Export",
+      "byok_custom_gemini_key": true
     }
   ],
   "refund_policy": "All sales final; no refunds or mid-cycle cancellations. Free plan and 0-credit Sample Mode available for full evaluation prior to upgrade.",

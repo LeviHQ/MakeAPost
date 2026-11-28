@@ -29,9 +29,10 @@ import {
   EyeOff,
   Image as ImageIcon,
   ArrowRight,
+  Key,
+  Trash2,
   // FolderKanban,
   // Pencil,
-  // Trash2,
 } from 'lucide-react';
 import styles from './settings.module.css';
 
@@ -52,6 +53,13 @@ export default function SettingsPage() {
   const [watermarkMode, setWatermarkMode] = useState('default'); // 'default' | 'custom' | 'none'
   const [customWatermarkText, setCustomWatermarkText] = useState('');
   const [savingWatermark, setSavingWatermark] = useState(false);
+
+  // BYOK Custom Gemini API Key State (Advanced Only)
+  const [byokMode, setByokMode] = useState('default'); // 'default' | 'custom'
+  const [byokInput, setByokInput] = useState('');
+  const [byokMaskedKey, setByokMaskedKey] = useState(null);
+  const [byokHasSavedKey, setByokHasSavedKey] = useState(false);
+  const [savingByok, setSavingByok] = useState(false);
   const [usage, setUsage] = useState({
     planId: 'free',
     planName: 'Free',
@@ -149,6 +157,18 @@ export default function SettingsPage() {
                   aiCreditsUsed: usageData.aiCreditsUsed || { x: 0, linkedin: 0, reddit: 0 },
                   aiLimitPerPlatform: usageData.aiLimitPerPlatform || PLANS.free.dailyAiPerPlatform,
                 });
+              }
+            }
+          } catch {}
+
+          try {
+            const byokRes = await fetch('/api/settings/api-key');
+            if (byokRes.ok) {
+              const byokData = await byokRes.json();
+              if (isMounted) {
+                setByokMode(byokData.useCustomGeminiKey ? 'custom' : 'default');
+                setByokHasSavedKey(Boolean(byokData.hasCustomKey));
+                setByokMaskedKey(byokData.maskedKey || null);
               }
             }
           } catch {}
@@ -1077,6 +1097,240 @@ export default function SettingsPage() {
               <strong>Plan Access:</strong> Free Tier (Default Badge) • Pro Tier (Clean Export) • Advanced Tier (Custom Brand Handle).
             </div>
           </div>
+        </section>
+
+        {/* Card 5: Bring Your Own Gemini API Key (BYOK — Advanced Plan Only) */}
+        <section className={styles.cardSection}>
+          <div className={styles.cardHeader}>
+            <div className={styles.cardTitle}>
+              <Key size={18} />
+              <span>AI Engine &amp; Gemini API Key (BYOK)</span>
+            </div>
+            <div
+              className={`badge-brutal ${usage.planId === 'advanced' ? 'badge-yellow' : 'badge-blue'}`}
+              style={{ fontSize: '0.7rem', padding: '2px 8px' }}
+            >
+              {usage.planId === 'advanced' ? 'ADVANCED UNLOCKED' : 'ADVANCED ONLY'}
+            </div>
+          </div>
+
+          <p style={{ fontSize: '0.86rem', color: 'var(--muted)', margin: 0, lineHeight: 1.5 }}>
+            Developers and power users on the <strong>Advanced Plan</strong> can connect their own Google Gemini API key for a dedicated, faster generation lane—or switch back to MakeAPost&apos;s default platform key anytime. Only <strong>one key</strong> is active at a time.
+          </p>
+
+          {/* 2-Way Mutually Exclusive Key Selector */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '10px' }}>
+            {/* Option A: Default Platform Key */}
+            <div
+              className="card-brutal"
+              style={{
+                padding: '14px',
+                cursor: savingByok ? 'not-allowed' : 'pointer',
+                backgroundColor: byokMode === 'default' ? 'var(--accent-yellow)' : 'var(--bg-secondary)',
+                color: byokMode === 'default' ? '#09090B' : 'var(--ink)',
+                border: 'var(--border)',
+                boxShadow: byokMode === 'default' ? '3px 3px 0px var(--shadow-color)' : '1.5px 1.5px 0px var(--shadow-color)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '6px',
+              }}
+              onClick={async () => {
+                if (savingByok || byokMode === 'default') return;
+                setSavingByok(true);
+                try {
+                  const res = await fetch('/api/settings/api-key', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mode: 'default' }),
+                  });
+                  const data = await res.json();
+                  if (!res.ok) throw new Error(data.error || 'Could not switch key.');
+                  setByokMode('default');
+                  showToast('Switched to Default Platform Gemini Key.');
+                } catch (err) {
+                  showToast(err?.message || 'Failed to switch to default key.');
+                } finally {
+                  setSavingByok(false);
+                }
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '0.88rem' }}>
+                  Use Default Platform Key
+                </span>
+                {byokMode === 'default' && <Check size={16} />}
+              </div>
+              <span style={{ fontSize: '0.74rem', opacity: 0.85, lineHeight: 1.4 }}>
+                Uses MakeAPost&apos;s built-in Gemini API key with zero configuration.
+              </span>
+            </div>
+
+            {/* Option B: Custom Gemini API Key (Advanced Only) */}
+            <div
+              className="card-brutal"
+              style={{
+                padding: '14px',
+                cursor: savingByok ? 'not-allowed' : 'pointer',
+                backgroundColor: byokMode === 'custom' ? 'var(--accent-yellow)' : 'var(--bg-secondary)',
+                color: byokMode === 'custom' ? '#09090B' : 'var(--ink)',
+                border: 'var(--border)',
+                boxShadow: byokMode === 'custom' ? '3px 3px 0px var(--shadow-color)' : '1.5px 1.5px 0px var(--shadow-color)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '6px',
+                opacity: usage.planId === 'advanced' ? 1 : 0.78,
+              }}
+              onClick={async () => {
+                if (savingByok) return;
+                if (usage.planId !== 'advanced') {
+                  setUpgradeModal({
+                    open: true,
+                    title: 'Custom Gemini API Key Requires Advanced',
+                    desc: 'Bring your own Google Gemini API key for dedicated high-speed post generation on the Advanced Plan ($15/mo).',
+                    plansToShow: ['advanced'],
+                  });
+                  return;
+                }
+                if (byokMode === 'custom') return;
+                if (byokHasSavedKey) {
+                  setSavingByok(true);
+                  try {
+                    const res = await fetch('/api/settings/api-key', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ mode: 'custom' }),
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Could not enable custom key.');
+                    setByokMode('custom');
+                    showToast('Activated your Custom Gemini API Key.');
+                  } catch (err) {
+                    showToast(err?.message || 'Failed to activate custom key.');
+                  } finally {
+                    setSavingByok(false);
+                  }
+                } else {
+                  setByokMode('custom');
+                }
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
+                <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '0.88rem' }}>
+                  Use Custom Gemini API Key
+                </span>
+                {usage.planId !== 'advanced' ? (
+                  <span className="badge-brutal badge-yellow" style={{ fontSize: '0.6rem', padding: '1px 6px' }}>
+                    <Lock size={10} />
+                    <span>ADVANCED</span>
+                  </span>
+                ) : (
+                  byokMode === 'custom' && <Check size={16} />
+                )}
+              </div>
+              <span style={{ fontSize: '0.74rem', opacity: 0.85, lineHeight: 1.4 }}>
+                Dedicated fast lane using your own Google AI Studio key (bypass shared load).
+              </span>
+            </div>
+          </div>
+
+          {/* Custom Key Input & Status (Shown for Advanced users when Custom selected or saved) */}
+          {usage.planId === 'advanced' && (byokMode === 'custom' || byokHasSavedKey) && (
+            <div
+              style={{
+                padding: '14px',
+                borderRadius: 'var(--radius-sm)',
+                border: '2px dashed var(--border-color)',
+                backgroundColor: 'var(--card-bg-subtle)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+              }}
+            >
+              {byokHasSavedKey && byokMaskedKey && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', fontSize: '0.78rem', fontFamily: 'var(--font-mono)' }}>
+                  <span>
+                    <strong>Saved Key:</strong> {byokMaskedKey}{' '}
+                    <span className={`badge-brutal ${byokMode === 'custom' ? 'badge-green' : 'badge-blue'}`} style={{ fontSize: '0.64rem', padding: '1px 6px', marginLeft: '6px' }}>
+                      {byokMode === 'custom' ? 'ACTIVE' : 'STANDBY'}
+                    </span>
+                  </span>
+                  <button
+                    type="button"
+                    disabled={savingByok}
+                    className="btn-brutal"
+                    style={{ padding: '4px 10px', fontSize: '0.72rem', color: '#DC2626', borderColor: '#DC2626', gap: '4px' }}
+                    onClick={async () => {
+                      setSavingByok(true);
+                      try {
+                        const res = await fetch('/api/settings/api-key', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ mode: 'default', clearKey: true }),
+                        });
+                        if (res.ok) {
+                          setByokMode('default');
+                          setByokHasSavedKey(false);
+                          setByokMaskedKey(null);
+                          setByokInput('');
+                          showToast('Custom key removed. Switched to Default Platform Key.');
+                        }
+                      } finally {
+                        setSavingByok(false);
+                      }
+                    }}
+                  >
+                    <Trash2 size={12} />
+                    <span>Remove Key</span>
+                  </button>
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <input
+                  type="password"
+                  value={byokInput}
+                  onChange={(e) => setByokInput(e.target.value)}
+                  placeholder={byokHasSavedKey ? 'Paste new Gemini API key (AIza... / AQ....) to replace' : 'Paste your Gemini API key (AIza... / AQ....)'}
+                  className="input-brutal"
+                  style={{ flex: 1, minWidth: '220px', fontFamily: 'var(--font-mono)', fontSize: '0.82rem' }}
+                  disabled={savingByok}
+                />
+                <button
+                  type="button"
+                  disabled={savingByok || !byokInput.trim()}
+                  className="btn-brutal btn-primary"
+                  style={{ padding: '8px 16px', fontSize: '0.84rem', gap: '6px', opacity: savingByok || !byokInput.trim() ? 0.65 : 1 }}
+                  onClick={async () => {
+                    setSavingByok(true);
+                    try {
+                      const res = await fetch('/api/settings/api-key', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ mode: 'custom', apiKey: byokInput.trim() }),
+                      });
+                      const data = await res.json();
+                      if (!res.ok) throw new Error(data.error || 'Could not save API key.');
+                      setByokMode('custom');
+                      setByokHasSavedKey(true);
+                      setByokMaskedKey(data.maskedKey);
+                      setByokInput('');
+                      showToast('Custom Gemini API Key saved & activated!');
+                    } catch (err) {
+                      showToast(err?.message || 'Invalid Gemini API key.');
+                    } finally {
+                      setSavingByok(false);
+                    }
+                  }}
+                >
+                  <Save size={14} />
+                  <span>{savingByok ? 'Saving...' : 'Save & Activate Key'}</span>
+                </button>
+              </div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>
+                Stored server-side and masked after saving. Never shared or exposed in browser requests.
+              </div>
+            </div>
+          )}
         </section>
 
         {/* [FUTURE FEATURE - COMMENTED OUT FOR BUDGET]: Card 5: Auto-Learned Project Context (Max 5, Latest-First, 300-char crisp summary) */}

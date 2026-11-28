@@ -11,7 +11,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'How does the Free Plan work, and what are the daily limits on Pro and Advanced?',
-    a: 'Every user is automatically enrolled in our monthly auto-renewing Free Plan upon Google Sign-In—no credit card or setup needed. Free includes 3 image edits/day and 1 AI post per platform/day (X, LinkedIn, Reddit). Pro ($7/mo) unlocks 30 image edits/day and 10 AI posts per platform/day; Advanced ($15/mo) unlocks 50 image edits/day and 15 AI posts per platform/day.',
+    a: 'Every user is automatically enrolled in our monthly auto-renewing Free Plan upon Google Sign-In—no credit card or setup needed. Free includes 3 image edits/day and 1 AI post per platform/day (X, LinkedIn, Reddit). Pro ($7/mo) unlocks 30 image edits/day, 10 AI posts per platform/day, and Hide Watermark. Advanced ($15/mo) unlocks 50 image edits/day, 15 AI posts per platform/day, Custom Brand Handle, and Bring Your Own Gemini API Key (BYOK) for a dedicated fast lane.',
   },
   {
     q: 'Can I test the Studio and AI Post Mode without spending my daily credits?',

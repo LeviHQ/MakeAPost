@@ -252,6 +252,10 @@ export default function UpgradeModal({
                 <Check size={15} style={{ color: '#16A34A', flexShrink: 0 }} />
                 <span><strong>Custom Brand Handle</strong> (@you / domain) + Clean Export</span>
               </li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Check size={15} style={{ color: '#16A34A', flexShrink: 0 }} />
+                <span><strong>Custom Gemini API Key (BYOK)</strong> — Dedicated fast lane</span>
+              </li>
             </ul>
             <button
               type="button"

@@ -212,8 +212,9 @@ export default function AboutPage() {
               <span className={styles.listBullet} />
               <span>
                 <strong>Advanced Plan ($15/mo):</strong> 50 image edits/day (1,500/month), 15 AI
-                posts per platform/day (1,350/month), Hide Watermark, and Custom Brand Handle
-                (<code>@handle</code> or domain badge).
+                posts per platform/day (1,350/month), Hide Watermark, Custom Brand Handle
+                (<code>@handle</code> or domain badge), and Bring Your Own Gemini API Key (BYOK)
+                for a dedicated fast generation lane.
               </span>
             </li>
           </ul>

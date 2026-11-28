@@ -113,6 +113,23 @@ export async function GET() {
       }
     }
 
+    let byokRow = null;
+    if (planId === 'advanced') {
+      try {
+        const admin = createAdminClient();
+        const { data: keyData } = await admin
+          .from('users')
+          .select('use_custom_gemini_key, custom_gemini_api_key')
+          .eq('id', user.id)
+          .single();
+        byokRow = keyData || null;
+      } catch {}
+    }
+
+    const hasCustomGeminiKey = Boolean(byokRow?.custom_gemini_api_key?.trim());
+    const useCustomGeminiKey =
+      planId === 'advanced' && Boolean(byokRow?.use_custom_gemini_key) && hasCustomGeminiKey;
+
     return NextResponse.json({
       authenticated: true,
       planId,
@@ -124,6 +141,8 @@ export async function GET() {
       accountCreatedAt,
       hasBillingCustomer: Boolean(userRow?.billing_customer_id),
       defaultWatermark: effectiveWatermark,
+      useCustomGeminiKey,
+      hasCustomGeminiKey,
       imageCreditsUsed: normalized.imageCreditsUsed,
       imageLimit: planConfig.dailyImages,
       aiCreditsUsed: normalized.aiCreditsUsed,

@@ -9,7 +9,7 @@
 - **Pricing:**
   - **Free ($0/mo, auto-renewed monthly on Google Sign-In):** 3 image edits/day, 1 AI post per platform/day (X, LinkedIn, Reddit), default MakeAPost watermark.
   - **Pro ($7/mo):** 30 image edits/day (900/mo), 10 AI posts per platform/day (900/mo), Hide Watermark (Clean Export).
-  - **Advanced ($15/mo):** 50 image edits/day (1,500/mo), 15 AI posts per platform/day (1,350/mo), Hide Watermark + Custom Brand Handle.
+  - **Advanced ($15/mo):** 50 image edits/day (1,500/mo), 15 AI posts per platform/day (1,350/mo), Hide Watermark + Custom Brand Handle + Custom Gemini API Key (BYOK).
 - **Sample Mode:** Built-in Code Snippet Sample and SaaS Analytics Sample use 0 image credits and 0 AI credits for unlimited free testing.
 - **Privacy Architecture:** 100% client-side HTML5 Canvas editing; zero screenshots and zero generated post drafts are stored in any database.
 - **Social Sharing:** Zero-token native web intents + device clipboard PNG copy (never asks for X, LinkedIn, or Reddit passwords or OAuth tokens).

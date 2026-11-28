@@ -349,6 +349,12 @@ export default function LandingPricingSection() {
                 <strong>Custom Brand Handle</strong> (@you / domain) + Clean Export
               </span>
             </li>
+            <li>
+              <Check size={16} className={styles.privacyIconYes} />
+              <span>
+                <strong>Custom Gemini API Key (BYOK)</strong> — Dedicated fast lane
+              </span>
+            </li>
           </ul>
 
           <div className={styles.pricingCtaSlot}>

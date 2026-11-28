@@ -36,7 +36,7 @@ MakeAPost eliminates switching between screenshot beautifiers (such as Shots.so,
 ## 3. Plans, Limits & Billing Policy
 - **Free Plan ($0/mo):** Automatically activated on first Google Sign-In (auto-renewed monthly). 3 image edits/day, 1 AI post per platform/day, default `made with makeapost.site` watermark.
 - **Pro Plan ($7/mo):** 30 image edits/day (900/month), 10 AI posts per platform/day (900/month), Hide Watermark (clean exports).
-- **Advanced Plan ($15/mo):** 50 image edits/day (1,500/month), 15 AI posts per platform/day (1,350/month), Hide Watermark + Custom Brand Handle (`@handle` or website URL).
+- **Advanced Plan ($15/mo):** 50 image edits/day (1,500/month), 15 AI posts per platform/day (1,350/month), Hide Watermark + Custom Brand Handle (`@handle` or website URL) + Bring Your Own Gemini API Key (BYOK — toggle between Default Platform Key and Custom Key in Account Settings).
 - **Payment Processor:** Dodo Payments.
 - **Billing Policy:** All sales are final; MakeAPost does not offer refunds or mid-cycle cancellations (verified duplicate processor charges may be reviewed via https://makeapost.site/contact).
 

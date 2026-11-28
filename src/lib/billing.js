@@ -11,6 +11,7 @@ export const PLANS = {
     dailyAiPerPlatform: 1,
     canHideWatermark: false,
     canCustomWatermark: false,
+    canCustomGeminiKey: false,
     badgeLabel: 'FREE',
   },
   pro: {
@@ -21,6 +22,7 @@ export const PLANS = {
     dailyAiPerPlatform: 10,
     canHideWatermark: true,
     canCustomWatermark: false,
+    canCustomGeminiKey: false,
     badgeLabel: 'PRO',
   },
   advanced: {
@@ -31,6 +33,7 @@ export const PLANS = {
     dailyAiPerPlatform: 15,
     canHideWatermark: true,
     canCustomWatermark: true,
+    canCustomGeminiKey: true,
     badgeLabel: 'ADVANCED',
   },
 };

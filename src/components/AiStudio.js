@@ -426,10 +426,14 @@ export default function AiStudio({
           </span>
         </div>
         <span
-          className={`badge-brutal ${image?.isSample ? 'badge-yellow' : 'badge-blue'}`}
+          className={`badge-brutal ${image?.isSample || usage?.useCustomGeminiKey ? 'badge-yellow' : 'badge-blue'}`}
           style={{ fontSize: '0.65rem', padding: '2px 8px' }}
         >
-          {image?.isSample ? 'Sample • 0 Credits' : 'Multimodal'}
+          {image?.isSample
+            ? 'Sample • 0 Credits'
+            : usage?.useCustomGeminiKey
+            ? 'Custom Gemini Key'
+            : 'Multimodal'}
         </span>
       </div>
 
