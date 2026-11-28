@@ -153,6 +153,11 @@ export default function RootLayout({ children }) {
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script
+          src="https://analytics.ahrefs.com/analytics.js"
+          data-key="11a5Zl24NpMqkMpv6iijXQ"
+          async
+        />
       </head>
       <body suppressHydrationWarning>
         <PwaRegister />
