@@ -1,0 +1,40 @@
+# MakeAPost AI Crawler & Answer Engine Policy (https://makeapost.site)
+
+User-Agent: GPTBot
+Allow: /
+
+User-Agent: OAI-SearchBot
+Allow: /
+
+User-Agent: ChatGPT-User
+Allow: /
+
+User-Agent: ClaudeBot
+Allow: /
+
+User-Agent: anthropic-ai
+Allow: /
+
+User-Agent: PerplexityBot
+Allow: /
+
+User-Agent: Google-Extended
+Allow: /
+
+User-Agent: Applebot-Extended
+Allow: /
+
+User-Agent: CCBot
+Allow: /
+
+# Disallow private API and authenticated user settings endpoints
+Disallow: /api/
+Disallow: /auth/
+Disallow: /settings
+
+# Primary machine-readable references
+LLMs: https://makeapost.site/llms.txt
+LLMs-Full: https://makeapost.site/llms-full.txt
+AI-Snapshot: https://makeapost.site/ai-snapshot.json
+OpenAPI: https://makeapost.site/openapi.json
+Sitemap: https://makeapost.site/sitemap.xml

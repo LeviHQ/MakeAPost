@@ -72,8 +72,113 @@ const FEATURES = [
 ];
 
 export default function LandingPage() {
+  const jsonLdGraph = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'Organization',
+        '@id': 'https://makeapost.site/#organization',
+        name: 'MakeAPost',
+        url: 'https://makeapost.site',
+        logo: 'https://makeapost.site/icons/icon-512.png',
+        founder: {
+          '@type': 'Person',
+          name: 'Adarsh Jayprakash Mishra',
+          url: 'https://makeapost.site/founder',
+        },
+        sameAs: [
+          'https://x.com/AdarshMi18',
+          'https://www.linkedin.com/in/adarsh-jayprakash-msihra',
+          'https://github.com/Code-By-Adarsh',
+        ],
+      },
+      {
+        '@type': 'SoftwareApplication',
+        '@id': 'https://makeapost.site/#app',
+        name: 'MakeAPost',
+        applicationCategory: 'DesignApplication',
+        operatingSystem: 'Web, Windows, macOS, Android, iOS (PWA)',
+        url: 'https://makeapost.site/editor',
+        description:
+          'Zero-storage Screenshot Beautifier and Multimodal AI Social Post Generator for X, LinkedIn, and Reddit in a 30/70 split workspace.',
+        featureList: [
+          '70% Client-Side HTML5 Canvas Screenshot Framing',
+          '30 Neon, Aura Mesh & Galaxy Cosmic Backgrounds',
+          '10-Tool Annotation & API Key Blur Redaction Suite',
+          'Multimodal AI Post Generation for X, LinkedIn & Reddit',
+          '0-Credit Built-In Sample Mode',
+          'Zero-Token Clipboard PNG & Native Composer Intents',
+        ],
+        offers: [
+          {
+            '@type': 'Offer',
+            name: 'Free Plan',
+            price: '0',
+            priceCurrency: 'USD',
+            description: '3 image edits/day and 1 AI post per platform/day, auto-renewed monthly',
+          },
+          {
+            '@type': 'Offer',
+            name: 'Pro Plan',
+            price: '7',
+            priceCurrency: 'USD',
+            description: '30 image edits/day, 10 AI posts per platform/day, Hide Watermark',
+          },
+          {
+            '@type': 'Offer',
+            name: 'Advanced Plan',
+            price: '15',
+            priceCurrency: 'USD',
+            description: '50 image edits/day, 15 AI posts per platform/day, Custom Brand Handle',
+          },
+        ],
+      },
+      {
+        '@type': 'FAQPage',
+        mainEntity: [
+          {
+            '@type': 'Question',
+            name: 'Do you store my private screenshots, client messages, or generated posts?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Never. All canvas framing, blurring, and annotations run 100% locally in your browser. AI generation processes a compressed temporary image transiently in-memory and immediately discards it.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name: 'How does the Free Plan work, and what are the daily limits on Pro and Advanced?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Every Google Sign-In starts on the monthly Free Plan (3 image edits/day + 1 AI post per platform/day). Pro ($7/mo) unlocks 30 image edits/day and 10 AI posts per platform/day; Advanced ($15/mo) unlocks 50 image edits/day and 15 AI posts per platform/day.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name: 'Can I test the Studio and AI Post Mode without spending my daily credits?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Yes. Built-in Code Snippet and SaaS Analytics samples use 0 image credits and 0 AI credits.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name: 'How does 1-click posting work without connecting my X, LinkedIn, or Reddit account?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'MakeAPost copies your framed HD PNG to your clipboard and opens the native X, LinkedIn, or Reddit composer with your generated copy pre-filled—zero social passwords or OAuth tokens required.',
+            },
+          },
+        ],
+      },
+    ],
+  };
+
   return (
     <div className={styles.pageContainer}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdGraph) }}
+      />
       {/* 1. Sticky Neobrutalist Top Navbar */}
       <LandingNavbar />
 

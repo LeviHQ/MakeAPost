@@ -1,0 +1,73 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "MakeAPost Public & Studio API Overview",
+    "version": "1.0.0",
+    "description": "Machine-readable specification of MakeAPost public endpoints and authenticated studio capabilities at https://makeapost.site.",
+    "contact": {
+      "name": "Adarsh Jayprakash Mishra",
+      "email": "adarshmishra70931@gmail.com",
+      "url": "https://makeapost.site/contact"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://makeapost.site",
+      "description": "Production MakeAPost Server"
+    }
+  ],
+  "paths": {
+    "/api/credits/status": {
+      "get": {
+        "summary": "Get current user plan, billing cycle dates, and daily image/AI credit usage",
+        "responses": {
+          "200": {
+            "description": "Plan status and daily quota payload"
+          }
+        }
+      }
+    },
+    "/api/credits/image": {
+      "post": {
+        "summary": "Verify and consume 1 daily image edit credit for custom uploaded screenshots (Sample images consume 0 credits)",
+        "responses": {
+          "200": {
+            "description": "Credit verified and updated"
+          },
+          "401": {
+            "description": "Google Sign-In required"
+          },
+          "429": {
+            "description": "Daily image limit reached"
+          }
+        }
+      }
+    },
+    "/api/generate": {
+      "post": {
+        "summary": "Generate tailored X, LinkedIn, and Reddit posts from a compressed canvas screenshot via Google Gemini Vision",
+        "responses": {
+          "200": {
+            "description": "Generated posts JSON for requested platforms"
+          },
+          "401": {
+            "description": "Google Sign-In required"
+          },
+          "429": {
+            "description": "Daily per-platform AI limit reached"
+          }
+        }
+      }
+    },
+    "/api/contact": {
+      "post": {
+        "summary": "Submit a support, billing, or data-deletion inquiry via Resend",
+        "responses": {
+          "200": {
+            "description": "Inquiry delivered with user confirmation email"
+          }
+        }
+      }
+    }
+  }
+}

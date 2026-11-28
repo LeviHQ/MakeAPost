@@ -19,22 +19,130 @@
 
 .footerGrid {
   display: grid;
-  grid-template-columns: 1.8fr 1fr 1fr 1.2fr 1.1fr;
+  grid-template-columns: 1.7fr 1fr 1.05fr 1fr 1.1fr;
   gap: 28px;
 }
 
-@media (max-width: 980px) {
+@media (max-width: 1024px) {
   .footerGrid {
-    grid-template-columns: 1fr 1fr;
-    gap: 32px;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 28px;
   }
 }
 
-@media (max-width: 580px) {
+@media (max-width: 720px) {
+  .footerGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+}
+
+@media (max-width: 520px) {
   .footerGrid {
     grid-template-columns: 1fr;
-    gap: 28px;
+    gap: 24px;
   }
+}
+
+/* AI Visibility / GEO & AEO Strip */
+.aiVisibilityBar {
+  border-top: 2px solid var(--border-color);
+  padding-top: 22px;
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .aiVisibilityBar {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+.aiSectionHeader {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  text-transform: uppercase;
+}
+
+.aiSectionSub {
+  font-weight: 500;
+  color: var(--muted);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.aiButtonGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.aiQueryBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 11px;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--ink);
+  background-color: var(--card-bg-subtle);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  box-shadow: 2px 2px 0 var(--shadow-color);
+  transition: transform 0.12s ease, background-color 0.12s ease;
+}
+
+.aiQueryBtn:hover {
+  background-color: var(--accent-yellow);
+  color: #09090B;
+  transform: translate(-1px, -1px);
+}
+
+.aiEndpointsCol {
+  border-left: 2px dashed var(--border-color);
+  padding-left: 24px;
+}
+
+@media (max-width: 900px) {
+  .aiEndpointsCol {
+    border-left: none;
+    padding-left: 0;
+    border-top: 1.5px dashed var(--border-color);
+    padding-top: 16px;
+  }
+}
+
+.endpointList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+}
+
+.endpointLink {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.endpointLink:hover {
+  color: var(--ink);
+  text-decoration: underline;
 }
 
 /* Brand Column */

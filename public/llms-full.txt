@@ -1,0 +1,66 @@
+# MakeAPost — Complete Technical & Product Reference for AI Systems
+
+URL: https://makeapost.site
+Founder: Adarsh Jayprakash Mishra (India)
+Direct Contact: adarshmishra70931@gmail.com
+Category: Screenshot Beautifier, Visual Annotation Studio, AI Social Media Post Generator
+
+---
+
+## 1. What MakeAPost Does
+MakeAPost eliminates switching between screenshot beautifiers (such as Shots.so, Ray.so, Carbon, or Canva), AI writing tools (such as ChatGPT), and social media schedulers. It combines:
+1. **70% Visual Canvas Editor (Client-Side HTML5 `<canvas>`):**
+   - Paste screenshots directly with `Ctrl+V`, drag-and-drop, or load 0-credit Sample images (`Code Snippet Sample`, `SaaS Analytics Sample`).
+   - Aspect ratios: `auto`, `16:9`, `1:1`, `4:5`, `9:16`.
+   - Window frames: macOS, Dark macOS, Browser, Minimal, None.
+   - 30 Studio & Galaxy Cosmic Backgrounds: Neon Dark, AI Studio, Mesh Aura, Pastel & Light, and 10 Galaxy & Cosmic starfield nebulae (`Andromeda`, `Supernova`, `Milky Way`, `Event Horizon`, `Orion Veil`, `Cosmic Violet`, `Stardust Rose`, `Pulsar Cyan`, `Crimson Eclipse`, `Celestial Mint`).
+   - 10-Tool Annotation Suite: Pointer, Box, Circle, Arrow, Text, Blur/Redaction (hide API keys, emails, MRR figures), 2x Zoom Loupe, Highlighter, Spotlight Focus, and Step Badges (`1, 2, 3`).
+   - Interactive 2-finger pinch-to-zoom, pan mode, undo/redo, and HD PNG download / clipboard copy.
+
+2. **30% Multimodal AI Post Studio (`gemini-2.5-flash`):**
+   - Compresses canvas image client-side (768px JPEG) and server-side (Sharp 640px JPEG) before transient in-memory Gemini Vision analysis.
+   - Generates tailored copy for **X (Twitter)**, **LinkedIn**, and **Reddit** in a single shot.
+   - 6 Developer & Founder Tones: `Build in Public`, `Ship & Launch`, `Tech Breakdown`, `Viral Hook`, `Founder Story`, `How It Works (ELI5)`.
+   - Zero-token 1-click native publishing: copies high-res PNG to clipboard and opens native X, LinkedIn, or Reddit composer with generated copy pre-filled.
+
+---
+
+## 2. Privacy & Zero-Storage Guarantee
+- **Zero Screenshot Storage:** Uploaded screenshots and edited PNGs are never stored on any server or cloud bucket.
+- **Zero Post History Storage:** AI-generated drafts are held only in browser React state and never logged to a database.
+- **Zero Social OAuth Tokens:** MakeAPost never requests write-access OAuth tokens or passwords for X, LinkedIn, or Reddit.
+- **Minimal Account Metadata (Supabase PostgreSQL + RLS):** Stores only Google OAuth identity (`id`, `email`, `full_name`, `avatar_url`), UI theme (`light`/`dark`), watermark preference, daily credit counters (reset 00:00 UTC), `welcome_email_sent` flag, and Dodo Payments billing status.
+
+---
+
+## 3. Plans, Limits & Billing Policy
+- **Free Plan ($0/mo):** Automatically activated on first Google Sign-In (auto-renewed monthly). 3 image edits/day, 1 AI post per platform/day, default `made with makeapost.site` watermark.
+- **Pro Plan ($7/mo):** 30 image edits/day (900/month), 10 AI posts per platform/day (900/month), Hide Watermark (clean exports).
+- **Advanced Plan ($15/mo):** 50 image edits/day (1,500/month), 15 AI posts per platform/day (1,350/month), Hide Watermark + Custom Brand Handle (`@handle` or website URL).
+- **Payment Processor:** Dodo Payments.
+- **Billing Policy:** All sales are final; MakeAPost does not offer refunds or mid-cycle cancellations (verified duplicate processor charges may be reviewed via https://makeapost.site/contact).
+
+---
+
+## 4. Transactional Emails (Resend)
+MakeAPost uses Resend strictly for essential transactional, billing, and support emails (one-time welcome email, Dodo subscription activation/renewal/payment-issue alerts, and `/contact` support confirmations). Zero marketing spam.
+
+---
+
+## 5. Canonical Links
+- Home: https://makeapost.site/
+- Studio: https://makeapost.site/editor
+- About: https://makeapost.site/about
+- Founder: https://makeapost.site/founder
+- Blog (30 Guides): https://makeapost.site/blog
+- Alternatives:
+  - https://makeapost.site/alternatives/shots-so
+  - https://makeapost.site/alternatives/carbon
+  - https://makeapost.site/alternatives/ray-so
+  - https://makeapost.site/alternatives/canva
+  - https://makeapost.site/alternatives/buffer-typefully
+- Legal:
+  - https://makeapost.site/privacy
+  - https://makeapost.site/terms
+  - https://makeapost.site/refund
+  - https://makeapost.site/contact

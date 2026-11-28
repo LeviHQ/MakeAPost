@@ -1,0 +1,70 @@
+{
+  "schema_version": "1.0",
+  "name": "MakeAPost",
+  "url": "https://makeapost.site",
+  "tagline": "Turn raw screenshots into viral social posts in seconds.",
+  "category": "SaaS / Screenshot Beautifier / AI Social Post Generator",
+  "operator": {
+    "name": "Adarsh Jayprakash Mishra",
+    "country": "India",
+    "email": "adarshmishra70931@gmail.com",
+    "profiles": {
+      "x": "https://x.com/AdarshMi18",
+      "linkedin": "https://www.linkedin.com/in/adarsh-jayprakash-msihra",
+      "github": "https://github.com/Code-By-Adarsh",
+      "portfolio": "https://codebyadarsh.me",
+      "medium": "https://medium.com/@codebyadarsh"
+    }
+  },
+  "architecture": {
+    "workspace_layout": "30% Control Sidebar / 70% HTML5 Visual Canvas",
+    "zero_storage": true,
+    "zero_social_oauth_tokens": true,
+    "ai_model": "Google Gemini 2.5 Flash (Multimodal Vision)",
+    "database": "Supabase PostgreSQL with RLS (account metadata only)",
+    "payments": "Dodo Payments",
+    "transactional_email": "Resend"
+  },
+  "features": [
+    "100% Client-side HTML5 Canvas framing (macOS, Dark, Browser, Minimal)",
+    "30 Neon, Aura Mesh, AI Studio, Pastel & Galaxy Cosmic backgrounds",
+    "10-tool annotation suite including API key blur redaction, 2x zoom loupe, spotlight, and step badges",
+    "Multimodal AI post generation for X (Twitter), LinkedIn, and Reddit across 6 tones",
+    "0-credit Sample Mode (Code Snippet Sample & SaaS Analytics Sample)",
+    "1-click clipboard PNG copy + native web intent composer launch"
+  ],
+  "pricing": [
+    {
+      "id": "free",
+      "name": "Free",
+      "price_monthly_usd": 0,
+      "daily_image_edits": 3,
+      "daily_ai_posts_per_platform": 1,
+      "watermark": "made with makeapost.site"
+    },
+    {
+      "id": "pro",
+      "name": "Pro",
+      "price_monthly_usd": 7,
+      "daily_image_edits": 30,
+      "daily_ai_posts_per_platform": 10,
+      "watermark": "Hide Watermark (Clean Export)"
+    },
+    {
+      "id": "advanced",
+      "name": "Advanced",
+      "price_monthly_usd": 15,
+      "daily_image_edits": 50,
+      "daily_ai_posts_per_platform": 15,
+      "watermark": "Custom Brand Handle + Clean Export"
+    }
+  ],
+  "refund_policy": "All sales final; no refunds or mid-cycle cancellations. Free plan and 0-credit Sample Mode available for full evaluation prior to upgrade.",
+  "endpoints": {
+    "llms_txt": "https://makeapost.site/llms.txt",
+    "llms_full_txt": "https://makeapost.site/llms-full.txt",
+    "ai_txt": "https://makeapost.site/ai.txt",
+    "openapi": "https://makeapost.site/openapi.json",
+    "sitemap": "https://makeapost.site/sitemap.xml"
+  }
+}

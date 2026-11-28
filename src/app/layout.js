@@ -42,23 +42,45 @@ const getBaseUrl = () => {
 
 export const metadata = {
   metadataBase: new URL(getBaseUrl()),
+  applicationName: 'MakeAPost',
   alternates: {
     canonical: '/',
   },
-  title: 'MakeAPost — Turn Screenshots into Viral Social Posts',
+  title: {
+    default: 'MakeAPost — Screenshot Beautifier & AI Social Post Generator',
+    template: '%s | MakeAPost',
+  },
   description:
-    'Turn raw screenshots into viral social posts in seconds. Edit your image & generate tailored X, LinkedIn, and Reddit posts in one screen.',
+    'Turn raw screenshots into viral X, LinkedIn & Reddit posts in 10 seconds. Client-side HTML5 Canvas editor (30 Cosmic & Neon themes, blur redaction) + Multimodal AI writer with zero storage.',
   keywords: [
     'screenshot beautifier',
-    'social media post generator',
+    'AI social media post generator',
     'screenshot to viral post',
-    'shots so alternative',
-    'AI social media manager',
-    'X threads generator',
+    'code screenshot generator',
+    'shots.so alternative',
+    'carbon alternative',
+    'ray.so alternative',
+    'X post generator from screenshot',
     'LinkedIn post generator',
+    'Reddit launch post generator',
+    'build in public tool',
+    'zero storage screenshot editor',
     'MakeAPost',
   ],
-  authors: [{ name: 'MakeAPost' }],
+  authors: [{ name: 'Adarsh Jayprakash Mishra', url: 'https://makeapost.site/founder' }],
+  creator: 'Adarsh Jayprakash Mishra',
+  publisher: 'MakeAPost',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   manifest: '/manifest.webmanifest',
   icons: {
     icon: [
@@ -76,7 +98,7 @@ export const metadata = {
     title: 'MakeAPost',
   },
   openGraph: {
-    title: 'MakeAPost — Turn Screenshots into Viral Social Posts',
+    title: 'MakeAPost — Screenshot Beautifier & AI Social Post Generator',
     description:
       'Turn raw screenshots into viral social posts in seconds. Edit your image & generate tailored X, LinkedIn, and Reddit posts in one screen.',
     url: '/',
@@ -94,11 +116,11 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'MakeAPost — Turn Screenshots into Viral Social Posts',
+    title: 'MakeAPost — Screenshot Beautifier & AI Social Post Generator',
     description:
       'Turn raw screenshots into viral social posts in seconds. Edit your image & generate tailored X, LinkedIn, and Reddit posts in one screen.',
     images: ['/og-image.png'],
-    creator: '@makeapost',
+    creator: '@AdarshMi18',
   },
 };
 

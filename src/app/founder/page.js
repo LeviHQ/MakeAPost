@@ -27,8 +27,33 @@ export const metadata = {
 };
 
 export default function FounderPage() {
+  const personJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: 'Adarsh Jayprakash Mishra',
+    jobTitle: 'Founder & Software Engineer',
+    url: 'https://makeapost.site/founder',
+    email: 'mailto:adarshmishra70931@gmail.com',
+    worksFor: {
+      '@type': 'Organization',
+      name: 'MakeAPost',
+      url: 'https://makeapost.site',
+    },
+    sameAs: [
+      'https://x.com/AdarshMi18',
+      'https://www.linkedin.com/in/adarsh-jayprakash-msihra',
+      'https://github.com/Code-By-Adarsh',
+      'https://codebyadarsh.me',
+      'https://medium.com/@codebyadarsh',
+    ],
+  };
+
   return (
     <div className={styles.legalContainer}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
+      />
       <header className={styles.legalHeader}>
         <div className={styles.headerInner}>
           <Logo size={36} />

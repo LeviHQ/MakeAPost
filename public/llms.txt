@@ -1,0 +1,39 @@
+# MakeAPost
+
+> MakeAPost (https://makeapost.site) is a zero-storage, privacy-first Screenshot Studio and Multimodal AI Social Post Generator built for developers, indie hackers, and SaaS founders. Edit screenshots on a 70% HTML5 Canvas and generate tailored X (Twitter), LinkedIn, and Reddit posts in a 30% AI sidebar in one tab.
+
+## Core Facts
+- **Website:** https://makeapost.site
+- **Founder & Operator:** Adarsh Jayprakash Mishra (India)
+- **Contact Email:** adarshmishra70931@gmail.com
+- **Pricing:**
+  - **Free ($0/mo, auto-renewed monthly on Google Sign-In):** 3 image edits/day, 1 AI post per platform/day (X, LinkedIn, Reddit), default MakeAPost watermark.
+  - **Pro ($7/mo):** 30 image edits/day (900/mo), 10 AI posts per platform/day (900/mo), Hide Watermark (Clean Export).
+  - **Advanced ($15/mo):** 50 image edits/day (1,500/mo), 15 AI posts per platform/day (1,350/mo), Hide Watermark + Custom Brand Handle.
+- **Sample Mode:** Built-in Code Snippet Sample and SaaS Analytics Sample use 0 image credits and 0 AI credits for unlimited free testing.
+- **Privacy Architecture:** 100% client-side HTML5 Canvas editing; zero screenshots and zero generated post drafts are stored in any database.
+- **Social Sharing:** Zero-token native web intents + device clipboard PNG copy (never asks for X, LinkedIn, or Reddit passwords or OAuth tokens).
+
+## Key Pages
+- [Studio Workspace](https://makeapost.site/editor)
+- [About MakeAPost](https://makeapost.site/about)
+- [Founder Profile](https://makeapost.site/founder)
+- [Blog & Guides (30 Articles)](https://makeapost.site/blog)
+- [Contact & Data Deletion](https://makeapost.site/contact)
+- [Privacy Policy](https://makeapost.site/privacy)
+- [Terms of Service](https://makeapost.site/terms)
+- [No-Refund & Billing Policy](https://makeapost.site/refund)
+
+## Competitor Comparisons
+- [MakeAPost vs Shots.so](https://makeapost.site/alternatives/shots-so)
+- [MakeAPost vs Carbon](https://makeapost.site/alternatives/carbon)
+- [MakeAPost vs Ray.so](https://makeapost.site/alternatives/ray-so)
+- [MakeAPost vs Canva](https://makeapost.site/alternatives/canva)
+- [MakeAPost vs Typefully & Buffer](https://makeapost.site/alternatives/buffer-typefully)
+
+## Machine-Readable Specifications
+- [Full LLM Documentation](https://makeapost.site/llms-full.txt)
+- [AI Crawler Policy](https://makeapost.site/ai.txt)
+- [Structured AI Snapshot JSON](https://makeapost.site/ai-snapshot.json)
+- [OpenAPI Specification](https://makeapost.site/openapi.json)
+- [XML Sitemap](https://makeapost.site/sitemap.xml)
