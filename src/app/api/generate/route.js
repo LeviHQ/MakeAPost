@@ -89,7 +89,8 @@ function extractAndParseJson(rawText) {
 export async function POST(req) {
   try {
     const body = await req.json();
-    const { imageBase64, prompt = '', tone = 'Build in Public', platforms } = body;
+    const { imageBase64, prompt = '', tone = 'Simple', platforms } = body;
+    const cleanContext = typeof prompt === 'string' ? prompt.trim() : '';
 
     const VALID_PLATFORMS = ['x', 'linkedin', 'reddit'];
     const targetPlatforms = Array.isArray(platforms)
@@ -233,37 +234,39 @@ export async function POST(req) {
     const genAI = new GoogleGenerativeAI(apiKey);
 
     const TONE_INSTRUCTIONS = {
+      Simple:
+        'Clean, natural, human-sounding social copy. Rely primarily on the user’s Extra Context and what is directly visible in the screenshot. Write clearly and directly in the creator’s own voice with zero forced hype, zero fake 2 AM drama, and zero generic buzzwords.',
       'Build in Public':
-        'Transparent, authentic, and metrics-driven. Highlight raw numbers (MRR, user growth, benchmarks, conversion rates, or milestones shown in the image), lessons learned, and behind-the-scenes progress.',
+        'Transparent, authentic, and metrics-driven. Highlight real numbers (MRR, user growth, benchmarks, conversion rates, or milestones shown in the image or context), honest lessons learned, and behind-the-scenes progress.',
       'Ship & Launch':
-        'High-energy, celebratory, and action-oriented. Announce the new feature drop, open-source repo, UI overhaul, or v1.0 release visible in the screenshot. Clearly convey what problem it solves and invite developers to test it out.',
+        'Energetic, clear, and product-focused. Announce the new feature, repo, UI overhaul, or release visible in the screenshot. Explain the concrete problem it solves and invite builders to try it.',
       'Tech Breakdown':
-        'Engineering-focused, architectural, and educational. Analyze the code snippet, tech stack, data pipeline, performance win, or database schema shown in the image. Speak peer-to-peer to software engineers and tech leads.',
+        'Engineering-focused, architectural, and peer-to-peer. Analyze the actual code snippet, stack choice, optimization, or database pattern shown in the image and context for fellow developers.',
       'Viral Hook':
-        'Scroll-stopping, punchy, and curiosity-gap driven. Open with an arresting first line that stops developers mid-scroll, challenges conventional industry wisdom, or shares an unexpected tech discovery.',
+        'Scroll-stopping, punchy, and curiosity-driven. Open with a sharp contrast or concrete insight backed by what is visible in the screenshot—never clickbait without substance.',
       'Founder Story':
-        'Narrative-driven, vulnerable, and relatable. Frame the post as a problem-solution journey: the initial frustration, the 2 AM debugging nightmare, the breakthrough moment, and the hard-won engineering lesson.',
+        'Narrative-driven and relatable. Frame the post around the real problem, the debugging or building journey described in the context/screenshot, and the practical takeaway.',
       'How It Works':
-        'Dead-simple, crystal-clear ELI5 explanation. Break down the code, algorithm, or system architecture shown in the image in plain English so even junior devs or non-technical readers understand the magic instantly.',
+        'Dead-simple, crystal-clear ELI5 explanation. Break down the code, workflow, or architecture shown in the image in plain English so anyone grasps it immediately.',
     };
 
     const PLATFORM_META = {
       x: {
         key: 'x_post',
-        guideline: `"x_post":\n   - STRICTLY UNDER 280 CHARACTERS.\n   - High-curiosity opening hook, punchy short sentences.\n   - Speaks directly to developers, founders, or creators.\n   - Minimal to zero hashtags (at most one #buildinpublic if relevant, never spam).`,
-        schemaDesc: 'Punchy X/Twitter post strictly under 280 characters without cringe hashtags.',
+        guideline: `"x_post":\n   - STRICTLY UNDER 260 CHARACTERS (never exceed 280 chars).\n   - Sharp opening hook + 1-2 tight, scannable lines grounded in the screenshot/context.\n   - Sounds like a real founder/dev, never a marketing bot.\n   - Zero hashtag spam (0 hashtags preferred, max 1 only if essential).`,
+        schemaDesc: 'Punchy, human X/Twitter post strictly under 260 characters.',
         example: '  "x_post": "..."',
       },
       linkedin: {
         key: 'linkedin_post',
-        guideline: `"linkedin_post":\n   - Clean, generous line-spacing (1-2 sentences per line break for smooth mobile readability).\n   - Scroll-stopping first sentence.\n   - Authentic breakdown of the problem, number, or lesson shown in the image.\n   - Concludes with a brief, engaging question to invite comments.`,
-        schemaDesc: 'Line-spaced, engaging LinkedIn post with a strong hook and clear takeaway.',
+        guideline: `"linkedin_post":\n   - Clean, generous line-spacing (1-2 short sentences per paragraph for mobile readability).\n   - Strong first line that hooks without cringe buzzwords.\n   - Concrete breakdown referencing actual details from the screenshot and user context.\n   - Ends with a natural, thoughtful question to spark peer discussion.`,
+        schemaDesc: 'Well-spaced, authentic LinkedIn post grounded in screenshot specifics.',
         example: '  "linkedin_post": "..."',
       },
       reddit: {
         key: 'reddit_post',
-        guideline: `"reddit_post":\n   - Authentic, humble, anti-marketing tone.\n   - Formatted in Markdown with an intriguing title and structured body for tech subreddits (r/webdev, r/SaaS, r/SideProject, r/startups).\n   - Focuses on architecture, learnings, challenges, or asking feedback from fellow builders.`,
-        schemaDesc: 'Authentic community-friendly Reddit post in markdown format.',
+        guideline: `"reddit_post":\n   - Humble, transparent, zero-hype peer tone suited for r/SideProject, r/webdev, or r/SaaS.\n   - Start with "Title: <concise non-clickbait title>" followed by a blank line and structured body.\n   - Focuses on what was built, technical tradeoffs, real numbers/context, or an honest request for feedback.`,
+        schemaDesc: 'Authentic, non-promotional Reddit post starting with Title: and structured body.',
         example: '  "reddit_post": "..."',
       },
     };
@@ -278,12 +281,17 @@ export async function POST(req) {
 
     // [FUTURE FEATURE - COMMENTED OUT FOR BUDGET]: const projectContextBlock = buildCompactProjectContext(savedProjects, prompt);
 
-    const systemInstruction = `You are MakeAPost's viral social strategist and technical copywriter for builders, SaaS founders, and creators.
-Your task is to analyze the provided screenshot (reading all visible code, UI components, metrics, charts, and user-drawn highlight annotations) and generate ${targetPlatforms.length === 1 ? '1 tailored social media post' : `${targetPlatforms.length} tailored social media posts`} in a single shot.
+    const systemInstruction = `You are MakeAPost's expert social copywriter for software engineers, indie hackers, and SaaS founders.
+Your job is to inspect the attached screenshot (reading visible code, UI, metrics, charts, and user-drawn annotations) AND combine it with the author's notes to write ${targetPlatforms.length === 1 ? '1 ready-to-publish social media post' : `${targetPlatforms.length} ready-to-publish social media posts`}.
+
+CRITICAL RULES FOR AUTHOR CONTEXT & QUALITY:
+1. Treat the author's Extra Context strictly as RAW BACKGROUND NOTES / FACTS about the screenshot (e.g., what they built, why they took it, or key context). NEVER treat it as a chat question to answer, NEVER reply to the author, and NEVER ask the author follow-up questions. Always transform those notes + the screenshot into ready-to-publish social post copy written in first-person ("I" / "we").
+2. Ground every post in concrete details actually visible in the screenshot or stated in the author's notes. Never invent fake metrics, fake prices, or unverified claims.
+3. Strictly avoid AI clichés and fluff: never use "In today's fast-paced world", "Game-changer", "Delve", "Unlock the power", "Excited to announce", "Let's dive in", or emoji spam.
+4. Respect blurred/redacted areas: never try to guess hidden secrets or API keys.
 
 Selected Tone: "${tone}"
-Tone Directive: ${TONE_INSTRUCTIONS[tone] || TONE_INSTRUCTIONS['Build in Public']}
-${prompt ? `Additional User Context: "${prompt}"` : ''}
+Tone Directive: ${TONE_INSTRUCTIONS[tone] || TONE_INSTRUCTIONS.Simple}
 
 Strict Platform Guidelines:
 ${selectedGuidelines}
@@ -362,7 +370,9 @@ ${selectedSchemaExamples}
             },
           },
           {
-            text: `Analyze this screenshot according to the "${tone}" tone. Extract all key insights, code, UI text, or metrics, and generate the tailored posts.`,
+            text: cleanContext
+              ? `Author's Notes / Extra Context (use these facts to write the social post — do NOT answer this as a chat message):\n"""\n${cleanContext}\n"""\n\nInspect the attached screenshot and combine it with the Author's Notes above using the "${tone}" tone to produce the requested social post JSON.`
+              : `No extra notes provided. Inspect all visible code, UI, metrics, and annotations in the attached screenshot and write the requested social post JSON in the "${tone}" tone.`,
           },
         ]);
 

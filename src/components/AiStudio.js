@@ -9,6 +9,7 @@ import { createClient } from '@/lib/supabase/client';
 import { copyImageAndOpenComposer, downloadPngFallback, isMobileDevice } from '@/lib/shareIntent';
 import {
   Sparkles,
+  FileText,
   AlertCircle,
   Hammer,
   Rocket,
@@ -29,6 +30,7 @@ import {
 } from 'lucide-react';
 
 const TONE_OPTIONS = [
+  { id: 'Simple', label: 'Simple (Context First)', icon: FileText, desc: 'Clean, natural post built directly from your context & screenshot — zero forced hype', fullWidth: true },
   { id: 'Build in Public', label: 'Build in Public', icon: Hammer, desc: 'Transparent metrics, MRR milestones & builder lessons' },
   { id: 'Ship & Launch', label: 'Ship & Launch', icon: Rocket, desc: 'Feature drops, v1.0 releases, repos & project launches' },
   { id: 'Tech Breakdown', label: 'Tech Breakdown', icon: Code2, desc: 'Architecture deep-dive, stack choices & code review' },
@@ -68,7 +70,7 @@ export default function AiStudio({
   usage,
 }) {
   const [prompt, setPrompt] = useState('');
-  const [tone, setTone] = useState('Build in Public');
+  const [tone, setTone] = useState('Simple');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
 
@@ -546,6 +548,7 @@ export default function AiStudio({
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '6px',
+                  gridColumn: t.fullWidth ? '1 / -1' : undefined,
                   opacity: isGenerating ? 0.6 : 1,
                   cursor: isGenerating ? 'not-allowed' : 'pointer',
                 }}
@@ -664,7 +667,7 @@ export default function AiStudio({
           disabled={isGenerating}
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
-          placeholder="Describe context (optional — AI also reads your screenshot code, metrics, and annotations)..."
+          placeholder="Add notes about this screenshot (e.g. 'Shipped dark mode in 2 days' or 'Fixed React re-render bug') — AI turns your notes + screenshot into posts..."
           className="input-brutal"
           style={{
             resize: 'vertical',
